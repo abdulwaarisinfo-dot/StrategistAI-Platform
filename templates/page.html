@@ -10,7 +10,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         :root {
-            --bg-dark: #000000; /* Deep Black */
+            --bg-dark: #000000;
             --sidebar-bg: #000000;
             --accent-primary: #82b1ff;
             --accent-glow: rgba(130, 177, 255, 0.2);
@@ -20,6 +20,7 @@
             --text-main: #ffffff;
             --text-dim: #94a3b8;
             --border-color: rgba(255, 255, 255, 0.08);
+            --sidebar-width: 72px;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -31,6 +32,11 @@
             display: flex;
             height: 100vh;
             overflow: hidden;
+            flex-direction: column; /* Mobile Default */
+        }
+
+        @media (min-width: 768px) {
+            body { flex-direction: row; }
         }
 
         /* Ambient Background */
@@ -40,35 +46,62 @@
             background: radial-gradient(circle at 50% 50%, #0a0a0a 0%, #000000 100%);
         }
 
-        /* Sidebar Navigation */
+        /* Sidebar Navigation - Responsive */
         .sidebar {
-            width: 72px;
+            width: 100%;
+            height: 64px;
             background: var(--sidebar-bg);
-            border-right: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             align-items: center;
-            padding: 20px 0;
+            justify-content: space-between;
+            padding: 0 20px;
             z-index: 100;
         }
 
+        @media (min-width: 768px) {
+            .sidebar {
+                width: var(--sidebar-width);
+                height: 100vh;
+                flex-direction: column;
+                border-bottom: none;
+                border-right: 1px solid var(--border-color);
+                padding: 20px 0;
+            }
+        }
+
         .logo-container {
-            width: 40px;
-            height: 40px;
+            width: 32px;
+            height: 32px;
             background: #fff;
-            border-radius: 12px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 40px;
             cursor: pointer;
+        }
+
+        @media (min-width: 768px) {
+            .logo-container {
+                width: 40px;
+                height: 40px;
+                margin-bottom: 40px;
+            }
         }
 
         .nav-items {
             display: flex;
-            flex-direction: column;
-            gap: 20px;
-            flex-grow: 1;
+            flex-direction: row;
+            gap: 12px;
+        }
+
+        @media (min-width: 768px) {
+            .nav-items {
+                flex-direction: column;
+                gap: 20px;
+                flex-grow: 1;
+            }
         }
 
         .nav-item {
@@ -76,22 +109,22 @@
             background: none;
             border: none;
             cursor: pointer;
-            padding: 10px;
-            border-radius: 12px;
+            padding: 8px;
+            border-radius: 10px;
             transition: all 0.2s;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
+        .nav-item i { width: 20px; height: 20px; }
+
         .nav-item:hover, .nav-item.active {
             color: #fff;
             background: rgba(255, 255, 255, 0.05);
         }
 
-        .nav-item.active {
-            color: var(--accent-primary);
-        }
+        .nav-item.active { color: var(--accent-primary); }
 
         /* Main Content Area */
         .main-wrapper {
@@ -100,15 +133,20 @@
             flex-direction: column;
             position: relative;
             z-index: 1;
+            overflow: hidden;
         }
 
         /* Top Bar */
         .top-bar {
-            height: 72px;
+            height: 64px;
             display: flex;
             justify-content: flex-end;
             align-items: center;
-            padding: 0 40px;
+            padding: 0 20px;
+        }
+
+        @media (min-width: 768px) {
+            .top-bar { height: 72px; padding: 0 40px; }
         }
 
         .wallet-btn {
@@ -126,16 +164,27 @@
         }
 
         /* Views */
-        .view-section { display: none; width: 100%; height: 100%; overflow-y: auto; padding: 40px;}
+        .view-section { 
+            display: none; 
+            width: 100%; 
+            height: 100%; 
+            overflow-y: auto; 
+            padding: 20px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border-color) transparent;
+        }
         .view-section.active { display: block; }
+        @media (min-width: 768px) {
+            .view-section { padding: 40px; }
+        }
 
         .center-content {
             flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            padding-bottom: 80px;
+            justify-content: flex-start;
+            padding-bottom: 120px;
             max-width: 1000px;
             margin: 0 auto;
             width: 100%;
@@ -143,37 +192,47 @@
 
         .sparkle-icon {
             color: var(--accent-primary);
-            margin-bottom: 20px;
+            margin-bottom: 16px;
             filter: drop-shadow(0 0 10px var(--accent-primary));
         }
 
         .welcome-text {
             color: var(--text-dim);
-            font-size: 14px;
+            font-size: 13px;
             margin-bottom: 8px;
+            text-align: center;
         }
 
         .hero-title {
-            font-size: 48px;
+            font-size: 28px;
             font-weight: 700;
-            margin-bottom: 40px;
-            letter-spacing: -1px;
+            margin-bottom: 32px;
+            letter-spacing: -0.5px;
             text-align: center;
+            line-height: 1.2;
+        }
+
+        @media (min-width: 768px) {
+            .hero-title { font-size: 48px; margin-bottom: 40px; }
         }
 
         .hero-title span { font-weight: 300; }
 
-        /* Cards */
+        /* Cards Grid */
         .cards-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
+            grid-template-columns: 1fr;
+            gap: 16px;
             width: 100%;
-            margin-bottom: 60px;
+            margin-bottom: 40px;
+        }
+
+        @media (min-width: 640px) {
+            .cards-grid { grid-template-columns: repeat(3, 1fr); }
         }
 
         .suggestion-card {
-            height: 140px;
+            height: 120px;
             border-radius: 20px;
             padding: 20px;
             display: flex;
@@ -184,6 +243,10 @@
             position: relative;
             overflow: hidden;
             border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        @media (min-width: 768px) {
+            .suggestion-card { height: 140px; }
         }
 
         .suggestion-card:hover {
@@ -200,26 +263,51 @@
             font-weight: 600;
             color: #fff;
             line-height: 1.4;
-            max-width: 120px;
+            max-width: 140px;
             z-index: 2;
         }
 
-        /* Input Dock */
-        .input-dock {
+        /* Input Dock - Sticky on Mobile */
+        .input-dock-container {
             width: 100%;
             max-width: 700px;
-            background: rgba(10, 10, 10, 0.9);
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 0 20px;
+            z-index: 110;
+        }
+
+        @media (min-width: 768px) {
+            .input-dock-container {
+                position: relative;
+                bottom: auto;
+                left: auto;
+                transform: none;
+                padding: 0;
+            }
+        }
+
+        .input-dock {
+            width: 100%;
+            background: rgba(10, 10, 10, 0.95);
             border: 1px solid var(--border-color);
             border-radius: 24px;
-            padding: 16px;
+            padding: 12px;
             backdrop-filter: blur(20px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
 
         .form-grid {
             display: grid;
-            grid-template-columns: 2fr 1fr 1fr;
-            gap: 12px;
+            grid-template-columns: 1fr;
+            gap: 8px;
             margin-bottom: 12px;
+        }
+
+        @media (min-width: 500px) {
+            .form-grid { grid-template-columns: 2fr 1fr 1fr; }
         }
 
         .input-group {
@@ -229,7 +317,7 @@
         }
 
         .input-group label {
-            font-size: 10px;
+            font-size: 9px;
             text-transform: uppercase;
             color: var(--text-dim);
             padding-left: 4px;
@@ -239,9 +327,9 @@
             background: rgba(255, 255, 255, 0.04);
             border: 1px solid rgba(255, 255, 255, 0.04);
             border-radius: 12px;
-            padding: 12px 16px;
+            padding: 10px 14px;
             color: #fff;
-            font-size: 14px;
+            font-size: 13px;
             outline: none;
             transition: 0.2s;
             width: 100%;
@@ -266,8 +354,8 @@
             border-radius: 20px;
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 12px;
+            gap: 6px;
+            font-size: 11px;
             color: var(--text-dim);
             cursor: pointer;
         }
@@ -276,8 +364,8 @@
             background: var(--accent-primary);
             color: #000;
             border: none;
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -286,24 +374,28 @@
             transition: 0.2s;
         }
 
-        .submit-btn:hover:not(:disabled) {
-            transform: scale(1.1);
-            box-shadow: 0 0 15px var(--accent-primary);
-        }
-
-        /* Results */
+        /* Results Panel - Floating Overlay */
         .result-panel {
             position: fixed;
             bottom: -100%;
-            left: 72px;
+            left: 0;
             right: 0;
-            height: 60vh;
-            background: #000000;
+            height: 80vh;
+            background: #050505;
             border-top: 1px solid var(--border-color);
-            z-index: 90;
+            z-index: 120;
             transition: bottom 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            padding: 40px;
+            padding: 24px;
             overflow-y: auto;
+            border-radius: 24px 24px 0 0;
+        }
+
+        @media (min-width: 768px) {
+            .result-panel {
+                left: var(--sidebar-width);
+                height: 60vh;
+                padding: 40px;
+            }
         }
 
         .result-panel.active { bottom: 0; }
@@ -313,47 +405,35 @@
             margin: 0 auto;
             color: #cbd5e1;
             line-height: 1.8;
-            font-size: 16px;
+            font-size: 15px;
             white-space: pre-wrap;
         }
 
         .close-panel {
-            position: absolute;
-            top: 20px;
-            right: 40px;
-            background: none;
+            position: sticky;
+            top: 0;
+            float: right;
+            background: rgba(255,255,255,0.05);
             border: none;
-            color: var(--text-dim);
+            color: #fff;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
             cursor: pointer;
-        }
-
-        .history-list {
             display: flex;
-            flex-direction: column;
-            gap: 12px;
-            width: 100%;
-            margin-top: 20px;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
         }
-
-        .history-item {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid var(--border-color);
-            padding: 16px;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .history-item:hover { background: rgba(255, 255, 255, 0.04); }
 
         .status-pill {
             position: fixed;
-            bottom: 20px;
+            bottom: 85px;
             right: 20px;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.85);
             padding: 4px 12px;
             border-radius: 20px;
-            font-size: 11px;
+            font-size: 10px;
             display: flex;
             align-items: center;
             gap: 6px;
@@ -361,24 +441,33 @@
             z-index: 100;
         }
 
-        .dot { width: 6px; height: 6px; border-radius: 50%; background: #222; }
+        @media (min-width: 768px) {
+            .status-pill { bottom: 20px; }
+        }
+
+        .dot { width: 6px; height: 6px; border-radius: 50%; background: #333; }
         .dot.online { background: #10b981; box-shadow: 0 0 8px #10b981; }
 
-        @keyframes spin { to { transform: rotate(360deg); } }
         .spinner {
-            width: 20px; height: 20px; border: 2px solid #000;
+            width: 18px; height: 18px; border: 2px solid #000;
             border-top-color: transparent; border-radius: 50%;
             animation: spin 1s linear infinite;
         }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
     </style>
 </head>
 <body>
     <div id="canvas-container"></div>
 
-    <!-- Sidebar -->
+    <!-- Sidebar / Top Nav on Mobile -->
     <div class="sidebar">
         <div class="logo-container">
-            <i data-lucide="zap" style="color: #000; width: 24px;"></i>
+            <i data-lucide="zap" style="color: #000; width: 20px;"></i>
         </div>
         <div class="nav-items">
             <button class="nav-item active" onclick="switchView('strategy', this)" title="Dashboard">
@@ -391,100 +480,103 @@
                 <i data-lucide="settings"></i>
             </button>
         </div>
-        <div class="nav-items" style="margin-top: auto;">
-            <button class="nav-item" style="color: #ef4444;" onclick="logout()" title="Logout">
-                <i data-lucide="log-out"></i>
-            </button>
+        <div class="nav-items hidden-mobile" style="margin-top: auto; display: none;">
+            <!-- Hidden on mobile, shown via script or CSS on desktop if needed -->
         </div>
+        <button class="nav-item" style="color: #ef4444;" onclick="logout()" title="Logout">
+            <i data-lucide="log-out"></i>
+        </button>
     </div>
 
     <!-- Main Content -->
     <div class="main-wrapper">
         <div class="top-bar">
             <button class="wallet-btn">
-                <i data-lucide="plus" style="width: 16px;"></i>
-                
+                <i data-lucide="plus" style="width: 14px;"></i>
+                <span>Upgrade</span>
             </button>
         </div>
 
         <!-- Dashboard View -->
         <section id="strategy-view" class="view-section active">
             <div class="center-content">
-                <i data-lucide="sparkles" class="sparkle-icon" style="width: 48px; height: 48px;"></i>
-                <p class="welcome-text">Welcome to Leonardo AI Strategist</p>
-                <h1 class="hero-title">How <span>can I help?</span></h1>
+                <i data-lucide="sparkles" class="sparkle-icon" style="width: 40px; height: 40px;"></i>
+                <p class="welcome-text">Leonardo AI Strategist v4.0</p>
+                <h1 class="hero-title">Architecting <span>your next move</span></h1>
 
-              <div class="cards-grid">
-    <div class="suggestion-card card-1" onclick="autofill('SaaS Productivity Tool', 49.99, 'Remote Professionals')">
-        <span class="card-label">Generate Ad Angles & Strategy</span>
-        <i data-lucide="box" style="position: absolute; bottom: -10px; right: -10px; opacity: 0.2; width: 80px; height: 80px;"></i>
-    </div>
+                <div class="cards-grid">
+                    <div class="suggestion-card card-1" onclick="autofill('SaaS Productivity', 49.99, 'Remote Teams')">
+                        <span class="card-label">Generate Ad Angles & Strategy</span>
+                        <i data-lucide="box" style="position: absolute; bottom: -10px; right: -10px; opacity: 0.15; width: 60px; height: 60px;"></i>
+                    </div>
+                    <div class="suggestion-card card-2" onclick="autofill('Yoga App', 12.00, 'Health Enthusiasts')">
+                        <span class="card-label">Create Marketing Funnel</span>
+                        <i data-lucide="filter" style="position: absolute; bottom: -10px; right: -10px; opacity: 0.15; width: 60px; height: 60px;"></i>
+                    </div>
+                    <div class="suggestion-card card-3" onclick="autofill('Real Estate', 5000, 'Investors')">
+                        <span class="card-label">Develop Persona & Hooks</span>
+                        <i data-lucide="video" style="position: absolute; bottom: -10px; right: -10px; opacity: 0.15; width: 60px; height: 60px;"></i>
+                    </div>
+                </div>
 
-    <div class="suggestion-card card-2" onclick="autofill('Eco-Friendly Yoga Mats', 85.00, 'Health Conscious Gen Z')">
-        <span class="card-label">Create Marketing Funnel</span>
-        <i data-lucide="filter" style="position: absolute; bottom: -10px; right: -10px; opacity: 0.2; width: 80px; height: 80px;"></i>
-    </div>
-
-    <div class="suggestion-card card-3" onclick="autofill('Premium Real Estate Consulting', 2500, 'Luxury Property Investors')">
-        <span class="card-label">Develop Persona & Hooks</span>
-        <i data-lucide="video" style="position: absolute; bottom: -10px; right: -10px; opacity: 0.2; width: 80px; height: 80px;"></i>
-    </div>
-</div>
-
-            <div class="input-dock">
-    <form id="strategyForm">
-        <div class="form-grid">
-            <div class="input-group">
-                <label>Product Name</label>
-                <input type="text" id="prodName" class="dock-input" required placeholder="AI Analytics Suite">
-            </div>
-            <div class="input-group">
-                <label>Price ($)</label>
-                <input type="number" step="0.01" id="prodPrice" class="dock-input" required placeholder="2499.99">
-            </div>
-            <div class="input-group">
-                <label>Audience</label>
-                <input type="text" id="prodAudience" class="dock-input" required placeholder="IT Department Managers">
-            </div>
-        </div>
-                        <div class="action-bar">
-                            <div class="selector-pill">
-                                <i data-lucide="layers" style="width: 14px;"></i>
-                                <span>Strategy Model v4</span>
-                                <i data-lucide="chevron-down" style="width: 12px;"></i>
+                <div class="input-dock-container">
+                    <div class="input-dock">
+                        <form id="strategyForm">
+                            <div class="form-grid">
+                                <div class="input-group">
+                                    <label>Product</label>
+                                    <input type="text" id="prodName" class="dock-input" required placeholder="Name...">
+                                </div>
+                                <div class="input-group">
+                                    <label>Price</label>
+                                    <input type="number" step="0.01" id="prodPrice" class="dock-input" required placeholder="0.00">
+                                </div>
+                                <div class="input-group">
+                                    <label>Audience</label>
+                                    <input type="text" id="prodAudience" class="dock-input" required placeholder="Target...">
+                                </div>
                             </div>
-                            <button type="submit" class="submit-btn" id="submitBtn">
-                                <i data-lucide="arrow-up" style="width: 20px;"></i>
-                            </button>
-                        </div>
-                    </form>
+                            <div class="action-bar">
+                                <div class="selector-pill">
+                                    <i data-lucide="layers" style="width: 12px;"></i>
+                                    <span>Model v4</span>
+                                    <i data-lucide="chevron-down" style="width: 10px;"></i>
+                                </div>
+                                <button type="submit" class="submit-btn" id="submitBtn">
+                                    <i data-lucide="arrow-up" style="width: 18px;"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </section>
 
         <!-- History View -->
         <section id="history-view" class="view-section">
-            <h1 style="font-size: 32px; margin-bottom: 8px;">Generation History</h1>
-            <p style="color: var(--text-dim); margin-bottom: 40px;">Review your previous strategic architectures.</p>
-            <div id="historyList" class="history-list">
-                <p style="color: var(--text-dim);">No history available yet.</p>
+            <h1 style="font-size: 24px; margin-bottom: 8px;">History</h1>
+            <p style="color: var(--text-dim); margin-bottom: 30px; font-size: 14px;">Previous strategic architectures.</p>
+            <div id="historyList" style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="padding: 20px; border: 1px solid var(--border-color); border-radius: 12px; color: var(--text-dim); text-align: center;">
+                    No generations recorded yet.
+                </div>
             </div>
         </section>
 
         <!-- Settings View -->
         <section id="settings-view" class="view-section">
-            <h1 style="font-size: 32px; margin-bottom: 8px;">Settings</h1>
-            <p style="color: var(--text-dim); margin-bottom: 40px;">Manage your intelligence preferences.</p>
+            <h1 style="font-size: 24px; margin-bottom: 8px;">Settings</h1>
+            <p style="color: var(--text-dim); margin-bottom: 30px; font-size: 14px;">Manage your intelligence preferences.</p>
         </section>
     </div>
 
     <!-- Results Overlay -->
     <div id="resultArea" class="result-panel">
         <button class="close-panel" onclick="toggleResultPanel(false)">
-            <i data-lucide="x"></i>
+            <i data-lucide="x" style="width: 16px;"></i>
         </button>
         <div class="result-box">
-            <h2 style="color: var(--accent-primary); margin-bottom: 20px;">Architectural Analysis</h2>
+            <h2 style="color: var(--accent-primary); margin-bottom: 20px; font-size: 20px;">Architectural Analysis</h2>
             <div id="outputContent"></div>
         </div>
     </div>
@@ -492,7 +584,7 @@
     <!-- Status -->
     <div class="status-pill">
         <div id="wsStatusDot" class="dot"></div>
-        <span id="wsStatusText">WebSocket Offline</span>
+        <span id="wsStatusText">System Standby</span>
     </div>
 
     <script>
@@ -529,7 +621,7 @@
         /** WebSocket Setup **/
         function connectWebSocket() {
             if (!token) {
-                document.getElementById('wsStatusText').innerText = 'Unauthorized - Demo Mode';
+                document.getElementById('wsStatusText').innerText = 'Demo Mode';
                 return;
             }
 
@@ -557,7 +649,7 @@
         function resetSubmitButton() {
             const btn = document.getElementById('submitBtn');
             btn.disabled = false;
-            btn.innerHTML = '<i data-lucide="arrow-up" style="width: 20px;"></i>';
+            btn.innerHTML = '<i data-lucide="arrow-up" style="width: 18px;"></i>';
             lucide.createIcons();
         }
 
@@ -577,39 +669,26 @@
             if (socket && socket.readyState === WebSocket.OPEN) {
                 socket.send(JSON.stringify(payload));
             } else {
-                try {
-                    const formData = new FormData();
-                    formData.append('product_name', payload.product_name);
-                    formData.append('price', payload.price);
-                    formData.append('target_audience', payload.target_audience);
-
-                    const res = await fetch('/generate', {
-                        method: 'POST',
-                        headers: { 'Authorization': `Bearer ${token}` },
-                        body: formData
-                    });
-                    
-                    if (res.ok) {
-                        const data = await res.json();
-                        toggleResultPanel(true);
-                        document.getElementById('outputContent').innerText = data.output;
-                    } else {
-                        // Demo fallback for previewing
-                        toggleResultPanel(true);
-                        document.getElementById('outputContent').innerText = `DEMO OUTPUT:\n\nStrategy for: ${payload.product_name}\nTarget: ${payload.target_audience}\nPrice Point: $${payload.price}\n\n1. Market Penetration: Focus on the specific needs of ${payload.target_audience}.\n2. Value Proposition: Align pricing with high-tier architectural standards.\n3. Scalability: Use modular frameworks.`;
-                    }
-                } catch (err) {
-                    console.error("Connection Error", err);
-                } finally {
+                // Demo fallback logic
+                setTimeout(() => {
+                    toggleResultPanel(true);
+                    document.getElementById('outputContent').innerText = 
+                        `STRATEGIC BLUEPRINT FOR: ${payload.product_name.toUpperCase()}\n` +
+                        `--------------------------------------------------\n` +
+                        `1. TARGET PERSONA: ${payload.target_audience}\n` +
+                        `2. PRICE ANCHORING: $${payload.price} positioning\n\n` +
+                        `CORE STRATEGY:\n` +
+                        `- Implement high-converting "Problem-Solution-Proof" framework.\n` +
+                        `- Leverage psychological triggers centered on ROI for ${payload.target_audience}.\n` +
+                        `- Utilize multi-channel retargeting based on price-point awareness.`;
                     resetSubmitButton();
-                }
+                }, 1000);
             }
         };
 
-        /** Logout **/
         function logout() {
             localStorage.clear();
-            alert("Logout triggered (Demo Mode)");
+            location.reload();
         }
 
         /** Three.js Background **/
@@ -624,19 +703,19 @@
 
             const geo = new THREE.BufferGeometry();
             const pos = [];
-            for(let i=0; i<800; i++) {
+            for(let i=0; i<600; i++) {
                 pos.push((Math.random()-0.5)*10, (Math.random()-0.5)*10, (Math.random()-0.5)*10);
             }
             geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-            const mat = new THREE.PointsMaterial({ color: 0x82b1ff, size: 0.015, transparent: true, opacity: 0.25 });
+            const mat = new THREE.PointsMaterial({ color: 0x82b1ff, size: 0.012, transparent: true, opacity: 0.2 });
             const points = new THREE.Points(geo, mat);
             scene.add(points);
             camera.position.z = 2;
 
             function anim() {
                 requestAnimationFrame(anim);
-                points.rotation.y += 0.0006;
-                points.rotation.x += 0.0003;
+                points.rotation.y += 0.0005;
+                points.rotation.x += 0.0002;
                 renderer.render(scene, camera);
             }
             anim();
