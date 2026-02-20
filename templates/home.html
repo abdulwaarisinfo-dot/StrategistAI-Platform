@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot | Strategist.AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg-dark: #0a0a0a;
+            --input-bg: #1a1a1a;
+            --accent: #ffffff;
+            --accent-soft: rgba(255, 255, 255, 0.1);
+            --text-main: #e5e5e5;
+            --text-dim: #888888;
+            --border: rgba(255, 255, 255, 0.08);
+            --ease: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* --- BACKGROUND GRADIENT --- */
+        .bg-glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 10% 10%, rgba(255,255,255,0.03) 0%, transparent 40%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* --- NAVBAR --- */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 2.5rem;
+            width: 100%;
+            z-index: 10;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .nav-link {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.2s;
+        }
+
+        .nav-link:hover { color: #fff; }
+
+        .nav-auth {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn-ghost {
+            color: var(--text-main);
+            text-decoration: none;
+            font-size: 0.85rem;
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            transition: background 0.2s;
+            cursor: pointer;
+            background: transparent;
+        }
+
+        .btn-ghost:hover {
+            background: var(--accent-soft);
+        }
+
+        .btn-fill {
+            background: #fff;
+            color: #000;
+            text-decoration: none;
+            font-size: 0.85rem;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: transform 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-fill:hover {
+            transform: translateY(-1px);
+        }
+
+        /* --- MAIN CONTENT --- */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 500;
+            margin-bottom: 2rem;
+            letter-spacing: -0.02em;
+            text-align: center;
+        }
+
+        /* --- SUGGESTION PILLS --- */
+        .suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            justify-content: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .pill {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .pill:hover {
+            border-color: rgba(255,255,255,0.2);
+            color: #fff;
+            background: #252525;
+        }
+
+        /* --- INPUT AREA --- */
+        .chat-container {
+            width: 100%;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            position: relative;
+            transition: border-color 0.3s;
+        }
+
+        .chat-container:focus-within {
+            border-color: rgba(255,255,255,0.15);
+        }
+
+        textarea {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 1rem;
+            resize: none;
+            height: 80px;
+            outline: none;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        textarea::placeholder { color: #555; }
+
+        .chat-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .left-tools {
+            display: flex;
+            gap: 0.8rem;
+        }
+
+        .tool-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: color 0.2s;
+            padding: 4px;
+        }
+
+        .tool-btn:hover { color: #fff; }
+        .tool-btn.active { color: #fff; }
+
+        .voice-btn {
+            background: #252525;
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .voice-btn:hover {
+            background: #333;
+            color: #fff;
+        }
+
+        /* Visual indicator for voice activity */
+        .mic-active {
+            color: #ff4b4b !important;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        /* --- FOOTER --- */
+        footer {
+            padding: 2rem;
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+        }
+
+        footer a { color: var(--text-dim); text-decoration: underline; }
+
+        /* --- AD SYSTEM --- */
+        #adOverlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.95);
+            z-index: 9999;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(15px);
+        }
+
+        #adOverlay.active { display: flex; }
+
+        .ad-box {
+            width: 90%;
+            max-width: 650px;
+            aspect-ratio: 16/9;
+            background: #000;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .ad-media { width: 100%; height: 100%; border: none; }
+
+        .ad-footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 20px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.9));
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .ad-info h4 { font-size: 1rem; color: #fff; }
+        .ad-info p { font-size: 0.8rem; color: #aaa; }
+
+        .btn-visit {
+            background: #fff;
+            color: #000;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            cursor: pointer;
+        }
+
+        .ad-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 10;
+        }
+
+        .mute-toggle {
+            background: rgba(0,0,0,0.6);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 8px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .skip-section {
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        #skipBtn {
+            padding: 10px 30px;
+            border-radius: 30px;
+            background: #fff;
+            color: #000;
+            border: none;
+            font-weight: 600;
+            cursor: not-allowed;
+            opacity: 0.3;
+            transition: opacity 0.3s, transform 0.2s;
+        }
+
+        #skipBtn.ready { cursor: pointer; opacity: 1; }
+        #skipBtn.ready:active { transform: scale(0.98); }
+
+        /* --- AUTH MODAL --- */
+        #authModal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-content {
+            background: #111;
+            padding: 2.5rem;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        .modal-content h2 { margin-bottom: 1rem; font-weight: 500; }
+        .modal-content p { color: var(--text-dim); margin-bottom: 2rem; font-size: 0.9rem; line-height: 1.5; }
+        
+        .modal-btns { display: flex; flex-direction: column; gap: 0.8rem; }
+        
+        .modal-btns .btn-fill, .modal-btns .btn-ghost {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* --- MOBILE RESPONSIVENESS --- */
+        @media (max-width: 768px) {
+            nav { padding: 1rem; }
+            .nav-links { display: none; }
+            h1 { font-size: 1.8rem; }
+            .chat-container { padding: 1rem; }
+            .suggestions { gap: 0.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-glow"></div>
+
+    <nav>
+        <div class="nav-left">
+            <div class="logo">
+                <i data-lucide="command"></i>
+                Chatbot
+            </div>
+            <div class="nav-links">
+                <a href="#" class="nav-link">New Chat<a/>
+                <a href="#" class="nav-link">Projects<a/>
+            </div>
+        </div>
+        <div class="nav-auth">
+            <button class="btn-ghost" onclick="showAuth()">Log in</button>
+            <button class="btn-fill" onclick="showAuth()">Sign up</button>
+        </div>
+    </nav>
+
+    <main id="appContent">
+        <h1 id="mainTitle">What can I help with?</h1>
+        
+        <div class="suggestions">
+            <div class="pill" onclick="fillPrompt('Generate a complete marketing strategy for my product')">
+                <i data-lucide="target" size="14"></i> Marketing Strategy
+            </div>
+
+            <div class="pill" onclick="fillPrompt('Generate high-converting ad angles for my product')">
+                <i data-lucide="megaphone" size="14"></i> Ad Angles
+            </div>
+
+            <div class="pill" onclick="fillPrompt('Create detailed customer personas for my product')">
+                <i data-lucide="users" size="14"></i> Customer Personas
+            </div>
+
+            <div class="pill" onclick="fillPrompt('Build irresistible offers for my product')">
+                <i data-lucide="dollar-sign" size="14"></i> Offer Builder
+            </div>
+
+            <div class="pill" onclick="fillPrompt('Write scroll-stopping marketing hooks and headlines')">
+                <i data-lucide="zap" size="14"></i> Marketing Hooks
+            </div>
+        </div>
+
+        <div class="chat-container">
+            <textarea id="mainPrompt" placeholder="Ask Chatbot to Generate a Prototype..."></textarea>
+            <div class="chat-actions">
+                <div class="left-tools">
+                    <button class="tool-btn" title="Add files"><i data-lucide="plus" size="18"></i></button>
+                    <button class="tool-btn" id="micBtn" title="Voice Input" onclick="toggleVoiceInput()"><i data-lucide="mic" size="18"></i></button>
+                    <button class="tool-btn" id="speakerBtn" title="Speech Output" onclick="toggleSpeaker()"><i data-lucide="volume-2" size="18"></i></button>
+                    <button class="tool-btn" title="Search the web"><i data-lucide="globe" size="18"></i> Search</button>
+                </div>
+                <button class="voice-btn" id="generateBtn" onclick="handleGenerate()">
+                    <i data-lucide="arrow-right" size="16"></i> Generate
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        By messaging Chatbot, you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.
+    </footer>
+
+    <!-- Ad Overlay -->
+    <div id="adOverlay">
+        <div class="ad-box">
+            <div class="ad-controls">
+                <button class="mute-toggle" onclick="toggleAdMute()" title="Unmute Video">
+                    <i id="adMuteIcon" data-lucide="volume-x" size="18"></i>
+                </button>
+            </div>
+            <div id="adMediaContainer" class="ad-media"></div>
+            <div class="ad-footer">
+                <div class="ad-info">
+                    <h4 id="adTitle">Precision Marketing</h4>
+                    <p id="adDesc">Loading next-gen assets...</p>
+                </div>
+                <button class="btn-visit" id="adVisitBtn">Visit Site</button>
+            </div>
+        </div>
+        <div class="skip-section">
+            <p id="skipTimer" style="margin-bottom: 10px; font-size: 0.8rem; color: #888;">Verifying access...</p>
+            <button id="skipBtn" disabled>Skip Advertisement</button>
+        </div>
+    </div>
+
+    <!-- Auth Modal -->
+    <div id="authModal">
+        <div class="modal-content">
+            <h2>Get Started</h2>
+            <p>To use our premium generation features, please log in or create a account.</p>
+            <div class="modal-btns">
+                <a href="/login-page" class="btn-fill">Login to Dashboard</a>
+                <a href="/signup-page" class="btn-ghost">Create Account</a>
+                <button onclick="hideAuth()" style="background:transparent; border:none; color:#555; margin-top:15px; cursor:pointer; font-size: 0.8rem;">Maybe later</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isSpeakerEnabled = false;
+        let isListening = false;
+        let recognition = null;
+        let adMuted = true;
+        let currentAdUrl = "";
+
+        lucide.createIcons();
+
+        const ADS = [
+            {
+                title: "Strategist.AI Pro",
+                desc: "Scale your marketing with precision AI tools.",
+                url: "https://www.youtube.com/embed/ScMzIvxBSi4",
+                link: "https://strategist.ai"
+            },
+            {
+                title: "Next-Gen UI Kit",
+                desc: "Beautiful components for your next project.",
+                url: "https://www.youtube.com/embed/nI3dh2NpXZU",
+                link: "https://google.com"
+            },
+
+            {
+                title: "Pixup8k",
+                desc: "Pixup8k Convert Blury Photos into 4k-8k",
+                url: "https://tse3.mm.bing.net/th/id/OIP.57kZM23jGZLONRqoSYCgRQHaJQ?rs=1&pid=ImgDetMain&o=7&rm=3",
+                link: "https://tse3.mm.bing.net/th/id/OIP.57kZM23jGZLONRqoSYCgRQHaJQ?rs=1&pid=ImgDetMain&o=7&rm=3"
+            }
+        ];
+
+        let adTimer = 8;
+        let adInterval;
+
+        function showAuth() {
+            document.getElementById('authModal').style.display = 'flex';
+        }
+
+        function hideAuth() {
+            document.getElementById('authModal').style.display = 'none';
+        }
+
+        function fillPrompt(text) {
+            const textarea = document.getElementById('mainPrompt');
+            textarea.value = text;
+            textarea.focus();
+            if (isSpeakerEnabled) speakText(`Selected: ${text}`);
+        }
+
+        function toggleAdMute() {
+            adMuted = !adMuted;
+            const iframe = document.querySelector('#adMediaContainer iframe');
+            const icon = document.getElementById('adMuteIcon');
+            
+            const muteParam = adMuted ? "1" : "0";
+            iframe.src = `${currentAdUrl}?autoplay=1&mute=${muteParam}&controls=0&modestbranding=1&rel=0`;
+            
+            icon.setAttribute('data-lucide', adMuted ? 'volume-x' : 'volume-2');
+            lucide.createIcons();
+        }
+
+        function toggleVoiceInput() {
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                return;
+            }
+
+            const micBtn = document.getElementById('micBtn');
+            const textarea = document.getElementById('mainPrompt');
+
+            if (isListening) {
+                recognition.stop();
+                return;
+            }
+
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+
+            recognition.onstart = () => {
+                isListening = true;
+                micBtn.classList.add('mic-active');
+                textarea.placeholder = "Listening...";
+            };
+
+            recognition.onresult = (event) => {
+                const text = event.results[0][0].transcript;
+                textarea.value = text;
+                textarea.placeholder = "Ask Chatbot to Generate a Prototype...";
+            };
+
+            recognition.onend = () => {
+                isListening = false;
+                micBtn.classList.remove('mic-active');
+                textarea.placeholder = "Ask Chatbot to Generate a Prototype...";
+            };
+
+            recognition.start();
+        }
+
+        function toggleSpeaker() {
+            isSpeakerEnabled = !isSpeakerEnabled;
+            const speakerBtn = document.getElementById('speakerBtn');
+            
+            if (isSpeakerEnabled) {
+                speakerBtn.classList.add('active');
+                speakerBtn.innerHTML = '<i data-lucide="volume-x" size="18"></i>';
+                speakText("Voice system activated.");
+            } else {
+                speakerBtn.classList.remove('active');
+                speakerBtn.innerHTML = '<i data-lucide="volume-2" size="18"></i>';
+                window.speechSynthesis.cancel();
+            }
+            lucide.createIcons();
+        }
+
+        async function speakText(text) {
+            if (!isSpeakerEnabled) return;
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        async function handleGenerate() {
+            const prompt = document.getElementById('mainPrompt').value;
+            if (!prompt.trim()) return;
+            if (isSpeakerEnabled) speakText("Processing your request...");
+            showAuth();
+        }
+
+        function startAdSystem() {
+            if (sessionStorage.getItem('home_ad_seen')) return;
+
+            const overlay = document.getElementById('adOverlay');
+            const media = document.getElementById('adMediaContainer');
+            const skipBtn = document.getElementById('skipBtn');
+            const timerTxt = document.getElementById('skipTimer');
+
+            const randomAd = ADS[Math.floor(Math.random() * ADS.length)];
+            currentAdUrl = randomAd.url;
+            
+            document.getElementById('adTitle').innerText = randomAd.title;
+            document.getElementById('adDesc').innerText = randomAd.desc;
+            document.getElementById('adVisitBtn').onclick = () => window.open(randomAd.link, '_blank');
+            
+            media.innerHTML = `<iframe class="ad-media" src="${randomAd.url}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0" allow="autoplay; encrypted-media" style="pointer-events: none;"></iframe>`;
+            overlay.classList.add('active');
+
+            adInterval = setInterval(() => {
+                adTimer--;
+                if (adTimer > 0) {
+                    timerTxt.innerText = `Accessing Neural Hub in ${adTimer}s...`;
+                } else {
+                    clearInterval(adInterval);
+                    timerTxt.innerText = "Access Granted.";
+                    skipBtn.disabled = false;
+                    skipBtn.classList.add('ready');
+                    skipBtn.innerText = "Continue to Dashboard";
+                }
+            }, 1000);
+
+            skipBtn.onclick = () => {
+                overlay.classList.remove('active');
+                media.innerHTML = ""; 
+                sessionStorage.setItem('home_ad_seen', 'true');
+                if (isSpeakerEnabled) speakText("Welcome to the hub.");
+            };
+        }
+
+        document.getElementById('mainPrompt').addEventListener('keydown', (e) => {
+            if(e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleGenerate();
+            }
+        });
+
+        window.onload = () => {
+            startAdSystem();
+        };
+    </script>
+</body>
+</html>

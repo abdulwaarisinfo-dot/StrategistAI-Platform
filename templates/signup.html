@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join AI Strategist</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --card: #141414;
+            --accent: #00bcd4;
+            --error: #ff4d4d;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .card {
+            background: var(--card);
+            padding: 2.5rem;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 420px;
+            border: 1px solid #222;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+        }
+
+        h2 { margin-bottom: 0.5rem; font-size: 1.75rem; }
+        p.subtitle { color: #888; margin-bottom: 2rem; font-size: 0.9rem; }
+
+        .form-group { margin-bottom: 1.25rem; }
+        label { display: block; margin-bottom: 0.5rem; color: #ccc; font-size: 0.85rem; }
+
+        input, select {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            background: #1e1e1e;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus { border-color: var(--accent); }
+
+        .btn {
+            width: 100%;
+            padding: 1rem;
+            background: var(--accent);
+            border: none;
+            border-radius: 8px;
+            color: #000;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            margin-top: 1rem;
+        }
+
+        .btn:hover { opacity: 0.9; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .footer-link {
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        .footer-link a { color: var(--accent); text-decoration: none; }
+        
+        .message-box {
+            display: none;
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>Create Account</h2>
+        <p class="subtitle">Join the future of marketing automation.</p>
+
+        <div id="message" class="message-box"></div>
+
+        <form id="signupForm">
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" name="username" required placeholder="johndoe">
+            </div>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" name="email" required placeholder="john@example.com">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" name="password" required placeholder="••••••••">
+            </div>
+            <div class="form-group">
+                <label>Country</label>
+                <input type="text" name="country" required placeholder="United States">
+            </div>
+            <button type="submit" class="btn" id="submitBtn">Sign Up</button>
+        </form>
+
+        <div class="footer-link">
+            Already have an account? <a href="/login-page">Log in</a>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('signupForm');
+        const msgBox = document.getElementById('message');
+        const btn = document.getElementById('submitBtn');
+
+        form.onsubmit = async (e) => {
+            e.preventDefault();
+            btn.disabled = true;
+            msgBox.style.display = 'none';
+
+            const formData = new FormData(form);
+
+            try {
+                const response = await fetch('/signup', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    msgBox.style.display = 'block';
+                    msgBox.style.background = 'rgba(0, 188, 212, 0.1)';
+                    msgBox.style.color = 'var(--accent)';
+                    msgBox.innerText = "Success! Redirecting to login...";
+                    setTimeout(() => window.location.href = '/login-page', 2000);
+                } else {
+                    throw new Error(data.detail || "Signup failed");
+                }
+            } catch (err) {
+                msgBox.style.display = 'block';
+                msgBox.style.background = 'rgba(255, 77, 77, 0.1)';
+                msgBox.style.color = 'var(--error)';
+                msgBox.innerText = err.message;
+                btn.disabled = false;
+            }
+        };
+    </script>
+</body>
+</html>
