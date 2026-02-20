@@ -23,7 +23,12 @@
             --sidebar-width: 72px;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            -webkit-tap-highlight-color: transparent;
+        }
         
         body {
             background-color: var(--bg-dark);
@@ -32,7 +37,7 @@
             display: flex;
             height: 100vh;
             overflow: hidden;
-            flex-direction: column; /* Mobile Default */
+            flex-direction: column-reverse; /* Mobile Nav at bottom */
         }
 
         @media (min-width: 768px) {
@@ -50,13 +55,14 @@
         .sidebar {
             width: 100%;
             height: 64px;
-            background: var(--sidebar-bg);
-            border-bottom: 1px solid var(--border-color);
+            background: rgba(0,0,0,0.9);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid var(--border-color);
             display: flex;
             flex-direction: row;
             align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
+            justify-content: space-around;
+            padding: 0 10px;
             z-index: 100;
         }
 
@@ -65,9 +71,10 @@
                 width: var(--sidebar-width);
                 height: 100vh;
                 flex-direction: column;
-                border-bottom: none;
+                border-top: none;
                 border-right: 1px solid var(--border-color);
                 padding: 20px 0;
+                justify-content: flex-start;
             }
         }
 
@@ -109,15 +116,15 @@
             background: none;
             border: none;
             cursor: pointer;
-            padding: 8px;
-            border-radius: 10px;
+            padding: 10px;
+            border-radius: 12px;
             transition: all 0.2s;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
-        .nav-item i { width: 20px; height: 20px; }
+        .nav-item i { width: 22px; height: 22px; }
 
         .nav-item:hover, .nav-item.active {
             color: #fff;
@@ -138,28 +145,33 @@
 
         /* Top Bar */
         .top-bar {
-            height: 64px;
+            height: 60px;
             display: flex;
-            justify-content: flex-end;
+            justify-content: space-between;
             align-items: center;
             padding: 0 20px;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(5px);
         }
 
         @media (min-width: 768px) {
-            .top-bar { height: 72px; padding: 0 40px; }
+            .top-bar { height: 72px; padding: 0 40px; background: transparent; backdrop-filter: none; }
         }
+
+        .mobile-logo { display: flex; align-items: center; gap: 10px; }
+        @media (min-width: 768px) { .mobile-logo { display: none; } }
 
         .wallet-btn {
             background: #fff;
             color: #000;
             border: none;
-            padding: 8px 16px;
+            padding: 8px 14px;
             border-radius: 8px;
             font-weight: 600;
-            font-size: 13px;
+            font-size: 12px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             cursor: pointer;
         }
 
@@ -170,12 +182,14 @@
             height: 100%; 
             overflow-y: auto; 
             padding: 20px;
+            padding-bottom: 180px; /* Space for the dock */
             scrollbar-width: thin;
             scrollbar-color: var(--border-color) transparent;
         }
         .view-section.active { display: block; }
+        
         @media (min-width: 768px) {
-            .view-section { padding: 40px; }
+            .view-section { padding: 40px; padding-bottom: 40px; }
         }
 
         .center-content {
@@ -184,7 +198,6 @@
             flex-direction: column;
             align-items: center;
             justify-content: flex-start;
-            padding-bottom: 120px;
             max-width: 1000px;
             margin: 0 auto;
             width: 100%;
@@ -192,21 +205,23 @@
 
         .sparkle-icon {
             color: var(--accent-primary);
-            margin-bottom: 16px;
+            margin-bottom: 12px;
             filter: drop-shadow(0 0 10px var(--accent-primary));
         }
 
         .welcome-text {
             color: var(--text-dim);
-            font-size: 13px;
+            font-size: 12px;
             margin-bottom: 8px;
             text-align: center;
+            letter-spacing: 1px;
+            text-transform: uppercase;
         }
 
         .hero-title {
-            font-size: 28px;
+            font-size: 26px;
             font-weight: 700;
-            margin-bottom: 32px;
+            margin-bottom: 24px;
             letter-spacing: -0.5px;
             text-align: center;
             line-height: 1.2;
@@ -222,22 +237,22 @@
         .cards-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 16px;
+            gap: 12px;
             width: 100%;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
         }
 
         @media (min-width: 640px) {
-            .cards-grid { grid-template-columns: repeat(3, 1fr); }
+            .cards-grid { grid-template-columns: repeat(3, 1fr); gap: 16px; }
         }
 
         .suggestion-card {
-            height: 120px;
-            border-radius: 20px;
+            min-height: 100px;
+            border-radius: 18px;
             padding: 20px;
             display: flex;
             flex-direction: column;
-            justify-content: flex-start;
+            justify-content: center;
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
             position: relative;
@@ -250,8 +265,8 @@
         }
 
         .suggestion-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
         .card-1 { background: var(--card-gradient-1); }
@@ -262,41 +277,39 @@
             font-size: 14px;
             font-weight: 600;
             color: #fff;
-            line-height: 1.4;
-            max-width: 140px;
+            line-height: 1.3;
+            max-width: 160px;
             z-index: 2;
         }
 
-        /* Input Dock - Sticky on Mobile */
+        /* Input Dock */
         .input-dock-container {
             width: 100%;
-            max-width: 700px;
+            max-width: 800px;
             position: fixed;
-            bottom: 20px;
+            bottom: 80px; /* Above mobile navbar */
             left: 50%;
             transform: translateX(-50%);
-            padding: 0 20px;
+            padding: 0 15px;
             z-index: 110;
         }
 
         @media (min-width: 768px) {
             .input-dock-container {
-                position: relative;
-                bottom: auto;
-                left: auto;
-                transform: none;
-                padding: 0;
+                position: absolute;
+                bottom: 40px;
+                padding: 0 40px;
             }
         }
 
         .input-dock {
             width: 100%;
-            background: rgba(10, 10, 10, 0.95);
+            background: rgba(15, 15, 15, 0.85);
             border: 1px solid var(--border-color);
             border-radius: 24px;
             padding: 12px;
-            backdrop-filter: blur(20px);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            backdrop-filter: blur(25px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
         }
 
         .form-grid {
@@ -306,7 +319,7 @@
             margin-bottom: 12px;
         }
 
-        @media (min-width: 500px) {
+        @media (min-width: 540px) {
             .form-grid { grid-template-columns: 2fr 1fr 1fr; }
         }
 
@@ -321,11 +334,12 @@
             text-transform: uppercase;
             color: var(--text-dim);
             padding-left: 4px;
+            letter-spacing: 0.5px;
         }
 
         .dock-input {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.04);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.05);
             border-radius: 12px;
             padding: 10px 14px;
             color: #fff;
@@ -336,7 +350,7 @@
         }
 
         .dock-input:focus {
-            background: rgba(255, 255, 255, 0.07);
+            background: rgba(255, 255, 255, 0.08);
             border-color: var(--accent-primary);
         }
 
@@ -373,14 +387,15 @@
             cursor: pointer;
             transition: 0.2s;
         }
+        .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        /* Results Panel - Floating Overlay */
+        /* Results Panel */
         .result-panel {
             position: fixed;
             bottom: -100%;
             left: 0;
             right: 0;
-            height: 80vh;
+            height: 85vh;
             background: #050505;
             border-top: 1px solid var(--border-color);
             z-index: 120;
@@ -393,7 +408,7 @@
         @media (min-width: 768px) {
             .result-panel {
                 left: var(--sidebar-width);
-                height: 60vh;
+                height: 70vh;
                 padding: 40px;
             }
         }
@@ -404,8 +419,8 @@
             max-width: 800px;
             margin: 0 auto;
             color: #cbd5e1;
-            line-height: 1.8;
-            font-size: 15px;
+            line-height: 1.7;
+            font-size: 14px;
             white-space: pre-wrap;
         }
 
@@ -413,7 +428,7 @@
             position: sticky;
             top: 0;
             float: right;
-            background: rgba(255,255,255,0.05);
+            background: rgba(255,255,255,0.08);
             border: none;
             color: #fff;
             width: 32px;
@@ -428,9 +443,9 @@
 
         .status-pill {
             position: fixed;
-            bottom: 85px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.85);
+            bottom: 15px;
+            right: 15px;
+            background: rgba(0, 0, 0, 0.8);
             padding: 4px 12px;
             border-radius: 20px;
             font-size: 10px;
@@ -438,11 +453,11 @@
             align-items: center;
             gap: 6px;
             border: 1px solid var(--border-color);
-            z-index: 100;
+            z-index: 90;
         }
 
         @media (min-width: 768px) {
-            .status-pill { bottom: 20px; }
+            .status-pill { bottom: 20px; right: 20px; }
         }
 
         .dot { width: 6px; height: 6px; border-radius: 50%; background: #333; }
@@ -455,8 +470,11 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
+        /* Utility */
+        .hidden-mobile { display: none; }
+        @media (min-width: 768px) { .hidden-mobile { display: flex; } }
+
+        ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
     </style>
@@ -464,9 +482,9 @@
 <body>
     <div id="canvas-container"></div>
 
-    <!-- Sidebar / Top Nav on Mobile -->
+    <!-- Sidebar / Navigation -->
     <div class="sidebar">
-        <div class="logo-container">
+        <div class="logo-container hidden-mobile">
             <i data-lucide="zap" style="color: #000; width: 20px;"></i>
         </div>
         <div class="nav-items">
@@ -479,18 +497,22 @@
             <button class="nav-item" onclick="switchView('settings', this)" title="Settings">
                 <i data-lucide="settings"></i>
             </button>
+            <button class="nav-item" style="color: #ef4444;" onclick="logout()" title="Logout">
+                <i data-lucide="log-out"></i>
+            </button>
         </div>
-        <div class="nav-items hidden-mobile" style="margin-top: auto; display: none;">
-            <!-- Hidden on mobile, shown via script or CSS on desktop if needed -->
-        </div>
-        <button class="nav-item" style="color: #ef4444;" onclick="logout()" title="Logout">
-            <i data-lucide="log-out"></i>
-        </button>
     </div>
 
     <!-- Main Content -->
     <div class="main-wrapper">
+        <!-- Mobile Top Bar -->
         <div class="top-bar">
+            <div class="mobile-logo">
+                <div class="logo-container" style="width:28px; height:28px;">
+                    <i data-lucide="zap" style="color: #000; width: 14px;"></i>
+                </div>
+                <span style="font-weight: 700; font-size: 14px;">LEONARDO</span>
+            </div>
             <button class="wallet-btn">
                 <i data-lucide="plus" style="width: 14px;"></i>
                 <span>Upgrade</span>
@@ -500,8 +522,8 @@
         <!-- Dashboard View -->
         <section id="strategy-view" class="view-section active">
             <div class="center-content">
-                <i data-lucide="sparkles" class="sparkle-icon" style="width: 40px; height: 40px;"></i>
-                <p class="welcome-text">Leonardo AI Strategist v4.0</p>
+                <i data-lucide="sparkles" class="sparkle-icon" style="width: 32px; height: 32px;"></i>
+                <p class="welcome-text">Strategist v4.0</p>
                 <h1 class="hero-title">Architecting <span>your next move</span></h1>
 
                 <div class="cards-grid">
@@ -682,7 +704,7 @@
                         `- Leverage psychological triggers centered on ROI for ${payload.target_audience}.\n` +
                         `- Utilize multi-channel retargeting based on price-point awareness.`;
                     resetSubmitButton();
-                }, 1000);
+                }, 1200);
             }
         };
 
@@ -699,6 +721,7 @@
             const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
             
             renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Performance optimization
             container.appendChild(renderer.domElement);
 
             const geo = new THREE.BufferGeometry();
