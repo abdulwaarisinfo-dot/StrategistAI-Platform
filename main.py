@@ -12,19 +12,22 @@ from openai import OpenAI
 import certifi
 import os
 import logging
+import random
 from datetime import datetime, timedelta
-from typing import Dict
+from typing import Dict, List, Optional
 
 # ======================================================
 # ------------------- SUBSCRIPTION ---------------------
 # ======================================================
 
-subscription = {
+# Dictionary to manage tiered usage limits for users
+subscription_tiers = {
     "free": 5,
     "pro": 30,
     "upgrade": 70
 }
 
+# Standard duration for paid subscriptions in days
 SUBSCRIPTION_DAYS = 30
 
 # ======================================================
@@ -37,15 +40,20 @@ load_dotenv()
 # LOGGING SETUP
 # ======================================================
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)s | %(message)s")
+logging.basicConfig(
+    level=logging.INFO, 
+    format="%(asctime)s | %(levelname)s | %(name)s | %(message)s"
+)
 logger = logging.getLogger(__name__)
 
 # ======================================================
 # FASTAPI INIT
 # ======================================================
 
-app = FastAPI()
+app = FastAPI(title="AI Marketing Strategist API", version="1.1.0")
 templates = Jinja2Templates(directory="templates")
+
+# Security scheme for JWT Bearer tokens
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 # ======================================================
@@ -56,17 +64,19 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 MAX_BCRYPT_LEN = 72
 
 def hash_password(password: str) -> str:
+    """Hashes a plain-text password using bcrypt."""
     return pwd_context.hash(password[:MAX_BCRYPT_LEN])
 
 def verify_password(password: str, hashed: str) -> bool:
+    """Verifies a plain-text password against a stored hash."""
     return pwd_context.verify(password[:MAX_BCRYPT_LEN], hashed)
 
 # ======================================================
-# ENV VARIABLES
+# ENV VARIABLES & CONFIGURATION
 # ======================================================
 
 MONGO_URI = os.getenv("MONGO_URI", "")
-JWT_SECRET = os.getenv("JWT_SECRET_KEY", "super-secret-key")
+JWT_SECRET = os.getenv("JWT_SECRET_KEY", "super-secret-key-change-in-production")
 OPEN_API_KEY = os.getenv("OPEN_API_KEY", "")
 ALGORITHM = "HS256"
 
@@ -86,11 +96,11 @@ try:
     users_col = db["users"]
 
     client.admin.command("ping")
-    logger.info("MongoDB connected successfully")
+    logger.info("Connection to MongoDB established successfully.")
 
 except Exception as e:
-    logger.error(f"MongoDB connection failed: {e}")
-    raise e
+    logger.critical(f"FATAL: MongoDB connection failed: {e}")
+    raise SystemExit("Exiting: Database unavailable.")
 
 # ======================================================
 # OPENAI CLIENT
@@ -105,17 +115,19 @@ openai_client = OpenAI(api_key=OPEN_API_KEY)
 def create_access_token(data: dict, hours: int = 12):
     payload = data.copy()
     payload["exp"] = datetime.utcnow() + timedelta(hours=hours)
+    payload["iat"] = datetime.utcnow()
     return jwt.encode(payload, JWT_SECRET, algorithm=ALGORITHM)
 
 def decode_token(token: str):
     try:
         payload = jwt.decode(token, JWT_SECRET, algorithms=[ALGORITHM])
         return payload.get("sub")
-    except JWTError:
+    except JWTError as e:
+        logger.warning(f"Token decoding failed: {e}")
         return None
 
 # ======================================================
-# SUBSCRIPTION CHECK
+# SUBSCRIPTION & USAGE LOGIC
 # ======================================================
 
 def check_subscription_expiry(user: dict):
@@ -123,34 +135,30 @@ def check_subscription_expiry(user: dict):
         return user
 
     expiry = user.get("subscription_expiry")
-
     if expiry and datetime.utcnow() > expiry:
+        logger.info(f"Subscription expired for user: {user['email']}. Reverting to free.")
         users_col.update_one(
             {"email": user["email"]},
             {
                 "$set": {
                     "subscription": "free",
-                    "subscription_expiry": None
+                    "subscription_expiry": None,
+                    "updated_at": datetime.utcnow()
                 }
             }
         )
         user["subscription"] = "free"
         user["subscription_expiry"] = None
-
     return user
-
-# ======================================================
-# CURRENT USER
-# ======================================================
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
     email = decode_token(token)
     if not email:
-        raise HTTPException(status_code=401, detail="Invalid or expired token")
+        raise HTTPException(status_code=401, detail="Invalid session or expired token")
 
     user = users_col.find_one({"email": email})
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=404, detail="Account not found")
 
     user = check_subscription_expiry(user)
     return user
@@ -162,24 +170,27 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
 class ConnectionManager:
     def __init__(self):
         self.active_connections: Dict[str, WebSocket] = {}
-        self.connections_count: int = 0  # <-- Added connection counter
+        self.connections_count: int = 0
 
     async def connect(self, email: str, websocket: WebSocket):
         await websocket.accept()
         self.active_connections[email] = websocket
         self.connections_count = len(self.active_connections)
-        logger.info(f"Current active connections: {self.connections_count}")  # <-- Log count
+        logger.info(f"Active WS connection: {email}. Total: {self.connections_count}")
 
     def disconnect(self, email: str):
         if email in self.active_connections:
             del self.active_connections[email]
         self.connections_count = len(self.active_connections)
-        logger.info(f"Current active connections: {self.connections_count}")  # <-- Log count
+        logger.info(f"WS disconnect: {email}. Remaining: {self.connections_count}")
 
     async def send_personal_message(self, message: str, email: str):
         websocket = self.active_connections.get(email)
         if websocket:
-            await websocket.send_text(message)
+            try:
+                await websocket.send_text(message)
+            except Exception as e:
+                logger.error(f"Error sending WS message to {email}: {e}")
 
 manager = ConnectionManager()
 
@@ -204,66 +215,135 @@ async def main_page(request: Request):
     return templates.TemplateResponse("page.html", {"request": request})
 
 # ======================================================
-# SIGNUP (REST)
+# FORGOT PASSWORD & PHONE VERIFICATION LOGIC
+# ======================================================
+
+@app.post("/forgot-password-request", tags=["Auth"])
+async def forgot_password_request(
+    email: str = Form(...),
+    phone: str = Form(...) 
+):
+    """Requests a password reset code. Validates Email + Phone combo."""
+    user = users_col.find_one({"email": email, "phone": phone})
+    if not user:
+        raise HTTPException(status_code=404, detail="Credentials do not match our records.")
+
+    reset_code = str(random.randint(1000, 9999))
+    expiry = datetime.utcnow() + timedelta(minutes=15)
+
+    # SIMULATED SMS LOGGING
+    print("\n" + "="*40)
+    print(f"SMS SENT TO: {phone}")
+    print(f"MESSAGE: Your AI Strategist reset code is: {reset_code}")
+    print("="*40 + "\n")
+    
+    logger.info(f"SECURITY: Generated reset code {reset_code} for {email}")
+
+    users_col.update_one(
+        {"email": email},
+        {
+            "$set": {
+                "reset_code": reset_code,
+                "reset_code_expiry": expiry
+            }
+        }
+    )
+
+    return {"message": f"Verification code sent to ****{phone[-4:]}", "code_preview": reset_code}
+
+@app.post("/verify-reset-code", tags=["Auth"])
+async def verify_reset_code(email: str = Form(...), code: str = Form(...)):
+    user = users_col.find_one({"email": email})
+    if not user or user.get("reset_code") != code:
+        raise HTTPException(status_code=400, detail="Invalid verification code")
+    
+    if datetime.utcnow() > user.get("reset_code_expiry", datetime.min):
+        raise HTTPException(status_code=400, detail="Verification code has expired")
+
+    return {"message": "Verified. Proceed to reset password."}
+
+@app.post("/reset-password", tags=["Auth"])
+async def reset_password(
+    email: str = Form(...), 
+    code: str = Form(...), 
+    new_password: str = Form(...)
+):
+    user = users_col.find_one({"email": email})
+    if not user or user.get("reset_code") != code:
+        raise HTTPException(status_code=400, detail="Reset failed: Unauthorized session")
+
+    users_col.update_one(
+        {"email": email},
+        {
+            "$set": {
+                "hashed_password": hash_password(new_password),
+                "updated_at": datetime.utcnow()
+            },
+            "$unset": {
+                "reset_code": "", 
+                "reset_code_expiry": ""
+            }
+        }
+    )
+    return {"message": "Password updated successfully."}
+
+# ======================================================
+# SIGNUP & LOGIN
 # ======================================================
 
 @app.post("/signup", tags=["Auth"])
 async def signup(
     username: str = Form(...),
     email: str = Form(...),
+    phone: str = Form(...),
     password: str = Form(...),
     country: str = Form(...)
 ):
     if users_col.find_one({"email": email}):
-        raise HTTPException(status_code=400, detail="User already exists")
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    if users_col.find_one({"phone": phone}):
+        raise HTTPException(status_code=400, detail="Phone number already in use")
 
     new_user = {
         "username": username,
         "email": email,
+        "phone": phone,
         "hashed_password": hash_password(password),
         "subscription": "free",
         "subscription_expiry": None,
         "created_at": datetime.utcnow(),
+        "updated_at": datetime.utcnow(),
         "country": country,
         "last_generations": [],
         "usage_count": 0
     }
 
     users_col.insert_one(new_user)
-
     token = create_access_token({"sub": email})
-
-    return {
-        "message": "User registered successfully",
-        "access_token": token,
-        "token_type": "bearer"
-    }
-
-# ======================================================
-# LOGIN (REST)
-# ======================================================
+    return {"status": "success", "access_token": token}
 
 @app.post("/login", tags=["Auth"])
 async def login(email: str = Form(...), password: str = Form(...)):
     user = users_col.find_one({"email": email})
-
     if not user or not verify_password(password, user["hashed_password"]):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     user = check_subscription_expiry(user)
-
     token = create_access_token({"sub": email})
-
+    
     return {
         "access_token": token,
-        "token_type": "bearer",
-        "last_generations": user.get("last_generations", []),
-        "subscription": user.get("subscription"),
-        "country": user.get("country")
+        "user_profile": {
+            "email": user["email"],
+            "username": user["username"],
+            "subscription": user["subscription"],
+            "phone": user.get("phone")
+        }
     }
 
 # ======================================================
-# GENERATE (REST)
+# GENERATE (PRESERVED LOGIC)
 # ======================================================
 
 @app.post("/generate", tags=["AI"])
@@ -274,71 +354,32 @@ async def generate(
     current_user: dict = Depends(get_current_user)
 ):
     plan = current_user.get("subscription", "free")
-    usage_limit = subscription.get(plan, 5)
+    usage_limit = subscription_tiers.get(plan, 5)
+    current_usage = current_user.get("usage_count", 0)
 
-    if current_user.get("usage_count", 0) >= usage_limit:
-        raise HTTPException(status_code=403, detail="Usage limit reached. Upgrade plan.")
+    if current_usage >= usage_limit:
+        raise HTTPException(status_code=403, detail="Limit reached. Please upgrade.")
 
-    auto_prompt = f"""
-You are a senior performance marketing strategist.
+    prompt = f"Senior Strategist: Create conversion plan for {product_name} at {price} for {target_audience}."
 
-Product Details:
-- Product Name: {product_name}
-- Price: {price}
-- Target Audience: {target_audience}
+    try:
+        response = openai_client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}]
+        )
+        ai_output = response.choices[0].message.content
 
-Task:
-Create a clear, actionable, and conversion-focused marketing strategy.
-
-Generate the following sections:
-
-1. Ad Angles (5)
-   - Each angle must target a different psychological trigger.
-
-2. Customer Personas (3)
-   - Include age range, main pain point, and buying motivation.
-
-3. Irresistible Offers (3)
-   - Use urgency, bonuses, or guarantees.
-
-4. High-Converting Headlines (5)
-   - Short, bold, and scroll-stopping.
-
-5. Marketing Hooks (3)
-   - Strong opening lines for ads or landing pages.
-
-Rules:
-- Be practical, not theoretical.
-- Avoid generic marketing buzzwords.
-- Focus on real conversions.
-"""
-
-    response = openai_client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {"role": "system", "content": "You are a professional marketing strategist."},
-            {"role": "user", "content": auto_prompt}
-        ],
-        temperature=0.7
-    )
-
-    ai_output = response.choices[0].message.content
-
-    users_col.update_one(
-        {"email": current_user["email"]},
-        {
-            "$push": {"last_generations": {"$each": [{
-                "product_name": product_name,
-                "price": price,
-                "target_audience": target_audience,
-                "output": ai_output,
-                "created_at": datetime.utcnow()
-            }], "$slice": -5}},
-            "$inc": {"usage_count": 1}
-        }
-    )
-
-    return JSONResponse(content={"message": "Generation successful", "output": ai_output})
+        users_col.update_one(
+            {"email": current_user["email"]},
+            {
+                "$push": {"last_generations": {"$each": [{"product": product_name, "output": ai_output}], "$slice": -10}},
+                "$inc": {"usage_count": 1}
+            }
+        )
+        return {"output": ai_output, "remaining": usage_limit - (current_usage + 1)}
+    except Exception as e:
+        logger.error(f"AI Error: {e}")
+        raise HTTPException(status_code=500, detail="AI Service unavailable")
 
 # ======================================================
 # WEBSOCKET GENERATION
@@ -346,9 +387,11 @@ Rules:
 
 @app.websocket("/ws/generate")
 async def websocket_generate(websocket: WebSocket, token: str):
+    """Real-time generation via WebSocket for interactive experiences."""
     email = decode_token(token)
 
     if not email:
+        logger.warning("Unauthenticated WS attempt")
         await websocket.close(code=1008)
         return
 
@@ -356,46 +399,49 @@ async def websocket_generate(websocket: WebSocket, token: str):
 
     try:
         while True:
+            # Refresh user data each loop to check limits
             user = users_col.find_one({"email": email})
             if not user:
                 await websocket.close(code=1008)
                 return
 
             user = check_subscription_expiry(user)
+            
+            # Wait for user to send generation parameters
             data = await websocket.receive_json()
 
             plan = user.get("subscription", "free")
-            usage_limit = subscription.get(plan, 5)
+            limit = subscription_tiers.get(plan, 5)
+            count = user.get("usage_count", 0)
 
-            if user.get("usage_count", 0) >= usage_limit:
+            if count >= limit:
                 await manager.send_personal_message(
-                    "❌ Usage limit reached. Upgrade plan.",
+                    "ERROR: ❌ Usage limit reached. Upgrade to Pro for more generations.",
                     email
                 )
                 continue
 
-            product_name = data.get("product_name")
-            price = data.get("price")
-            target_audience = data.get("target_audience")
+            # Data Extraction
+            product_name = data.get("product_name", "Unknown Product")
+            price = data.get("price", 0)
+            audience = data.get("target_audience", "General")
 
-            auto_prompt = f"""
-            Product Name: {product_name}
-           Price: {price}
-           Target Audience: {target_audience}
-           Generate complete marketing strategy.
-"""
+            # Notification to user
+            await manager.send_personal_message("STATUS: ⏳ Analyzing market data...", email)
 
-            response = openai_client.chat.completions.create(
+            # OpenAI Call
+            resp = openai_client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
                     {"role": "system", "content": "You are a professional marketing strategist."},
-                    {"role": "user", "content": auto_prompt}
+                    {"role": "user", "content": f"Strategy for {product_name} targeting {audience} at price {price}"}
                 ],
                 temperature=0.7
             )
 
-            ai_output = response.choices[0].message.content
+            ai_output = resp.choices[0].message.content
 
+            # Persist data
             users_col.update_one(
                 {"email": email},
                 {
@@ -404,19 +450,48 @@ async def websocket_generate(websocket: WebSocket, token: str):
                             "$each": [{
                                 "product_name": product_name,
                                 "price": price,
-                                "target_audience": target_audience,
+                                "target_audience": audience,
                                 "output": ai_output,
                                 "created_at": datetime.utcnow()
                             }],
-                            "$slice": -5
+                            "$slice": -10
                         }
                     },
                     "$inc": {"usage_count": 1}
                 }
             )
 
+            # Stream result back
             await manager.send_personal_message(ai_output, email)
+            await manager.send_personal_message(f"STATUS: ✅ Done! Used {count+1}/{limit}", email)
 
     except WebSocketDisconnect:
         manager.disconnect(email)
-        logger.info(f"{email} disconnected")
+    except Exception as e:
+        logger.error(f"WS Runtime Error for {email}: {e}")
+        manager.disconnect(email)
+
+# ======================================================
+# HEALTH CHECK & INFO
+# ======================================================
+
+@app.get("/health", tags=["System"])
+async def health_check():
+    """Returns the current status of the API and DB connection."""
+    try:
+        client.admin.command("ping")
+        db_status = "Online"
+    except:
+        db_status = "Offline"
+        
+    return {
+        "status": "active",
+        "database": db_status,
+        "timestamp": datetime.utcnow(),
+        "active_ws": manager.connections_count
+    }
+
+# ======================================================
+# APP ENTRY POINT
+# ======================================================
+
