@@ -30,7 +30,7 @@
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            padding: 20px; /* Prevents card from touching screen edges on mobile */
+            padding: 20px;
         }
 
         .card {
@@ -48,6 +48,7 @@
             margin-bottom: 0.5rem; 
             font-size: 1.75rem; 
             letter-spacing: -0.025em;
+            text-align: center;
         }
         
         p.subtitle { 
@@ -55,6 +56,7 @@
             margin-bottom: 2rem; 
             font-size: 0.95rem; 
             line-height: 1.5;
+            text-align: center;
         }
 
         .form-group { 
@@ -79,7 +81,7 @@
             font-size: 1rem;
             outline: none;
             transition: all 0.2s ease;
-            -webkit-appearance: none; /* Removes iOS default styling */
+            -webkit-appearance: none;
         }
 
         input:focus { 
@@ -150,7 +152,6 @@
             border: 1px solid transparent;
         }
 
-        /* Responsive Breakpoints */
         @media (max-width: 480px) {
             .card {
                 padding: 1.5rem;
@@ -166,14 +167,7 @@
             }
 
             input {
-                padding: 0.75rem; /* Slightly smaller padding for smaller screens */
-            }
-        }
-
-        /* Support for high-res displays */
-        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
-            .card {
-                border-width: 0.5px;
+                padding: 0.75rem;
             }
         }
     </style>
@@ -193,6 +187,10 @@
             <div class="form-group">
                 <label for="email">Email Address</label>
                 <input type="email" id="email" name="email" required placeholder="john@example.com" autocomplete="email">
+            </div>
+            <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input type="tel" id="phone" name="phone" required placeholder="+923001234567" pattern="^\+?[1-9]\d{1,14}$" title="Please enter a valid phone number (e.g. +923001234567)">
             </div>
             <div class="form-group">
                 <label for="password">Password</label>
@@ -220,13 +218,13 @@
             
             // UI Feedback
             btn.disabled = true;
-            btn.innerText = "Processing...";
+            btn.innerText = "Creating Account...";
             msgBox.style.display = 'none';
 
             const formData = new FormData(form);
 
             try {
-                // Using a relative path as per your original logic
+                // Fetch call to the backend signup endpoint defined in main.py
                 const response = await fetch('/signup', {
                     method: 'POST',
                     body: formData
@@ -239,10 +237,16 @@
                     msgBox.style.background = 'rgba(0, 188, 212, 0.1)';
                     msgBox.style.borderColor = 'rgba(0, 188, 212, 0.2)';
                     msgBox.style.color = 'var(--accent)';
-                    msgBox.innerText = "Success! Your account has been created. Redirecting...";
+                    msgBox.innerText = "Success! Account created. Granting access...";
                     
-                    // Smooth transition
-                    setTimeout(() => window.location.href = '/login-page', 2000);
+                    // Save token if returned (backend returns access_token)
+                    if (data.access_token) {
+                        localStorage.setItem('access_token', data.access_token);
+                    }
+                    
+                    setTimeout(() => {
+                        window.location.href = '/page';
+                    }, 1500);
                 } else {
                     throw new Error(data.detail || "Signup failed. Please check your details.");
                 }
@@ -253,7 +257,7 @@
                 msgBox.style.color = 'var(--error)';
                 msgBox.innerText = err.message;
                 
-                // Reset button
+                // Reset button for retry
                 btn.disabled = false;
                 btn.innerText = "Sign Up";
             }
