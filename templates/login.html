@@ -11,6 +11,7 @@
             --card: #141414;
             --accent: #00bcd4;
             --error: #ff4d4d;
+            --success: #4caf50;
             --input-bg: #1e1e1e;
             --border: #222;
             --text-muted: #888;
@@ -41,13 +42,11 @@
             max-width: 400px;
             border: 1px solid var(--border);
             box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
-            transition: transform 0.3s ease;
         }
 
         h2 { 
             margin-bottom: 0.5rem; 
             font-size: 1.75rem; 
-            letter-spacing: -0.025em;
             text-align: center;
         }
         
@@ -55,21 +54,11 @@
             color: var(--text-muted); 
             margin-bottom: 2rem; 
             font-size: 0.95rem; 
-            line-height: 1.5;
             text-align: center;
         }
 
-        .form-group { 
-            margin-bottom: 1.25rem; 
-        }
-        
-        label { 
-            display: block; 
-            margin-bottom: 0.6rem; 
-            color: #ccc; 
-            font-size: 0.85rem; 
-            font-weight: 500;
-        }
+        .form-group { margin-bottom: 1.25rem; }
+        label { display: block; margin-bottom: 0.6rem; color: #ccc; font-size: 0.85rem; }
 
         input {
             width: 100%;
@@ -80,18 +69,10 @@
             color: white;
             font-size: 1rem;
             outline: none;
-            transition: all 0.2s ease;
-            -webkit-appearance: none;
+            transition: border 0.2s;
         }
 
-        input:focus { 
-            border-color: var(--accent); 
-            box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.1);
-        }
-
-        input::placeholder {
-            color: #555;
-        }
+        input:focus { border-color: var(--accent); }
 
         .btn {
             width: 100%;
@@ -101,139 +82,230 @@
             border-radius: 8px;
             color: #000;
             font-weight: 600;
-            font-size: 1rem;
             cursor: pointer;
-            transition: all 0.2s ease;
             margin-top: 1rem;
-            display: flex;
-            justify-content: center;
-            align-items: center;
         }
 
-        .btn:hover { 
-            opacity: 0.9; 
-            transform: translateY(-1px);
-        }
-        
-        .btn:active {
-            transform: translateY(0);
+        .btn:disabled { opacity: 0.5; }
+
+        .secondary-btn {
+            background: transparent;
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            margin-top: 0.5rem;
         }
 
-        .btn:disabled { 
-            opacity: 0.5; 
-            cursor: not-allowed; 
-            transform: none;
+        .forgot-link {
+            display: block;
+            text-align: right;
+            font-size: 0.8rem;
+            color: var(--accent);
+            cursor: pointer;
+            margin: -0.5rem 0 1rem 0;
         }
 
-        .footer-link {
-            text-align: center;
-            margin-top: 1.5rem;
-            font-size: 0.9rem;
-            color: var(--text-muted);
-        }
-
-        .footer-link a { 
-            color: var(--accent); 
-            text-decoration: none; 
-            font-weight: 600;
-        }
-        
-        .footer-link a:hover {
-            text-decoration: underline;
-        }
-        
-        #errorMsg {
-            color: var(--error);
-            background: rgba(255, 77, 77, 0.1);
-            border: 1px solid rgba(255, 77, 77, 0.2);
+        #statusMsg {
             padding: 1rem;
             border-radius: 8px;
             margin-bottom: 1.5rem;
             font-size: 0.875rem;
-            line-height: 1.4;
             display: none;
         }
 
-        /* Responsive Breakpoints */
-        @media (max-width: 480px) {
-            .card {
-                padding: 1.5rem;
-                border-radius: 12px;
-            }
-            
-            h2 {
-                font-size: 1.5rem;
-            }
+        .error { color: var(--error); background: rgba(255, 77, 77, 0.1); border: 1px solid var(--error); }
+        .success { color: var(--success); background: rgba(76, 175, 80, 0.1); border: 1px solid var(--success); }
 
-            input {
-                padding: 0.75rem;
-            }
+        /* Modal logic */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
         }
+
+        /* SMS Simulation Popup */
+        #smsNotification {
+            position: fixed;
+            top: 20px; right: 20px;
+            background: #222;
+            border-left: 4px solid var(--accent);
+            padding: 15px;
+            border-radius: 8px;
+            z-index: 2000;
+            display: none;
+            max-width: 280px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            animation: slideIn 0.4s ease-out;
+        }
+        @keyframes slideIn { from { transform: translateX(120%); } to { transform: translateX(0); } }
     </style>
 </head>
 <body>
-    <div class="card">
+
+    <!-- Login Container -->
+    <div class="card" id="loginCard">
         <h2>Welcome Back</h2>
-        <p class="subtitle">Enter your credentials to access the AI Strategist.</p>
-
-        <div id="errorMsg"></div>
-
+        <p class="subtitle">Access your marketing intelligence.</p>
+        <div id="statusMsg"></div>
         <form id="loginForm">
             <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" name="email" required placeholder="name@company.com" autocomplete="email">
+                <label>Email</label>
+                <input type="email" name="email" required placeholder="name@company.com">
             </div>
             <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" required placeholder="••••••••" autocomplete="current-password">
+                <label>Password</label>
+                <input type="password" name="password" required placeholder="••••••••">
             </div>
+            <span class="forgot-link" onclick="openModal('forgotModal')">Forgot password?</span>
             <button type="submit" class="btn" id="loginBtn">Log In</button>
         </form>
+        <p style="text-align: center; margin-top: 1.5rem; font-size: 0.9rem; color: #888;">
+            New here? <a href="/signup-page" style="color: var(--accent); text-decoration: none;">Create Account</a>
+        </p>
+    </div>
 
-        <div class="footer-link">
-            Don't have an account? <a href="/signup-page">Sign up</a>
+    <!-- Step 1: Request Code Modal -->
+    <div id="forgotModal" class="modal">
+        <div class="card">
+            <h2>Reset Password</h2>
+            <p class="subtitle">Verify your identity to proceed.</p>
+            <form id="forgotForm">
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" name="email" id="resetEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="text" name="phone" id="resetPhone" placeholder="+92..." required>
+                </div>
+                <button type="submit" class="btn">Send Verification Code</button>
+                <button type="button" class="btn secondary-btn" onclick="closeModal('forgotModal')">Cancel</button>
+            </form>
         </div>
     </div>
 
+    <!-- Step 2: Verify Code & Change Password Modal -->
+    <div id="resetModal" class="modal">
+        <div class="card">
+            <h2>New Password</h2>
+            <p class="subtitle">Enter the 4-digit code sent to your phone.</p>
+            <form id="resetForm">
+                <div class="form-group">
+                    <label>Verification Code</label>
+                    <input type="text" name="code" maxlength="4" required style="text-align: center; letter-spacing: 8px; font-size: 1.2rem;">
+                </div>
+                <div class="form-group">
+                    <label>Create New Password</label>
+                    <input type="password" name="new_password" required minlength="6">
+                </div>
+                <button type="submit" class="btn">Update & Login</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- SMS Notification Simulator -->
+    <div id="smsNotification">
+        <div style="font-size: 0.7rem; color: var(--accent); margin-bottom: 4px;">MESSAGES • NOW</div>
+        <div id="smsContent" style="font-size: 0.85rem; color: #eee;"></div>
+    </div>
+
     <script>
-        const form = document.getElementById('loginForm');
-        const errDisplay = document.getElementById('errorMsg');
-        const btn = document.getElementById('loginBtn');
+        const statusMsg = document.getElementById('statusMsg');
 
-        form.onsubmit = async (e) => {
+        function showStatus(msg, isError = true) {
+            statusMsg.innerText = msg;
+            statusMsg.className = isError ? 'error' : 'success';
+            statusMsg.style.display = 'block';
+        }
+
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+        // Simulated SMS UI
+        function triggerSmsUI(code) {
+            const sms = document.getElementById('smsNotification');
+            document.getElementById('smsContent').innerHTML = `<b>AI Strategist:</b> Your reset code is <b>${code}</b>. Valid for 15 mins.`;
+            sms.style.display = 'block';
+            setTimeout(() => { sms.style.display = 'none'; }, 8000);
+        }
+
+        // --- AUTH: LOGIN ---
+        document.getElementById('loginForm').onsubmit = async (e) => {
             e.preventDefault();
-            
+            const btn = document.getElementById('loginBtn');
             btn.disabled = true;
-            btn.innerText = "Authenticating...";
-            errDisplay.style.display = 'none';
-
-            const formData = new FormData(form);
+            btn.innerText = "Checking...";
 
             try {
                 const response = await fetch('/login', {
                     method: 'POST',
-                    body: formData
+                    body: new FormData(e.target)
                 });
+                const data = await response.json();
+                if (response.ok) {
+                    localStorage.setItem('access_token', data.access_token);
+                    localStorage.setItem('user', JSON.stringify(data.user_profile));
+                    window.location.href = '/page';
+                } else {
+                    throw new Error(data.detail);
+                }
+            } catch (err) {
+                showStatus(err.message);
+                btn.disabled = false;
+                btn.innerText = "Log In";
+            }
+        };
 
+        // --- FORGOT: REQUEST CODE ---
+        document.getElementById('forgotForm').onsubmit = async (e) => {
+            e.preventDefault();
+            try {
+                const response = await fetch('/forgot-password-request', {
+                    method: 'POST',
+                    body: new FormData(e.target)
+                });
                 const data = await response.json();
 
                 if (response.ok) {
-                    // Store credentials
-                    localStorage.setItem('access_token', data.access_token);
-                    localStorage.setItem('user_email', form.email.value);
-                    
-                    // Redirect on success
-                    window.location.href = '/page';
+                    closeModal('forgotModal');
+                    openModal('resetModal');
+                    // In a real app, the code is only in the backend logs or SMS.
+                    // We trigger the UI here because your backend returns code_preview for testing.
+                    if (data.code_preview) triggerSmsUI(data.code_preview);
+                    showStatus("Code sent to your phone.", false);
                 } else {
-                    throw new Error(data.detail || "Invalid login credentials. Please try again.");
+                    alert(data.detail);
                 }
             } catch (err) {
-                errDisplay.style.display = 'block';
-                errDisplay.innerText = err.message;
-                
-                // Reset button state
-                btn.disabled = false;
-                btn.innerText = "Log In";
+                alert("Request failed.");
+            }
+        };
+
+        // --- FORGOT: RESET PASSWORD ---
+        document.getElementById('resetForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            fd.append('email', document.getElementById('resetEmail').value);
+
+            try {
+                const response = await fetch('/reset-password', {
+                    method: 'POST',
+                    body: fd
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    closeModal('resetModal');
+                    showStatus("Password changed! You can now login.", false);
+                } else {
+                    alert(data.detail);
+                }
+            } catch (err) {
+                alert("Reset failed.");
             }
         };
     </script>
