@@ -43,7 +43,7 @@
             background: radial-gradient(circle at 50% 50%, #0a0a0a 0%, #000000 100%);
         }
 
-        /* Sidebar Navigation - Hidden on mobile, vertical on desktop */
+        /* Sidebar Navigation */
         .sidebar {
             width: var(--sidebar-width);
             background: var(--sidebar-bg);
@@ -53,9 +53,10 @@
             align-items: center;
             padding: 20px 0;
             z-index: 100;
+            flex-shrink: 0;
         }
 
-        /* Mobile Bottom Nav - Only visible on small screens */
+        /* Mobile Bottom Nav */
         .mobile-nav {
             display: none;
             position: fixed;
@@ -64,7 +65,7 @@
             right: 0;
             height: 64px;
             background: rgba(0,0,0,0.9);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(15px);
             border-top: 1px solid var(--border-color);
             z-index: 110;
             justify-content: space-around;
@@ -81,6 +82,11 @@
             justify-content: center;
             margin-bottom: 40px;
             cursor: pointer;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .logo-container:hover {
+            transform: scale(1.1);
         }
 
         .nav-items {
@@ -126,12 +132,21 @@
         .top-bar {
             height: var(--topbar-height);
             display: flex;
-            justify-content: space-between; /* Adjusted for mobile logo */
+            justify-content: flex-end;
             align-items: center;
             padding: 0 24px;
         }
 
-        .mobile-logo { display: none; }
+        .mobile-logo { 
+            display: none; 
+            cursor: pointer;
+            background: #fff; 
+            border-radius: 8px; 
+            width: 32px; 
+            height: 32px; 
+            align-items: center; 
+            justify-content: center;
+        }
 
         .wallet-btn {
             background: #fff;
@@ -145,7 +160,10 @@
             align-items: center;
             gap: 8px;
             cursor: pointer;
+            transition: opacity 0.2s;
         }
+
+        .wallet-btn:hover { opacity: 0.9; }
 
         /* Views */
         .view-section { 
@@ -318,6 +336,8 @@
             transition: 0.2s;
         }
 
+        .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
         /* Results Panel */
         .result-panel {
             position: fixed;
@@ -334,28 +354,6 @@
         }
 
         .result-panel.active { bottom: 0; }
-
-        /* Tablet & Mobile Adjustments */
-        @media (max-width: 768px) {
-            body { flex-direction: column; }
-            .sidebar { display: none; }
-            .mobile-nav { display: flex; }
-            .result-panel { left: 0; height: 80vh; padding-bottom: 80px; }
-            .top-bar { padding: 0 16px; }
-            .mobile-logo { 
-                display: flex; 
-                background: #fff; 
-                border-radius: 8px; 
-                width: 32px; 
-                height: 32px; 
-                align-items: center; 
-                justify-content: center;
-            }
-            .center-content { padding-bottom: 100px; }
-            .hero-title { margin-bottom: 30px; }
-            .view-section { padding: 16px; height: calc(100vh - 136px); }
-            .status-pill { bottom: 80px; right: 10px; font-size: 10px; }
-        }
 
         .result-box {
             max-width: 800px;
@@ -382,12 +380,13 @@
             justify-content: center;
         }
 
+        /* History */
         .history-list {
             display: flex;
             flex-direction: column;
             gap: 12px;
             width: 100%;
-            margin-top: 20px;
+            max-width: 800px;
         }
 
         .history-item {
@@ -399,6 +398,12 @@
             transition: 0.2s;
         }
 
+        .history-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--accent-primary);
+        }
+
+        /* Status */
         .status-pill {
             position: fixed;
             bottom: 20px;
@@ -423,6 +428,21 @@
             border-top-color: transparent; border-radius: 50%;
             animation: spin 1s linear infinite;
         }
+
+        /* Tablet & Mobile Breakpoints */
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar { display: none; }
+            .mobile-nav { display: flex; }
+            .top-bar { justify-content: space-between; padding: 0 16px; }
+            .mobile-logo { display: flex; }
+            .result-panel { left: 0; height: 80vh; padding-bottom: 80px; }
+            .center-content { padding-bottom: 100px; }
+            .hero-title { margin-bottom: 30px; }
+            .view-section { padding: 16px; height: calc(100vh - 136px); }
+            .status-pill { bottom: 80px; right: 10px; font-size: 10px; }
+            .cards-grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
@@ -430,7 +450,7 @@
 
     <!-- Desktop Sidebar -->
     <div class="sidebar">
-        <div class="logo-container">
+        <div class="logo-container" onclick="refreshApp()">
             <i data-lucide="zap" style="color: #000; width: 24px;"></i>
         </div>
         <div class="nav-items">
@@ -470,12 +490,12 @@
     <!-- Main Content -->
     <div class="main-wrapper">
         <div class="top-bar">
-            <div class="mobile-logo">
+            <div class="mobile-logo" onclick="refreshApp()">
                 <i data-lucide="zap" style="color: #000; width: 18px;"></i>
             </div>
             <button class="wallet-btn">
                 <i data-lucide="plus" style="width: 16px;"></i>
-                <span>Action</span>
+                <span>Quick Action</span>
             </button>
         </div>
 
@@ -484,7 +504,7 @@
             <div class="center-content">
                 <i data-lucide="sparkles" class="sparkle-icon" style="width: 48px; height: 48px;"></i>
                 <p class="welcome-text">Welcome to Leonardo AI Strategist</p>
-                <h1 class="hero-title">How <span>can I help?</span></h1>
+                <h1 class="hero-title">How <span>can I help today?</span></h1>
 
                 <div class="cards-grid">
                     <div class="suggestion-card card-1" onclick="autofill('SaaS Productivity Tool', 49.99, 'Remote Professionals')">
@@ -522,7 +542,7 @@
                         <div class="action-bar">
                             <div class="selector-pill">
                                 <i data-lucide="layers" style="width: 14px;"></i>
-                                <span>Strategy v4</span>
+                                <span>Strategy Engine v4</span>
                                 <i data-lucide="chevron-down" style="width: 12px;"></i>
                             </div>
                             <button type="submit" class="submit-btn" id="submitBtn">
@@ -539,14 +559,29 @@
             <h1 style="font-size: 32px; margin-bottom: 8px;">Generation History</h1>
             <p style="color: var(--text-dim); margin-bottom: 40px;">Review your previous strategic architectures.</p>
             <div id="historyList" class="history-list">
-                <p style="color: var(--text-dim);">No history available yet.</p>
+                <div class="history-item" onclick="loadDemoHistory()">
+                    <div style="font-weight: 600; margin-bottom: 4px;">SaaS Productivity Tool</div>
+                    <div style="font-size: 12px; color: var(--text-dim);">Generated Feb 22, 2024 • Strategy v4</div>
+                </div>
             </div>
         </section>
 
         <!-- Settings View -->
         <section id="settings-view" class="view-section">
             <h1 style="font-size: 32px; margin-bottom: 8px;">Settings</h1>
-            <p style="color: var(--text-dim); margin-bottom: 40px;">Manage your intelligence preferences.</p>
+            <p style="color: var(--text-dim); margin-bottom: 40px;">Manage your intelligence preferences and API integrations.</p>
+            
+            <div style="background: rgba(255,255,255,0.03); padding: 24px; border-radius: 16px; border: 1px solid var(--border-color); max-width: 600px;">
+                <h3 style="margin-bottom: 16px;">Preferences</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <span>Advanced 3D Effects</span>
+                    <input type="checkbox" checked onchange="toggle3D(this.checked)">
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>Auto-Save History</span>
+                    <input type="checkbox" checked>
+                </div>
+            </div>
         </section>
     </div>
 
@@ -568,22 +603,26 @@
     </div>
 
     <script>
-        const token = localStorage.getItem('access_token');
         let socket = null;
+        let renderer, scene, camera, points;
+        let is3DEnabled = true;
 
         lucide.createIcons();
 
+        function refreshApp() {
+            // Logic to refresh or reset the app state
+            location.reload();
+        }
+
         function switchView(id, btn) {
             document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
-            // Remove active from all nav types
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             
             const view = document.getElementById(id + '-view');
             if(view) view.classList.add('active');
             
-            // Activate both mobile and desktop buttons for the same view
-            const viewClass = id === 'strategy' ? 'home' : (id === 'history' ? 'clock' : 'settings');
-            document.querySelectorAll(`.nav-item i[data-lucide="${viewClass}"]`).forEach(icon => {
+            const iconType = id === 'strategy' ? 'home' : (id === 'history' ? 'clock' : 'settings');
+            document.querySelectorAll(`.nav-item i[data-lucide="${iconType}"]`).forEach(icon => {
                 icon.parentElement.classList.add('active');
             });
             
@@ -600,15 +639,23 @@
             document.getElementById('prodName').value = name;
             document.getElementById('prodPrice').value = price;
             document.getElementById('prodAudience').value = audience;
-            // Scroll to form on mobile
             if(window.innerWidth < 768) {
                 document.getElementById('strategyForm').scrollIntoView({ behavior: 'smooth' });
             }
         }
 
+        function loadDemoHistory() {
+            toggleResultPanel(true);
+            document.getElementById('outputContent').innerText = "Loading archive data...";
+            setTimeout(() => {
+                document.getElementById('outputContent').innerText = "ARCHIVE: SaaS Productivity Tool\n\n- User Persona: Deep Work Enthusiasts\n- Strategic Hook: 'Eliminate the friction between thought and execution.'\n- Pricing Strategy: High-tier subscription with annual discount.";
+            }, 600);
+        }
+
         function connectWebSocket() {
+            const token = localStorage.getItem('access_token');
             if (!token) {
-                document.getElementById('wsStatusText').innerText = 'Unauthorized - Demo Mode';
+                document.getElementById('wsStatusText').innerText = 'Demo Connection Only';
                 return;
             }
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -654,16 +701,11 @@
             if (socket && socket.readyState === WebSocket.OPEN) {
                 socket.send(JSON.stringify(payload));
             } else {
-                try {
-                    // Simulating API call for demo environment
-                    await new Promise(r => setTimeout(r, 1500));
-                    toggleResultPanel(true);
-                    document.getElementById('outputContent').innerText = `DEMO OUTPUT:\n\nStrategy for: ${payload.product_name}\nTarget: ${payload.target_audience}\nPrice Point: $${payload.price}\n\n1. Market Penetration: Focus on the specific needs of ${payload.target_audience}.\n2. Value Proposition: Align pricing with high-tier architectural standards.\n3. Scalability: Use modular frameworks.`;
-                } catch (err) {
-                    console.error("Connection Error", err);
-                } finally {
-                    resetSubmitButton();
-                }
+                // Simulation for environment
+                await new Promise(r => setTimeout(r, 1200));
+                toggleResultPanel(true);
+                document.getElementById('outputContent').innerText = `SYSTEM ANALYZING: ${payload.product_name.toUpperCase()}\n--------------------------------\n\n1. SEGMENTATION\nTargeting ${payload.target_audience} via cognitive-bias marketing hooks.\n\n2. PRICING ARCHITECTURE\n$${payload.price} positioning suggests premium scarcity.\n\n3. AD ANGLES\n- Angle A: Efficiency maximization\n- Angle B: Competitive edge through intelligence\n\nAnalysis Complete.`;
+                resetSubmitButton();
             }
         };
 
@@ -672,31 +714,48 @@
             location.reload();
         }
 
+        function toggle3D(enabled) {
+            is3DEnabled = enabled;
+            if(!enabled) {
+                document.getElementById('canvas-container').style.display = 'none';
+            } else {
+                document.getElementById('canvas-container').style.display = 'block';
+            }
+        }
+
         function init3D() {
             const container = document.getElementById('canvas-container');
-            const scene = new THREE.Scene();
-            const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
             
             renderer.setSize(window.innerWidth, window.innerHeight);
+            container.innerHTML = '';
             container.appendChild(renderer.domElement);
 
             const geo = new THREE.BufferGeometry();
             const pos = [];
-            const count = window.innerWidth < 768 ? 400 : 800; // Reduce points on mobile
+            const count = window.innerWidth < 768 ? 400 : 1000; 
             for(let i=0; i<count; i++) {
                 pos.push((Math.random()-0.5)*10, (Math.random()-0.5)*10, (Math.random()-0.5)*10);
             }
             geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-            const mat = new THREE.PointsMaterial({ color: 0x82b1ff, size: 0.015, transparent: true, opacity: 0.25 });
-            const points = new THREE.Points(geo, mat);
+            const mat = new THREE.PointsMaterial({ 
+                color: 0x82b1ff, 
+                size: 0.012, 
+                transparent: true, 
+                opacity: 0.2,
+                sizeAttenuation: true
+            });
+            points = new THREE.Points(geo, mat);
             scene.add(points);
-            camera.position.z = 2;
+            camera.position.z = 2.5;
 
             function anim() {
+                if(!is3DEnabled) return;
                 requestAnimationFrame(anim);
-                points.rotation.y += 0.0006;
-                points.rotation.x += 0.0003;
+                points.rotation.y += 0.0005;
+                points.rotation.x += 0.0002;
                 renderer.render(scene, camera);
             }
             anim();
@@ -705,6 +764,8 @@
                 camera.aspect = window.innerWidth / window.innerHeight;
                 camera.updateProjectionMatrix();
                 renderer.setSize(window.innerWidth, window.innerHeight);
+                // Refresh particle system on significant resize
+                init3D(); 
             });
         }
 
