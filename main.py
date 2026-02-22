@@ -13,7 +13,7 @@ import certifi
 import os
 import logging
 import random
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional
 
 # ======================================================
@@ -114,14 +114,17 @@ openai_client = OpenAI(api_key=OPEN_API_KEY)
 
 def create_access_token(data: dict, hours: int = 12):
     payload = data.copy()
-    payload["exp"] = datetime.utcnow() + timedelta(hours=hours)
-    payload["iat"] = datetime.utcnow()
+    expire = datetime.now(timezone.utc) + timedelta(hours=hours)
+    payload.update({"exp": expire, "iat": datetime.now(timezone.utc)})
     return jwt.encode(payload, JWT_SECRET, algorithm=ALGORITHM)
 
 def decode_token(token: str):
     try:
         payload = jwt.decode(token, JWT_SECRET, algorithms=[ALGORITHM])
-        return payload.get("sub")
+        email: str = payload.get("sub")
+        if email is None:
+            return None
+        return email
     except JWTError as e:
         logger.warning(f"Token decoding failed: {e}")
         return None
@@ -135,20 +138,26 @@ def check_subscription_expiry(user: dict):
         return user
 
     expiry = user.get("subscription_expiry")
-    if expiry and datetime.utcnow() > expiry:
-        logger.info(f"Subscription expired for user: {user['email']}. Reverting to free.")
-        users_col.update_one(
-            {"email": user["email"]},
-            {
-                "$set": {
-                    "subscription": "free",
-                    "subscription_expiry": None,
-                    "updated_at": datetime.utcnow()
+    # Ensure comparison is offset-aware or both are offset-naive
+    if expiry:
+        # If expiry from Mongo is naive, make it UTC
+        if expiry.tzinfo is None:
+            expiry = expiry.replace(tzinfo=timezone.utc)
+            
+        if datetime.now(timezone.utc) > expiry:
+            logger.info(f"Subscription expired for user: {user['email']}. Reverting to free.")
+            users_col.update_one(
+                {"email": user["email"]},
+                {
+                    "$set": {
+                        "subscription": "free",
+                        "subscription_expiry": None,
+                        "updated_at": datetime.now(timezone.utc)
+                    }
                 }
-            }
-        )
-        user["subscription"] = "free"
-        user["subscription_expiry"] = None
+            )
+            user["subscription"] = "free"
+            user["subscription_expiry"] = None
     return user
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
@@ -229,7 +238,7 @@ async def forgot_password_request(
         raise HTTPException(status_code=404, detail="Credentials do not match our records.")
 
     reset_code = str(random.randint(1000, 9999))
-    expiry = datetime.utcnow() + timedelta(minutes=15)
+    expiry = datetime.now(timezone.utc) + timedelta(minutes=15)
 
     # SIMULATED SMS LOGGING
     print("\n" + "="*40)
@@ -257,7 +266,11 @@ async def verify_reset_code(email: str = Form(...), code: str = Form(...)):
     if not user or user.get("reset_code") != code:
         raise HTTPException(status_code=400, detail="Invalid verification code")
     
-    if datetime.utcnow() > user.get("reset_code_expiry", datetime.min):
+    expiry = user.get("reset_code_expiry")
+    if expiry and expiry.tzinfo is None:
+        expiry = expiry.replace(tzinfo=timezone.utc)
+
+    if datetime.now(timezone.utc) > (expiry or datetime.min.replace(tzinfo=timezone.utc)):
         raise HTTPException(status_code=400, detail="Verification code has expired")
 
     return {"message": "Verified. Proceed to reset password."}
@@ -277,7 +290,7 @@ async def reset_password(
         {
             "$set": {
                 "hashed_password": hash_password(new_password),
-                "updated_at": datetime.utcnow()
+                "updated_at": datetime.now(timezone.utc)
             },
             "$unset": {
                 "reset_code": "", 
@@ -312,8 +325,8 @@ async def signup(
         "hashed_password": hash_password(password),
         "subscription": "free",
         "subscription_expiry": None,
-        "created_at": datetime.utcnow(),
-        "updated_at": datetime.utcnow(),
+        "created_at": datetime.now(timezone.utc),
+        "updated_at": datetime.now(timezone.utc),
         "country": country,
         "last_generations": [],
         "usage_count": 0
@@ -372,8 +385,20 @@ async def generate(
         users_col.update_one(
             {"email": current_user["email"]},
             {
-                "$push": {"last_generations": {"$each": [{"product": product_name, "output": ai_output}], "$slice": -10}},
-                "$inc": {"usage_count": 1}
+                "$push": {
+                    "last_generations": {
+                        "$each": [{
+                            "product_name": product_name, 
+                            "price": price,
+                            "target_audience": target_audience,
+                            "output": ai_output,
+                            "created_at": datetime.now(timezone.utc)
+                        }], 
+                        "$slice": -10
+                    }
+                },
+                "$inc": {"usage_count": 1},
+                "$set": {"updated_at": datetime.now(timezone.utc)}
             }
         )
         return {"output": ai_output, "remaining": usage_limit - (current_usage + 1)}
@@ -452,12 +477,13 @@ async def websocket_generate(websocket: WebSocket, token: str):
                                 "price": price,
                                 "target_audience": audience,
                                 "output": ai_output,
-                                "created_at": datetime.utcnow()
+                                "created_at": datetime.now(timezone.utc)
                             }],
                             "$slice": -10
                         }
                     },
-                    "$inc": {"usage_count": 1}
+                    "$inc": {"usage_count": 1},
+                    "$set": {"updated_at": datetime.now(timezone.utc)}
                 }
             )
 
@@ -481,17 +507,12 @@ async def health_check():
     try:
         client.admin.command("ping")
         db_status = "Online"
-    except:
+    except Exception:
         db_status = "Offline"
         
     return {
         "status": "active",
         "database": db_status,
-        "timestamp": datetime.utcnow(),
+        "timestamp": datetime.now(timezone.utc),
         "active_ws": manager.connections_count
     }
-
-# ======================================================
-# APP ENTRY POINT
-# ======================================================
-
