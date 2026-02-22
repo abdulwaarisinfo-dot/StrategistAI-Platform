@@ -646,10 +646,19 @@
 
         function loadDemoHistory() {
             toggleResultPanel(true);
-            document.getElementById('outputContent').innerText = "Loading archive data...";
-            setTimeout(() => {
-                document.getElementById('outputContent').innerText = "ARCHIVE: SaaS Productivity Tool\n\n- User Persona: Deep Work Enthusiasts\n- Strategic Hook: 'Eliminate the friction between thought and execution.'\n- Pricing Strategy: High-tier subscription with annual discount.";
-            }, 600);
+            const msg = `
+        ARCHIVE: SaaS Productivity Tool
+        
+        1. TARGET AUDIENCE
+        Focus on professionals seeking productivity enhancements and deep work efficiency.
+        
+        2. STRATEGIC INSIGHTS
+        Streamline workflows, reduce distractions, and highlight practical benefits that users can implement immediately.
+        
+        3. REAL-WORLD APPLICATION
+        Demonstrates how the tool improves task completion, collaboration efficiency, and daily productivity, without overloading the user with subscription tiers or pricing complexity.
+            `;
+            formatOutput(msg);
         }
 
         function connectWebSocket() {
