@@ -560,8 +560,8 @@
             <p style="color: var(--text-dim); margin-bottom: 40px;">Review your previous strategic architectures.</p>
             <div id="historyList" class="history-list">
                 <div class="history-item" onclick="loadDemoHistory()">
-                    <div style="font-weight: 600; margin-bottom: 4px;">SaaS Productivity Tool</div>
-                    <div style="font-size: 12px; color: var(--text-dim);">Generated Feb 22, 2024 • Strategy v4</div>
+                    <div style="font-weight: 600; margin-bottom: 4px;">Productivity Tool</div>
+                    <div style="font-size: 12px; color: var(--text-dim);">Generated Feb 22, 2025 • Strategy v4</div>
                 </div>
             </div>
         </section>
@@ -646,19 +646,20 @@
 
         function loadDemoHistory() {
             toggleResultPanel(true);
-            const msg = `
-        ARCHIVE: SaaS Productivity Tool
-        
+            document.getElementById('outputContent').innerText = "Loading archive insights...";
+            setTimeout(() => {
+                document.getElementById('outputContent').innerText = 
+        `ARCHIVE INSIGHTS: SaaS Productivity Tool
+
         1. TARGET AUDIENCE
         Focus on professionals seeking productivity enhancements and deep work efficiency.
-        
+
         2. STRATEGIC INSIGHTS
         Streamline workflows, reduce distractions, and highlight practical benefits that users can implement immediately.
-        
+
         3. REAL-WORLD APPLICATION
-        Demonstrates how the tool improves task completion, collaboration efficiency, and daily productivity, without overloading the user with subscription tiers or pricing complexity.
-            `;
-            formatOutput(msg);
+        Shows how the tool improves task completion, collaboration efficiency, and daily productivity, without overloading the user with subscription tiers or pricing details.`;
+            }, 600);
         }
 
         function connectWebSocket() {
