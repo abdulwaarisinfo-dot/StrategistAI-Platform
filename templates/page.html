@@ -438,7 +438,29 @@
             animation: spin 1s linear infinite;
         }
 
-        /* Tablet & Mobile Breakpoints */
+        /* User Identity Card for Settings */
+        .user-identity {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 32px;
+            padding: 20px;
+            background: rgba(130, 177, 255, 0.05);
+            border: 1px solid var(--accent-glow);
+            border-radius: 16px;
+        }
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            background: var(--accent-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #000;
+            font-weight: 700;
+        }
+
         @media (max-width: 768px) {
             body { flex-direction: column; }
             .sidebar { display: none; }
@@ -568,7 +590,6 @@
             <h1 style="font-size: 32px; margin-bottom: 8px;">Generation History</h1>
             <p style="color: var(--text-dim); margin-bottom: 40px;">Review your last 5 strategic architectures.</p>
             <div id="historyList" class="history-list">
-                <!-- History items will be injected here -->
                 <div class="no-history-msg">No history found. Generate your first strategy!</div>
             </div>
         </section>
@@ -578,18 +599,39 @@
             <h1 style="font-size: 32px; margin-bottom: 8px;">Settings</h1>
             <p style="color: var(--text-dim); margin-bottom: 40px;">Manage your intelligence preferences and API integrations.</p>
             
-            <div style="background: rgba(255,255,255,0.03); padding: 24px; border-radius: 16px; border: 1px solid var(--border-color); max-width: 600px;">
-                <h3 style="margin-bottom: 16px;">Preferences</h3>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                    <span>Advanced 3D Effects</span>
-                    <input type="checkbox" checked id="toggle3D" onchange="toggle3D(this.checked)">
+            <div style="max-width: 600px;">
+                <!-- NEW: User Email Card -->
+                <div class="user-identity">
+                    <div class="user-avatar" id="userInitial">U</div>
+                    <div>
+                        <div style="font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em;">Connected Account</div>
+                        <div id="userEmailDisplay" style="font-weight: 600; font-size: 16px;">Loading...</div>
+                    </div>
                 </div>
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span>Auto-Save History</span>
-                    <input type="checkbox" checked id="autoSave">
-                </div>
-                <div style="margin-top: 24px; border-top: 1px solid var(--border-color); padding-top: 16px;">
-                    <button onclick="clearHistory()" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 13px;">Clear Local Cache</button>
+
+                <div style="background: rgba(255,255,255,0.03); padding: 24px; border-radius: 16px; border: 1px solid var(--border-color);">
+                    <h3 style="margin-bottom: 24px; display: flex; align-items: center; gap: 8px;">
+                        <i data-lucide="sliders" style="width: 18px;"></i>
+                        Preferences
+                    </h3>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <span>Advanced 3D Effects</span>
+                        <input type="checkbox" checked id="toggle3D" onchange="toggle3D(this.checked)">
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <span>Auto-Save History</span>
+                        <input type="checkbox" checked id="autoSave">
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>Developer Mode</span>
+                        <input type="checkbox" id="devMode">
+                    </div>
+                    <div style="margin-top: 32px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                        <button onclick="clearHistory()" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 6px;">
+                            <i data-lucide="trash-2" style="width: 14px;"></i>
+                            Clear Local Cache
+                        </button>
+                    </div>
                 </div>
             </div>
         </section>
@@ -617,6 +659,14 @@
         let renderer, scene, camera, points;
         let is3DEnabled = true;
 
+        // --- Auth/User Logic (MongoDB integration simulation) ---
+        function loadUserInfo() {
+            // This is where you connect your MongoDB/Session logic
+            const email = localStorage.getItem('user_email') || "user@strat-ai.network";
+            document.getElementById('userEmailDisplay').innerText = email;
+            document.getElementById('userInitial').innerText = email.charAt(0).toUpperCase();
+        }
+
         // Initialize Icons
         lucide.createIcons();
 
@@ -628,13 +678,11 @@
 
         function saveToHistory(item) {
             let history = getHistory();
-            // Add new item to the beginning
             history.unshift({
                 ...item,
                 id: Date.now(),
                 date: new Date().toLocaleString()
             });
-            // Keep only the last 5
             history = history.slice(0, 5);
             localStorage.setItem('ai_strategist_history', JSON.stringify(history));
             renderHistory();
@@ -693,7 +741,6 @@
             if (btn) {
                 btn.classList.add('active');
             } else {
-                // Sync mobile/desktop nav manually if triggered by code
                 document.querySelectorAll(`.nav-item i[data-lucide="${id === 'strategy' ? 'home' : (id === 'history' ? 'clock' : 'settings')}"]`)
                     .forEach(icon => icon.parentElement.classList.add('active'));
             }
@@ -721,7 +768,7 @@
         function connectWebSocket() {
             const token = localStorage.getItem('access_token');
             if (!token) {
-                document.getElementById('wsStatusText').innerText = 'Demo Connection Only';
+                document.getElementById('wsStatusText').innerText = 'Simulation Active';
                 return;
             }
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -749,7 +796,6 @@
             toggleResultPanel(true);
             document.getElementById('outputContent').innerText = resultText;
             
-            // Save to memory
             const payload = {
                 product_name: document.getElementById('prodName').value,
                 price: parseFloat(document.getElementById('prodPrice').value),
@@ -781,7 +827,6 @@
             if (socket && socket.readyState === WebSocket.OPEN) {
                 socket.send(JSON.stringify(payload));
             } else {
-                // Simulation for environment
                 await new Promise(r => setTimeout(r, 1500));
                 const mockResult = `SYSTEM ANALYZING: ${payload.product_name.toUpperCase()}\n--------------------------------\n\n1. SEGMENTATION\nTargeting ${payload.target_audience} via cognitive-bias marketing hooks.\n\n2. PRICING ARCHITECTURE\n$${payload.price} positioning suggests premium scarcity.\n\n3. AD ANGLES\n- Angle A: Efficiency maximization\n- Angle B: Competitive edge through intelligence\n\nAnalysis Complete. History updated.`;
                 handleResponse(mockResult);
@@ -849,6 +894,7 @@
             init3D();
             connectWebSocket();
             renderHistory();
+            loadUserInfo();
         };
     </script>
 </body>
