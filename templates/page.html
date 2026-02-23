@@ -403,15 +403,6 @@
             border-color: var(--accent-primary);
         }
 
-        .no-history-msg {
-            color: var(--text-dim);
-            font-size: 14px;
-            padding: 40px 0;
-            text-align: center;
-            border: 1px dashed var(--border-color);
-            border-radius: 12px;
-        }
-
         /* Status */
         .status-pill {
             position: fixed;
@@ -438,29 +429,7 @@
             animation: spin 1s linear infinite;
         }
 
-        /* User Identity Card for Settings */
-        .user-identity {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            margin-bottom: 32px;
-            padding: 20px;
-            background: rgba(130, 177, 255, 0.05);
-            border: 1px solid var(--accent-glow);
-            border-radius: 16px;
-        }
-        .user-avatar {
-            width: 48px;
-            height: 48px;
-            background: var(--accent-primary);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #000;
-            font-weight: 700;
-        }
-
+        /* Tablet & Mobile Breakpoints */
         @media (max-width: 768px) {
             body { flex-direction: column; }
             .sidebar { display: none; }
@@ -524,7 +493,7 @@
             <div class="mobile-logo" onclick="refreshApp()">
                 <i data-lucide="zap" style="color: #000; width: 18px;"></i>
             </div>
-            <button class="wallet-btn" onclick="switchView('strategy')">
+            <button class="wallet-btn">
                 <i data-lucide="plus" style="width: 16px;"></i>
                 <span>Quick Action</span>
             </button>
@@ -588,9 +557,12 @@
         <!-- History View -->
         <section id="history-view" class="view-section">
             <h1 style="font-size: 32px; margin-bottom: 8px;">Generation History</h1>
-            <p style="color: var(--text-dim); margin-bottom: 40px;">Review your last 5 strategic architectures.</p>
+            <p style="color: var(--text-dim); margin-bottom: 40px;">Review your previous strategic architectures.</p>
             <div id="historyList" class="history-list">
-                <div class="no-history-msg">No history found. Generate your first strategy!</div>
+                <div class="history-item" onclick="loadDemoHistory()">
+                    <div style="font-weight: 600; margin-bottom: 4px;">Productivity Tool</div>
+                    <div style="font-size: 12px; color: var(--text-dim);">Generated Feb 22, 2025 • Strategy v4</div>
+                </div>
             </div>
         </section>
 
@@ -599,39 +571,15 @@
             <h1 style="font-size: 32px; margin-bottom: 8px;">Settings</h1>
             <p style="color: var(--text-dim); margin-bottom: 40px;">Manage your intelligence preferences and API integrations.</p>
             
-            <div style="max-width: 600px;">
-                <!-- NEW: User Email Card -->
-                <div class="user-identity">
-                    <div class="user-avatar" id="userInitial">U</div>
-                    <div>
-                        <div style="font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em;">Connected Account</div>
-                        <div id="userEmailDisplay" style="font-weight: 600; font-size: 16px;">Loading...</div>
-                    </div>
+            <div style="background: rgba(255,255,255,0.03); padding: 24px; border-radius: 16px; border: 1px solid var(--border-color); max-width: 600px;">
+                <h3 style="margin-bottom: 16px;">Preferences</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <span>Advanced 3D Effects</span>
+                    <input type="checkbox" checked onchange="toggle3D(this.checked)">
                 </div>
-
-                <div style="background: rgba(255,255,255,0.03); padding: 24px; border-radius: 16px; border: 1px solid var(--border-color);">
-                    <h3 style="margin-bottom: 24px; display: flex; align-items: center; gap: 8px;">
-                        <i data-lucide="sliders" style="width: 18px;"></i>
-                        Preferences
-                    </h3>
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                        <span>Advanced 3D Effects</span>
-                        <input type="checkbox" checked id="toggle3D" onchange="toggle3D(this.checked)">
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                        <span>Auto-Save History</span>
-                        <input type="checkbox" checked id="autoSave">
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span>Developer Mode</span>
-                        <input type="checkbox" id="devMode">
-                    </div>
-                    <div style="margin-top: 32px; border-top: 1px solid var(--border-color); padding-top: 20px;">
-                        <button onclick="clearHistory()" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 6px;">
-                            <i data-lucide="trash-2" style="width: 14px;"></i>
-                            Clear Local Cache
-                        </button>
-                    </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>Auto-Save History</span>
+                    <input type="checkbox" checked>
                 </div>
             </div>
         </section>
@@ -659,75 +607,10 @@
         let renderer, scene, camera, points;
         let is3DEnabled = true;
 
-        // --- Auth/User Logic (MongoDB integration simulation) ---
-        function loadUserInfo() {
-            // This is where you connect your MongoDB/Session logic
-            const email = localStorage.getItem('user_email') || "user@strat-ai.network";
-            document.getElementById('userEmailDisplay').innerText = email;
-            document.getElementById('userInitial').innerText = email.charAt(0).toUpperCase();
-        }
-
-        // Initialize Icons
         lucide.createIcons();
 
-        // --- History Logic ---
-        function getHistory() {
-            const data = localStorage.getItem('ai_strategist_history');
-            return data ? JSON.parse(data) : [];
-        }
-
-        function saveToHistory(item) {
-            let history = getHistory();
-            history.unshift({
-                ...item,
-                id: Date.now(),
-                date: new Date().toLocaleString()
-            });
-            history = history.slice(0, 5);
-            localStorage.setItem('ai_strategist_history', JSON.stringify(history));
-            renderHistory();
-        }
-
-        function renderHistory() {
-            const list = document.getElementById('historyList');
-            const history = getHistory();
-            
-            if (history.length === 0) {
-                list.innerHTML = `<div class="no-history-msg">No history found. Generate your first strategy!</div>`;
-                return;
-            }
-
-            list.innerHTML = history.map(item => `
-                <div class="history-item" onclick="viewHistoryItem(${item.id})">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                        <div>
-                            <div style="font-weight: 600; margin-bottom: 4px;">${item.product_name}</div>
-                            <div style="font-size: 12px; color: var(--text-dim);">${item.date} • Strategy v4</div>
-                        </div>
-                        <div style="font-size: 11px; background: rgba(130, 177, 255, 0.1); color: var(--accent-primary); padding: 2px 8px; border-radius: 4px;">
-                            $${item.price}
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function viewHistoryItem(id) {
-            const history = getHistory();
-            const item = history.find(h => h.id === id);
-            if (item) {
-                toggleResultPanel(true);
-                document.getElementById('outputContent').innerText = item.result || "No data available.";
-            }
-        }
-
-        function clearHistory() {
-            localStorage.removeItem('ai_strategist_history');
-            renderHistory();
-        }
-
-        // --- Core Functions ---
         function refreshApp() {
+            // Logic to refresh or reset the app state
             location.reload();
         }
 
@@ -738,15 +621,12 @@
             const view = document.getElementById(id + '-view');
             if(view) view.classList.add('active');
             
-            if (btn) {
-                btn.classList.add('active');
-            } else {
-                document.querySelectorAll(`.nav-item i[data-lucide="${id === 'strategy' ? 'home' : (id === 'history' ? 'clock' : 'settings')}"]`)
-                    .forEach(icon => icon.parentElement.classList.add('active'));
-            }
+            const iconType = id === 'strategy' ? 'home' : (id === 'history' ? 'clock' : 'settings');
+            document.querySelectorAll(`.nav-item i[data-lucide="${iconType}"]`).forEach(icon => {
+                icon.parentElement.classList.add('active');
+            });
             
             toggleResultPanel(false);
-            if (id === 'history') renderHistory();
         }
 
         function toggleResultPanel(show) {
@@ -764,11 +644,28 @@
             }
         }
 
-        // --- WebSocket Logic ---
+        function loadDemoHistory() {
+            toggleResultPanel(true);
+            document.getElementById('outputContent').innerText = "Loading archive insights...";
+            setTimeout(() => {
+                document.getElementById('outputContent').innerText = 
+        `ARCHIVE INSIGHTS: SaaS Productivity Tool
+
+        1. TARGET AUDIENCE
+        Focus on professionals seeking productivity enhancements and deep work efficiency.
+
+        2. STRATEGIC INSIGHTS
+        Streamline workflows, reduce distractions, and highlight practical benefits that users can implement immediately.
+
+        3. REAL-WORLD APPLICATION
+        Shows how the tool improves task completion, collaboration efficiency, and daily productivity, without overloading the user with subscription tiers or pricing details.`;
+            }, 600);
+        }
+
         function connectWebSocket() {
             const token = localStorage.getItem('access_token');
             if (!token) {
-                document.getElementById('wsStatusText').innerText = 'Simulation Active';
+                document.getElementById('wsStatusText').innerText = 'Demo Connection Only';
                 return;
             }
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -780,8 +677,8 @@
             };
 
             socket.onmessage = (event) => {
-                const data = event.data;
-                handleResponse(data);
+                toggleResultPanel(true);
+                document.getElementById('outputContent').innerText = event.data;
                 resetSubmitButton();
             };
 
@@ -790,19 +687,6 @@
                 document.getElementById('wsStatusText').innerText = 'Reconnecting...';
                 setTimeout(connectWebSocket, 3000);
             };
-        }
-
-        function handleResponse(resultText) {
-            toggleResultPanel(true);
-            document.getElementById('outputContent').innerText = resultText;
-            
-            const payload = {
-                product_name: document.getElementById('prodName').value,
-                price: parseFloat(document.getElementById('prodPrice').value),
-                target_audience: document.getElementById('prodAudience').value,
-                result: resultText
-            };
-            saveToHistory(payload);
         }
 
         function resetSubmitButton() {
@@ -827,9 +711,10 @@
             if (socket && socket.readyState === WebSocket.OPEN) {
                 socket.send(JSON.stringify(payload));
             } else {
-                await new Promise(r => setTimeout(r, 1500));
-                const mockResult = `SYSTEM ANALYZING: ${payload.product_name.toUpperCase()}\n--------------------------------\n\n1. SEGMENTATION\nTargeting ${payload.target_audience} via cognitive-bias marketing hooks.\n\n2. PRICING ARCHITECTURE\n$${payload.price} positioning suggests premium scarcity.\n\n3. AD ANGLES\n- Angle A: Efficiency maximization\n- Angle B: Competitive edge through intelligence\n\nAnalysis Complete. History updated.`;
-                handleResponse(mockResult);
+                // Simulation for environment
+                await new Promise(r => setTimeout(r, 1200));
+                toggleResultPanel(true);
+                document.getElementById('outputContent').innerText = `SYSTEM ANALYZING: ${payload.product_name.toUpperCase()}\n--------------------------------\n\n1. SEGMENTATION\nTargeting ${payload.target_audience} via cognitive-bias marketing hooks.\n\n2. PRICING ARCHITECTURE\n$${payload.price} positioning suggests premium scarcity.\n\n3. AD ANGLES\n- Angle A: Efficiency maximization\n- Angle B: Competitive edge through intelligence\n\nAnalysis Complete.`;
                 resetSubmitButton();
             }
         };
@@ -841,8 +726,11 @@
 
         function toggle3D(enabled) {
             is3DEnabled = enabled;
-            const container = document.getElementById('canvas-container');
-            container.style.opacity = enabled ? '1' : '0';
+            if(!enabled) {
+                document.getElementById('canvas-container').style.display = 'none';
+            } else {
+                document.getElementById('canvas-container').style.display = 'block';
+            }
         }
 
         function init3D() {
@@ -874,12 +762,11 @@
             camera.position.z = 2.5;
 
             function anim() {
+                if(!is3DEnabled) return;
                 requestAnimationFrame(anim);
-                if(is3DEnabled) {
-                    points.rotation.y += 0.0005;
-                    points.rotation.x += 0.0002;
-                    renderer.render(scene, camera);
-                }
+                points.rotation.y += 0.0005;
+                points.rotation.x += 0.0002;
+                renderer.render(scene, camera);
             }
             anim();
 
@@ -887,14 +774,14 @@
                 camera.aspect = window.innerWidth / window.innerHeight;
                 camera.updateProjectionMatrix();
                 renderer.setSize(window.innerWidth, window.innerHeight);
+                // Refresh particle system on significant resize
+                init3D(); 
             });
         }
 
         window.onload = () => {
             init3D();
             connectWebSocket();
-            renderHistory();
-            loadUserInfo();
         };
     </script>
 </body>
