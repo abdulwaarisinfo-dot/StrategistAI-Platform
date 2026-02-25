@@ -45,7 +45,10 @@ logger = logging.getLogger(__name__)
 # FASTAPI INIT
 # ======================================================
 
-app = FastAPI()
+app = FastAPI(docs_url= None,
+              redoc_url=None,
+              openapi_url=None
+             )
 # Ensure the 'templates' folder exists in your directory structure
 templates = Jinja2Templates(directory="templates")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
