@@ -412,43 +412,6 @@
             border-radius: 12px;
         }
 
-        /* Settings Unique Design */
-        .user-profile-section {
-            background: linear-gradient(to right, rgba(130, 177, 255, 0.1), transparent);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 24px;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            max-width: 600px;
-        }
-
-        .user-avatar {
-            width: 64px;
-            height: 64px;
-            background: var(--accent-primary);
-            color: #000;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 24px;
-            text-transform: uppercase;
-        }
-
-        .user-details h3 {
-            font-size: 18px;
-            margin-bottom: 4px;
-        }
-
-        .user-details p {
-            color: var(--text-dim);
-            font-size: 14px;
-        }
-
         /* Status */
         .status-pill {
             position: fixed;
@@ -605,26 +568,18 @@
             <h1 style="font-size: 32px; margin-bottom: 8px;">Generation History</h1>
             <p style="color: var(--text-dim); margin-bottom: 40px;">Review your last 5 strategic architectures.</p>
             <div id="historyList" class="history-list">
+                <!-- History items will be injected here -->
                 <div class="no-history-msg">No history found. Generate your first strategy!</div>
             </div>
         </section>
 
         <!-- Settings View -->
         <section id="settings-view" class="view-section">
-            <h1 style="font-size: 32px; margin-bottom: 8px;">Account Settings</h1>
-            <p style="color: var(--text-dim); margin-bottom: 40px;">Manage your intelligence preferences and account data.</p>
+            <h1 style="font-size: 32px; margin-bottom: 8px;">Settings</h1>
+            <p style="color: var(--text-dim); margin-bottom: 40px;">Manage your intelligence preferences and API integrations.</p>
             
-            <!-- Dynamic User Section -->
-            <div class="user-profile-section">
-                <div class="user-avatar" id="userInitial">?</div>
-                <div class="user-details">
-                    <h3 id="userNameDisplay">Authenticated User</h3>
-                    <p id="userEmailDisplay">Loading user profile...</p>
-                </div>
-            </div>
-
             <div style="background: rgba(255,255,255,0.03); padding: 24px; border-radius: 16px; border: 1px solid var(--border-color); max-width: 600px;">
-                <h3 style="margin-bottom: 16px;">System Preferences</h3>
+                <h3 style="margin-bottom: 16px;">Preferences</h3>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                     <span>Advanced 3D Effects</span>
                     <input type="checkbox" checked id="toggle3D" onchange="toggle3D(this.checked)">
@@ -662,47 +617,8 @@
         let renderer, scene, camera, points;
         let is3DEnabled = true;
 
+        // Initialize Icons
         lucide.createIcons();
-
-        // --- USER LOGIC (MongoDB Backend Sync) ---
-        async function fetchUserProfile() {
-            const token = localStorage.getItem('access_token');
-            const emailDisplay = document.getElementById('userEmailDisplay');
-            const initialDisplay = document.getElementById('userInitial');
-            const nameDisplay = document.getElementById('userNameDisplay');
-
-            if (!token) {
-                emailDisplay.innerText = "Guest Mode (No Token Found)";
-                return;
-            }
-
-            try {
-                // Fetch user info from your specific backend endpoint
-                // Replace '/api/user/me' with your actual MongoDB/Auth endpoint
-                const response = await fetch('/api/user/me', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (response.ok) {
-                    const userData = await response.json();
-                    // Assuming your backend returns { email: 'user@gmail.com', name: 'User Name' }
-                    const userEmail = userData.email || "Unknown Email";
-                    emailDisplay.innerText = userEmail;
-                    nameDisplay.innerText = userData.name || "Strategy Architect";
-                    initialDisplay.innerText = userEmail.charAt(0);
-                } else {
-                    // Fallback: If your backend doesn't have a profile endpoint, 
-                    // some JWTs store the email in the payload. Let's try to decode:
-                    const payload = JSON.parse(atob(token.split('.')[1]));
-                    const userEmail = payload.email || payload.sub || "User Identified";
-                    emailDisplay.innerText = userEmail;
-                    initialDisplay.innerText = userEmail.charAt(0);
-                }
-            } catch (err) {
-                console.error("Profile Fetch Error:", err);
-                emailDisplay.innerText = "Error loading profile";
-            }
-        }
 
         // --- History Logic ---
         function getHistory() {
@@ -712,11 +628,13 @@
 
         function saveToHistory(item) {
             let history = getHistory();
+            // Add new item to the beginning
             history.unshift({
                 ...item,
                 id: Date.now(),
                 date: new Date().toLocaleString()
             });
+            // Keep only the last 5
             history = history.slice(0, 5);
             localStorage.setItem('ai_strategist_history', JSON.stringify(history));
             renderHistory();
@@ -761,7 +679,9 @@
         }
 
         // --- Core Functions ---
-        function refreshApp() { location.reload(); }
+        function refreshApp() {
+            location.reload();
+        }
 
         function switchView(id, btn) {
             document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
@@ -773,14 +693,13 @@
             if (btn) {
                 btn.classList.add('active');
             } else {
-                const targetIcon = id === 'strategy' ? 'home' : (id === 'history' ? 'clock' : 'settings');
-                document.querySelectorAll(`.nav-item i[data-lucide="${targetIcon}"]`)
+                // Sync mobile/desktop nav manually if triggered by code
+                document.querySelectorAll(`.nav-item i[data-lucide="${id === 'strategy' ? 'home' : (id === 'history' ? 'clock' : 'settings')}"]`)
                     .forEach(icon => icon.parentElement.classList.add('active'));
             }
             
             toggleResultPanel(false);
             if (id === 'history') renderHistory();
-            if (id === 'settings') fetchUserProfile(); // Fetch email when opening settings
         }
 
         function toggleResultPanel(show) {
@@ -814,7 +733,8 @@
             };
 
             socket.onmessage = (event) => {
-                handleResponse(event.data);
+                const data = event.data;
+                handleResponse(data);
                 resetSubmitButton();
             };
 
@@ -829,6 +749,7 @@
             toggleResultPanel(true);
             document.getElementById('outputContent').innerText = resultText;
             
+            // Save to memory
             const payload = {
                 product_name: document.getElementById('prodName').value,
                 price: parseFloat(document.getElementById('prodPrice').value),
@@ -860,8 +781,9 @@
             if (socket && socket.readyState === WebSocket.OPEN) {
                 socket.send(JSON.stringify(payload));
             } else {
+                // Simulation for environment
                 await new Promise(r => setTimeout(r, 1500));
-                const mockResult = `SYSTEM ANALYZING: ${payload.product_name.toUpperCase()}\n--------------------------------\n\n1. SEGMENTATION\nTargeting ${payload.target_audience} via cognitive-bias marketing hooks.\n\n2. PRICING ARCHITECTURE\n$${payload.price} positioning suggests premium scarcity.\n\nAnalysis Complete. History updated.`;
+                const mockResult = `SYSTEM ANALYZING: ${payload.product_name.toUpperCase()}\n--------------------------------\n\n1. SEGMENTATION\nTargeting ${payload.target_audience} via cognitive-bias marketing hooks.\n\n2. PRICING ARCHITECTURE\n$${payload.price} positioning suggests premium scarcity.\n\n3. AD ANGLES\n- Angle A: Efficiency maximization\n- Angle B: Competitive edge through intelligence\n\nAnalysis Complete. History updated.`;
                 handleResponse(mockResult);
                 resetSubmitButton();
             }
@@ -927,7 +849,6 @@
             init3D();
             connectWebSocket();
             renderHistory();
-            fetchUserProfile(); // Initialize user profile on load
         };
     </script>
 </body>
