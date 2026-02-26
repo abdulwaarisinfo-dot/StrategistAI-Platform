@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Strategist | Intelligence Dashboard</title>
+    <title>Leonardo AI | Intelligence Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Icons and Engine -->
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -22,6 +22,7 @@
             --border-color: rgba(255, 255, 255, 0.08);
             --sidebar-width: 72px;
             --topbar-height: 72px;
+            --glass-bg: rgba(15, 15, 15, 0.7);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -56,7 +57,6 @@
             flex-shrink: 0;
         }
 
-        /* Mobile Bottom Nav */
         .mobile-nav {
             display: none;
             position: fixed;
@@ -85,9 +85,7 @@
             transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        .logo-container:hover {
-            transform: scale(1.1);
-        }
+        .logo-container:hover { transform: scale(1.1); }
 
         .nav-items {
             display: flex;
@@ -114,11 +112,9 @@
             background: rgba(255, 255, 255, 0.05);
         }
 
-        .nav-item.active {
-            color: var(--accent-primary);
-        }
+        .nav-item.active { color: var(--accent-primary); }
 
-        /* Main Content Area */
+        /* Main Content */
         .main-wrapper {
             flex: 1;
             display: flex;
@@ -128,7 +124,6 @@
             overflow: hidden;
         }
 
-        /* Top Bar */
         .top-bar {
             height: var(--topbar-height);
             display: flex;
@@ -160,10 +155,7 @@
             align-items: center;
             gap: 8px;
             cursor: pointer;
-            transition: opacity 0.2s;
         }
-
-        .wallet-btn:hover { opacity: 0.9; }
 
         /* Views */
         .view-section { 
@@ -174,131 +166,159 @@
             padding: 24px;
             -webkit-overflow-scrolling: touch;
         }
-        .view-section.active { display: block; }
+        .view-section.active { display: flex; flex-direction: column; }
 
         .center-content {
             flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start;
-            padding-bottom: 120px;
+            justify-content: center;
             max-width: 1000px;
             margin: 0 auto;
             width: 100%;
+            padding-bottom: 40px;
         }
 
         .sparkle-icon {
             color: var(--accent-primary);
-            margin-bottom: 20px;
-            filter: drop-shadow(0 0 10px var(--accent-primary));
+            margin-bottom: 24px;
+            filter: drop-shadow(0 0 15px var(--accent-primary));
         }
 
         .welcome-text {
             color: var(--text-dim);
             font-size: 14px;
-            margin-bottom: 8px;
-            text-align: center;
+            margin-bottom: 12px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
         }
 
         .hero-title {
-            font-size: clamp(32px, 8vw, 48px);
+            font-size: clamp(36px, 6vw, 56px);
             font-weight: 700;
-            margin-bottom: 40px;
-            letter-spacing: -1px;
+            margin-bottom: 48px;
+            letter-spacing: -2px;
             text-align: center;
-            padding: 0 10px;
+            line-height: 1.1;
         }
 
-        .hero-title span { font-weight: 300; }
+        .hero-title span { font-weight: 300; color: var(--text-dim); }
 
-        /* Cards */
+        /* Cards Grid */
         .cards-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 16px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
             width: 100%;
-            margin-bottom: 48px;
+            margin-bottom: 60px;
         }
 
         .suggestion-card {
-            height: 140px;
-            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
             padding: 24px;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            min-height: 160px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
         .suggestion-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+            background: rgba(255, 255, 255, 0.06);
+            transform: translateY(-8px);
+            border-color: var(--accent-primary);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
         }
 
-        .card-1 { background: var(--card-gradient-1); }
-        .card-2 { background: var(--card-gradient-2); }
-        .card-3 { background: var(--card-gradient-3); }
+        .card-icon-bg {
+            position: absolute;
+            bottom: -20px;
+            right: -20px;
+            width: 100px;
+            height: 100px;
+            opacity: 0.05;
+            transition: 0.3s;
+        }
+
+        .suggestion-card:hover .card-icon-bg {
+            opacity: 0.15;
+            transform: scale(1.1) rotate(-10deg);
+        }
 
         .card-label {
-            font-size: 14px;
+            font-size: 16px;
             font-weight: 600;
             color: #fff;
             line-height: 1.4;
-            max-width: 160px;
+            position: relative;
             z-index: 2;
         }
 
-        /* Input Dock */
-        .input-dock {
+        .card-sub {
+            font-size: 12px;
+            color: var(--text-dim);
+            margin-top: 8px;
+        }
+
+        /* The Refined Input Dock */
+        .input-dock-container {
             width: 100%;
-            max-width: 700px;
-            background: rgba(10, 10, 10, 0.9);
-            border: 1px solid var(--border-color);
-            border-radius: 24px;
-            padding: 16px;
-            backdrop-filter: blur(20px);
+            max-width: 800px;
             margin-top: auto;
+            position: relative;
+        }
+
+        .input-dock {
+            background: var(--glass-bg);
+            backdrop-filter: blur(24px);
+            border: 1px solid var(--border-color);
+            border-radius: 32px;
+            padding: 20px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5);
         }
 
         .form-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 12px;
-            margin-bottom: 12px;
+            grid-template-columns: 1.5fr 1fr 1.5fr;
+            gap: 16px;
+            margin-bottom: 16px;
         }
 
         .input-group {
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 8px;
         }
 
         .input-group label {
-            font-size: 10px;
+            font-size: 11px;
+            font-weight: 600;
             text-transform: uppercase;
             color: var(--text-dim);
-            padding-left: 4px;
+            padding-left: 8px;
+            letter-spacing: 0.5px;
         }
 
         .dock-input {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            border-radius: 12px;
-            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid transparent;
+            border-radius: 16px;
+            padding: 14px 20px;
             color: #fff;
             font-size: 14px;
             outline: none;
-            transition: 0.2s;
+            transition: all 0.2s;
             width: 100%;
         }
 
         .dock-input:focus {
-            background: rgba(255, 255, 255, 0.07);
+            background: rgba(255, 255, 255, 0.08);
             border-color: var(--accent-primary);
         }
 
@@ -306,73 +326,81 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding-top: 8px;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
         }
 
         .selector-pill {
             background: rgba(255, 255, 255, 0.05);
-            padding: 6px 12px;
-            border-radius: 20px;
+            padding: 8px 16px;
+            border-radius: 100px;
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 12px;
-            color: var(--text-dim);
+            gap: 10px;
+            font-size: 13px;
+            color: #fff;
             cursor: pointer;
+            transition: 0.2s;
         }
 
+        .selector-pill:hover { background: rgba(255, 255, 255, 0.1); }
+
         .submit-btn {
-            background: var(--accent-primary);
+            background: #fff;
             color: #000;
             border: none;
-            width: 40px;
-            height: 40px;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: 0.2s;
+            transition: transform 0.2s, background 0.2s;
         }
 
-        .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .submit-btn:hover:not(:disabled) {
+            transform: scale(1.05);
+            background: var(--accent-primary);
+        }
 
-        /* Results Panel */
+        .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* Overlays & Panels */
         .result-panel {
             position: fixed;
             bottom: -100%;
             left: var(--sidebar-width);
             right: 0;
-            height: 70vh;
-            background: #000000;
+            height: 80vh;
+            background: #000;
             border-top: 1px solid var(--border-color);
             z-index: 150;
-            transition: bottom 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            padding: 24px;
+            transition: bottom 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            padding: 40px;
             overflow-y: auto;
         }
 
         .result-panel.active { bottom: 0; }
 
         .result-box {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
-            color: #cbd5e1;
+            color: #e2e8f0;
             line-height: 1.8;
-            font-size: 16px;
+            font-size: 17px;
             white-space: pre-wrap;
         }
 
         .close-panel {
             position: absolute;
-            top: 20px;
-            right: 20px;
+            top: 30px;
+            right: 30px;
             background: rgba(255,255,255,0.1);
             border: none;
             color: #fff;
-            width: 32px;
-            height: 32px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             cursor: pointer;
             display: flex;
@@ -384,87 +412,83 @@
         .history-list {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 16px;
             width: 100%;
             max-width: 800px;
         }
 
         .history-item {
-            background: rgba(255, 255, 255, 0.02);
+            background: rgba(255, 255, 255, 0.03);
             border: 1px solid var(--border-color);
-            padding: 16px;
-            border-radius: 12px;
+            padding: 24px;
+            border-radius: 20px;
             cursor: pointer;
-            transition: 0.2s;
+            transition: 0.3s;
         }
 
         .history-item:hover {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.06);
             border-color: var(--accent-primary);
         }
 
         .no-history-msg {
             color: var(--text-dim);
-            font-size: 14px;
-            padding: 40px 0;
+            padding: 60px 0;
             text-align: center;
             border: 1px dashed var(--border-color);
-            border-radius: 12px;
+            border-radius: 24px;
         }
 
-        /* Status */
+        /* Utils */
         .status-pill {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
+            bottom: 24px;
+            right: 24px;
             background: rgba(0, 0, 0, 0.8);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 11px;
+            padding: 6px 14px;
+            border-radius: 100px;
+            font-size: 12px;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             border: 1px solid var(--border-color);
             z-index: 100;
         }
 
-        .dot { width: 6px; height: 6px; border-radius: 50%; background: #222; }
-        .dot.online { background: #10b981; box-shadow: 0 0 8px #10b981; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: #333; }
+        .dot.online { background: #10b981; box-shadow: 0 0 12px #10b981; }
 
         @keyframes spin { to { transform: rotate(360deg); } }
         .spinner {
-            width: 20px; height: 20px; border: 2px solid #000;
+            width: 22px; height: 22px; border: 2.5px solid #000;
             border-top-color: transparent; border-radius: 50%;
-            animation: spin 1s linear infinite;
+            animation: spin 0.8s linear infinite;
         }
 
-        /* Tablet & Mobile Breakpoints */
-        @media (max-width: 768px) {
-            body { flex-direction: column; }
+        /* Responsiveness */
+        @media (max-width: 900px) {
+            .cards-grid { grid-template-columns: 1fr; }
+            .form-grid { grid-template-columns: 1fr; }
             .sidebar { display: none; }
             .mobile-nav { display: flex; }
-            .top-bar { justify-content: space-between; padding: 0 16px; }
+            .top-bar { justify-content: space-between; }
             .mobile-logo { display: flex; }
-            .result-panel { left: 0; height: 80vh; padding-bottom: 80px; }
-            .center-content { padding-bottom: 100px; }
-            .hero-title { margin-bottom: 30px; }
-            .view-section { padding: 16px; height: calc(100vh - 136px); }
-            .status-pill { bottom: 80px; right: 10px; font-size: 10px; }
-            .cards-grid { grid-template-columns: 1fr; }
+            .result-panel { left: 0; padding-bottom: 100px; }
+            .view-section { height: calc(100vh - 136px); }
         }
     </style>
 </head>
 <body>
     <div id="canvas-container"></div>
 
-    <!-- Desktop Sidebar -->
+    <!-- Sidebar -->
     <div class="sidebar">
         <div class="logo-container" onclick="refreshApp()">
             <i data-lucide="zap" style="color: #000; width: 24px;"></i>
         </div>
         <div class="nav-items">
             <button class="nav-item active desktop-nav-btn" onclick="switchView('strategy', this)" title="Dashboard">
-                <i data-lucide="home"></i>
+                <i data-lucide="layout-grid"></i>
             </button>
             <button class="nav-item desktop-nav-btn" onclick="switchView('history', this)" title="History">
                 <i data-lucide="clock"></i>
@@ -474,16 +498,16 @@
             </button>
         </div>
         <div class="nav-items" style="margin-top: auto;">
-            <button class="nav-item" style="color: #ef4444;" onclick="logout()" title="Logout">
-                <i data-lucide="log-out"></i>
+            <button class="nav-item" style="color: #ef4444;" onclick="logout()">
+                <i data-lucide="power"></i>
             </button>
         </div>
     </div>
 
-    <!-- Mobile Navigation Bar -->
+    <!-- Mobile Nav -->
     <nav class="mobile-nav">
         <button class="nav-item active mobile-nav-btn" onclick="switchView('strategy', this)">
-            <i data-lucide="home"></i>
+            <i data-lucide="layout-grid"></i>
         </button>
         <button class="nav-item mobile-nav-btn" onclick="switchView('history', this)">
             <i data-lucide="clock"></i>
@@ -492,11 +516,10 @@
             <i data-lucide="settings"></i>
         </button>
         <button class="nav-item" style="color: #ef4444;" onclick="logout()">
-            <i data-lucide="log-out"></i>
+            <i data-lucide="power"></i>
         </button>
     </nav>
 
-    <!-- Main Content -->
     <div class="main-wrapper">
         <div class="top-bar">
             <div class="mobile-logo" onclick="refreshApp()">
@@ -504,92 +527,102 @@
             </div>
             <button class="wallet-btn" onclick="switchView('strategy')">
                 <i data-lucide="plus" style="width: 16px;"></i>
-                <span>Quick Action</span>
+                <span>New Project</span>
             </button>
         </div>
 
-        <!-- Dashboard View -->
+        <!-- Strategy View -->
         <section id="strategy-view" class="view-section active">
             <div class="center-content">
-                <i data-lucide="sparkles" class="sparkle-icon" style="width: 48px; height: 48px;"></i>
-                <p class="welcome-text">Welcome to Leonardo AI Strategist</p>
-                <h1 class="hero-title">How <span>can I help today?</span></h1>
+                <i data-lucide="sparkles" class="sparkle-icon" style="width: 54px; height: 54px;"></i>
+                <p class="welcome-text">Leonardo Engine v4.0</p>
+                <h1 class="hero-title">How can <span>I build for you?</span></h1>
 
                 <div class="cards-grid">
-                    <div class="suggestion-card card-1" onclick="autofill('Lumina Desk Lamp', 49.99, 'Interior Designers')">
-                        <span class="card-label">Generate Ad Angles & Strategy</span>
-                        <i data-lucide="box" style="position: absolute; bottom: -10px; right: -10px; opacity: 0.2; width: 80px; height: 80px;"></i>
+                    <div class="suggestion-card" onclick="autofill('Lumina Desk Lamp', 49.99, 'Interior Designers')">
+                        <div>
+                            <span class="card-label">Ad Angles & Strategy</span>
+                            <p class="card-sub">Generate unique angles for high conversion.</p>
+                        </div>
+                        <i data-lucide="box" class="card-icon-bg"></i>
                     </div>
 
-                    <div class="suggestion-card card-2" onclick="autofill('Eco-Friendly Yoga Mats', 85.00, 'Health Conscious Gen Z')">
-                        <span class="card-label">Create Marketing Funnel</span>
-                        <i data-lucide="filter" style="position: absolute; bottom: -10px; right: -10px; opacity: 0.2; width: 80px; height: 80px;"></i>
+                    <div class="suggestion-card" onclick="autofill('Eco-Yoga Mat', 85.00, 'Health Conscious Gen Z')">
+                        <div>
+                            <span class="card-label">Marketing Funnel</span>
+                            <p class="card-sub">Architecture for acquisition flow.</p>
+                        </div>
+                        <i data-lucide="filter" class="card-icon-bg"></i>
                     </div>
 
-                    <div class="suggestion-card card-3" onclick="autofill('Premium Real Estate Consulting', 2500, 'Luxury Property Investors')">
-                        <span class="card-label">Develop Persona & Hooks</span>
-                        <i data-lucide="video" style="position: absolute; bottom: -10px; right: -10px; opacity: 0.2; width: 80px; height: 80px;"></i>
+                    <div class="suggestion-card" onclick="autofill('Luxury Property Ads', 2500, 'Investors')">
+                        <div>
+                            <span class="card-label">Persona & Hooks</span>
+                            <p class="card-sub">Psychographic mapping and attention hooks.</p>
+                        </div>
+                        <i data-lucide="users" class="card-icon-bg"></i>
                     </div>
                 </div>
 
-                <div class="input-dock">
-                    <form id="strategyForm">
-                        <div class="form-grid">
-                            <div class="input-group">
-                                <label>Product Name</label>
-                                <input type="text" id="prodName" class="dock-input" required placeholder="AI Analytics Suite">
+                <div class="input-dock-container">
+                    <div class="input-dock">
+                        <form id="strategyForm">
+                            <div class="form-grid">
+                                <div class="input-group">
+                                    <label>Product / Service</label>
+                                    <input type="text" id="prodName" class="dock-input" required placeholder="AI Analytics Suite">
+                                </div>
+                                <div class="input-group">
+                                    <label>Price ($)</label>
+                                    <input type="number" step="0.01" id="prodPrice" class="dock-input" required placeholder="2499.00">
+                                </div>
+                                <div class="input-group">
+                                    <label>Target Audience</label>
+                                    <input type="text" id="prodAudience" class="dock-input" required placeholder="SaaS Founders">
+                                </div>
                             </div>
-                            <div class="input-group">
-                                <label>Price ($)</label>
-                                <input type="number" step="0.01" id="prodPrice" class="dock-input" required placeholder="2499.99">
+                            <div class="action-bar">
+                                <div class="selector-pill">
+                                    <i data-lucide="cpu" style="width: 16px;"></i>
+                                    <span>Strategy Engine v4.0</span>
+                                    <i data-lucide="chevron-down" style="width: 14px;"></i>
+                                </div>
+                                <button type="submit" class="submit-btn" id="submitBtn">
+                                    <i data-lucide="arrow-up" style="width: 22px;"></i>
+                                </button>
                             </div>
-                            <div class="input-group">
-                                <label>Audience</label>
-                                <input type="text" id="prodAudience" class="dock-input" required placeholder="IT Managers">
-                            </div>
-                        </div>
-                        <div class="action-bar">
-                            <div class="selector-pill">
-                                <i data-lucide="layers" style="width: 14px;"></i>
-                                <span>Strategy Engine v4</span>
-                                <i data-lucide="chevron-down" style="width: 12px;"></i>
-                            </div>
-                            <button type="submit" class="submit-btn" id="submitBtn">
-                                <i data-lucide="arrow-up" style="width: 20px;"></i>
-                            </button>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
                 </div>
             </div>
         </section>
 
         <!-- History View -->
         <section id="history-view" class="view-section">
-            <h1 style="font-size: 32px; margin-bottom: 8px;">Generation History</h1>
-            <p style="color: var(--text-dim); margin-bottom: 40px;">Review your last 5 strategic architectures.</p>
+            <h1 style="font-size: 36px; margin-bottom: 8px;">History</h1>
+            <p style="color: var(--text-dim); margin-bottom: 40px;">Review your strategic architectures.</p>
             <div id="historyList" class="history-list">
-                <!-- History items will be injected here -->
                 <div class="no-history-msg">No history found. Generate your first strategy!</div>
             </div>
         </section>
 
         <!-- Settings View -->
         <section id="settings-view" class="view-section">
-            <h1 style="font-size: 32px; margin-bottom: 8px;">Settings</h1>
-            <p style="color: var(--text-dim); margin-bottom: 40px;">Manage your intelligence preferences and API integrations.</p>
+            <h1 style="font-size: 36px; margin-bottom: 8px;">Settings</h1>
+            <p style="color: var(--text-dim); margin-bottom: 40px;">System preferences and API controls.</p>
             
-            <div style="background: rgba(255,255,255,0.03); padding: 24px; border-radius: 16px; border: 1px solid var(--border-color); max-width: 600px;">
-                <h3 style="margin-bottom: 16px;">Preferences</h3>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                    <span>Advanced 3D Effects</span>
+            <div style="background: rgba(255,255,255,0.03); padding: 32px; border-radius: 24px; border: 1px solid var(--border-color); max-width: 600px;">
+                <h3 style="margin-bottom: 24px;">General</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <span>3D Ambient Background</span>
                     <input type="checkbox" checked id="toggle3D" onchange="toggle3D(this.checked)">
                 </div>
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span>Auto-Save History</span>
+                    <span>Auto-Persistence</span>
                     <input type="checkbox" checked id="autoSave">
                 </div>
-                <div style="margin-top: 24px; border-top: 1px solid var(--border-color); padding-top: 16px;">
-                    <button onclick="clearHistory()" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 13px;">Clear Local Cache</button>
+                <div style="margin-top: 32px; border-top: 1px solid var(--border-color); padding-top: 24px;">
+                    <button onclick="clearHistory()" style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; padding: 10px 20px; border-radius: 12px; cursor: pointer; font-size: 13px;">Wipe Local Storage</button>
                 </div>
             </div>
         </section>
@@ -598,18 +631,17 @@
     <!-- Results Overlay -->
     <div id="resultArea" class="result-panel">
         <button class="close-panel" onclick="toggleResultPanel(false)">
-            <i data-lucide="x" style="width: 18px;"></i>
+            <i data-lucide="x" style="width: 20px;"></i>
         </button>
         <div class="result-box">
-            <h2 style="color: var(--accent-primary); margin-bottom: 20px;">Architectural Analysis</h2>
-            <div id="outputContent"></div>
+            <h2 style="color: var(--accent-primary); margin-bottom: 24px; font-size: 28px;">Architectural Protocol</h2>
+            <div id="outputContent" style="background: rgba(255,255,255,0.03); padding: 32px; border-radius: 24px; border: 1px solid var(--border-color);"></div>
         </div>
     </div>
 
-    <!-- Status -->
     <div class="status-pill">
         <div id="wsStatusDot" class="dot"></div>
-        <span id="wsStatusText">WebSocket Offline</span>
+        <span id="wsStatusText">System Offline</span>
     </div>
 
     <script>
@@ -617,7 +649,6 @@
         let renderer, scene, camera, points;
         let is3DEnabled = true;
 
-        // Initialize Icons
         lucide.createIcons();
 
         // --- History Logic ---
@@ -628,13 +659,11 @@
 
         function saveToHistory(item) {
             let history = getHistory();
-            // Add new item to the beginning
             history.unshift({
                 ...item,
                 id: Date.now(),
                 date: new Date().toLocaleString()
             });
-            // Keep only the last 5
             history = history.slice(0, 5);
             localStorage.setItem('ai_strategist_history', JSON.stringify(history));
             renderHistory();
@@ -645,7 +674,7 @@
             const history = getHistory();
             
             if (history.length === 0) {
-                list.innerHTML = `<div class="no-history-msg">No history found. Generate your first strategy!</div>`;
+                list.innerHTML = `<div class="no-history-msg">No history found. Start a project!</div>`;
                 return;
             }
 
@@ -653,10 +682,10 @@
                 <div class="history-item" onclick="viewHistoryItem(${item.id})">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                         <div>
-                            <div style="font-weight: 600; margin-bottom: 4px;">${item.product_name}</div>
-                            <div style="font-size: 12px; color: var(--text-dim);">${item.date} • Strategy v4</div>
+                            <div style="font-weight: 600; font-size: 18px; margin-bottom: 6px;">${item.product_name}</div>
+                            <div style="font-size: 13px; color: var(--text-dim);">${item.date} • Engine v4.0</div>
                         </div>
-                        <div style="font-size: 11px; background: rgba(130, 177, 255, 0.1); color: var(--accent-primary); padding: 2px 8px; border-radius: 4px;">
+                        <div style="font-size: 12px; background: rgba(130, 177, 255, 0.15); color: var(--accent-primary); padding: 4px 12px; border-radius: 8px; font-weight: 600;">
                             $${item.price}
                         </div>
                     </div>
@@ -678,10 +707,8 @@
             renderHistory();
         }
 
-        // --- Core Functions ---
-        function refreshApp() {
-            location.reload();
-        }
+        // --- View Switching ---
+        function refreshApp() { location.reload(); }
 
         function switchView(id, btn) {
             document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
@@ -693,8 +720,7 @@
             if (btn) {
                 btn.classList.add('active');
             } else {
-                // Sync mobile/desktop nav manually if triggered by code
-                document.querySelectorAll(`.nav-item i[data-lucide="${id === 'strategy' ? 'home' : (id === 'history' ? 'clock' : 'settings')}"]`)
+                document.querySelectorAll(`.nav-item i[data-lucide="${id === 'strategy' ? 'layout-grid' : (id === 'history' ? 'clock' : 'settings')}"]`)
                     .forEach(icon => icon.parentElement.classList.add('active'));
             }
             
@@ -712,16 +738,15 @@
             document.getElementById('prodName').value = name;
             document.getElementById('prodPrice').value = price;
             document.getElementById('prodAudience').value = audience;
-            if(window.innerWidth < 768) {
-                document.getElementById('strategyForm').scrollIntoView({ behavior: 'smooth' });
-            }
+            document.getElementById('strategyForm').classList.add('pulse');
+            setTimeout(() => document.getElementById('strategyForm').classList.remove('pulse'), 500);
         }
 
-        // --- WebSocket Logic ---
+        // --- WebSocket & Core Logic ---
         function connectWebSocket() {
             const token = localStorage.getItem('access_token');
             if (!token) {
-                document.getElementById('wsStatusText').innerText = 'Demo Connection Only';
+                document.getElementById('wsStatusText').innerText = 'Simulation Mode';
                 return;
             }
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -729,12 +754,11 @@
 
             socket.onopen = () => {
                 document.getElementById('wsStatusDot').classList.add('online');
-                document.getElementById('wsStatusText').innerText = 'Live Feed Active';
+                document.getElementById('wsStatusText').innerText = 'Engine Online';
             };
 
             socket.onmessage = (event) => {
-                const data = event.data;
-                handleResponse(data);
+                handleResponse(event.data);
                 resetSubmitButton();
             };
 
@@ -749,7 +773,6 @@
             toggleResultPanel(true);
             document.getElementById('outputContent').innerText = resultText;
             
-            // Save to memory
             const payload = {
                 product_name: document.getElementById('prodName').value,
                 price: parseFloat(document.getElementById('prodPrice').value),
@@ -762,7 +785,7 @@
         function resetSubmitButton() {
             const btn = document.getElementById('submitBtn');
             btn.disabled = false;
-            btn.innerHTML = '<i data-lucide="arrow-up" style="width: 20px;"></i>';
+            btn.innerHTML = '<i data-lucide="arrow-up" style="width: 22px;"></i>';
             lucide.createIcons();
         }
 
@@ -781,23 +804,19 @@
             if (socket && socket.readyState === WebSocket.OPEN) {
                 socket.send(JSON.stringify(payload));
             } else {
-                // Simulation for environment
-                await new Promise(r => setTimeout(r, 1500));
-                const mockResult = `SYSTEM ANALYZING: ${payload.product_name.toUpperCase()}\n--------------------------------\n\n1. SEGMENTATION\nTargeting ${payload.target_audience} via cognitive-bias marketing hooks.\n\n2. PRICING ARCHITECTURE\n$${payload.price} positioning suggests premium scarcity.\n\n3. AD ANGLES\n- Angle A: Efficiency maximization\n- Angle B: Competitive edge through intelligence\n\nAnalysis Complete. History updated.`;
+                // Environment simulation
+                await new Promise(r => setTimeout(r, 2000));
+                const mockResult = `STRATEGIC BLUEPRINT: ${payload.product_name.toUpperCase()}\n\n1. MARKET ARCHITECTURE\nPositioning for ${payload.target_audience} via prestige-scarcity bias.\n\n2. REVENUE OPTIMIZATION\nPrice point of $${payload.price} validated for anchor-effect scaling.\n\n3. TRAFFIC STRATEGY\n- Hook: Radical efficiency gains.\n- Angle: Eliminating the high-cost "Analytic Gap".\n\n4. FUNNEL FLOW\nAwareness -> Proof of Logic -> Institutional Trust -> Conversion.`;
                 handleResponse(mockResult);
                 resetSubmitButton();
             }
         };
 
-        function logout() {
-            localStorage.clear();
-            location.reload();
-        }
+        function logout() { localStorage.clear(); location.reload(); }
 
         function toggle3D(enabled) {
             is3DEnabled = enabled;
-            const container = document.getElementById('canvas-container');
-            container.style.opacity = enabled ? '1' : '0';
+            document.getElementById('canvas-container').style.opacity = enabled ? '1' : '0';
         }
 
         function init3D() {
@@ -805,34 +824,33 @@
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
             renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-            
             renderer.setSize(window.innerWidth, window.innerHeight);
             container.innerHTML = '';
             container.appendChild(renderer.domElement);
 
             const geo = new THREE.BufferGeometry();
             const pos = [];
-            const count = window.innerWidth < 768 ? 400 : 1000; 
+            const count = window.innerWidth < 768 ? 500 : 1500; 
             for(let i=0; i<count; i++) {
-                pos.push((Math.random()-0.5)*10, (Math.random()-0.5)*10, (Math.random()-0.5)*10);
+                pos.push((Math.random()-0.5)*12, (Math.random()-0.5)*12, (Math.random()-0.5)*12);
             }
             geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
             const mat = new THREE.PointsMaterial({ 
                 color: 0x82b1ff, 
-                size: 0.012, 
+                size: 0.015, 
                 transparent: true, 
-                opacity: 0.2,
+                opacity: 0.15,
                 sizeAttenuation: true
             });
             points = new THREE.Points(geo, mat);
             scene.add(points);
-            camera.position.z = 2.5;
+            camera.position.z = 3;
 
             function anim() {
                 requestAnimationFrame(anim);
                 if(is3DEnabled) {
-                    points.rotation.y += 0.0005;
-                    points.rotation.x += 0.0002;
+                    points.rotation.y += 0.0004;
+                    points.rotation.x += 0.0001;
                     renderer.render(scene, camera);
                 }
             }
