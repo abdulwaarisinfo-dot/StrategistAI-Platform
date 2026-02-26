@@ -628,11 +628,13 @@
 
         function saveToHistory(item) {
             let history = getHistory();
+            // Add new item to the beginning
             history.unshift({
                 ...item,
                 id: Date.now(),
                 date: new Date().toLocaleString()
             });
+            // Keep only the last 5
             history = history.slice(0, 5);
             localStorage.setItem('ai_strategist_history', JSON.stringify(history));
             renderHistory();
@@ -691,6 +693,7 @@
             if (btn) {
                 btn.classList.add('active');
             } else {
+                // Sync mobile/desktop nav manually if triggered by code
                 document.querySelectorAll(`.nav-item i[data-lucide="${id === 'strategy' ? 'home' : (id === 'history' ? 'clock' : 'settings')}"]`)
                     .forEach(icon => icon.parentElement.classList.add('active'));
             }
@@ -746,6 +749,7 @@
             toggleResultPanel(true);
             document.getElementById('outputContent').innerText = resultText;
             
+            // Save to memory
             const payload = {
                 product_name: document.getElementById('prodName').value,
                 price: parseFloat(document.getElementById('prodPrice').value),
@@ -777,6 +781,7 @@
             if (socket && socket.readyState === WebSocket.OPEN) {
                 socket.send(JSON.stringify(payload));
             } else {
+                // Simulation for environment
                 await new Promise(r => setTimeout(r, 1500));
                 const mockResult = `SYSTEM ANALYZING: ${payload.product_name.toUpperCase()}\n--------------------------------\n\n1. SEGMENTATION\nTargeting ${payload.target_audience} via cognitive-bias marketing hooks.\n\n2. PRICING ARCHITECTURE\n$${payload.price} positioning suggests premium scarcity.\n\n3. AD ANGLES\n- Angle A: Efficiency maximization\n- Angle B: Competitive edge through intelligence\n\nAnalysis Complete. History updated.`;
                 handleResponse(mockResult);
@@ -784,10 +789,11 @@
             }
         };
 
-        // --- UPDATED LOGOUT FUNCTION ---
+        // Modified Logout function to target your FastAPI route
         function logout() {
             localStorage.clear();
-            window.location.href = "home.html";
+            // Redirect to home.html via the @app.get("/") route
+            window.location.href = '/'; 
         }
 
         function toggle3D(enabled) {
