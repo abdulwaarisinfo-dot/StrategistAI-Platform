@@ -3,376 +3,344 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Strategist | Intelligence Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Icons and Engine -->
+    <title>Chatbot | Strategist.AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         :root {
-            --bg-dark: #000000;
-            --sidebar-bg: #000000;
-            --accent-primary: #82b1ff;
-            --accent-glow: rgba(130, 177, 255, 0.2);
-            --card-gradient-1: linear-gradient(135deg, #4f46e5, #7c3aed);
-            --card-gradient-2: linear-gradient(135deg, #0284c7, #0d9488);
-            --card-gradient-3: linear-gradient(135deg, #e11d48, #d97706);
-            --text-main: #ffffff;
-            --text-dim: #94a3b8;
-            --border-color: rgba(255, 255, 255, 0.08);
-            --sidebar-width: 72px;
-            --topbar-height: 72px;
+            --bg-dark: #0a0a0a;
+            --input-bg: #1a1a1a;
+            --accent: #ffffff;
+            --accent-soft: rgba(255, 255, 255, 0.1);
+            --text-main: #e5e5e5;
+            --text-dim: #888888;
+            --border: rgba(255, 255, 255, 0.08);
+            --ease: cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
         body {
             background-color: var(--bg-dark);
             color: var(--text-main);
-            font-family: 'Inter', sans-serif;
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-            flex-direction: row;
-        }
-
-        /* Ambient Background */
-        #canvas-container {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 0; pointer-events: none;
-            background: radial-gradient(circle at 50% 50%, #0a0a0a 0%, #000000 100%);
-        }
-
-        /* Sidebar Navigation */
-        .sidebar {
-            width: var(--sidebar-width);
-            background: var(--sidebar-bg);
-            border-right: 1px solid var(--border-color);
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            padding: 20px 0;
-            z-index: 100;
-            flex-shrink: 0;
+            overflow-x: hidden;
         }
 
-        /* Mobile Bottom Nav */
-        .mobile-nav {
-            display: none;
+        /* --- BACKGROUND GRADIENT --- */
+        .bg-glow {
             position: fixed;
-            bottom: 0;
+            top: 0;
             left: 0;
-            right: 0;
-            height: 64px;
-            background: rgba(0,0,0,0.9);
-            backdrop-filter: blur(15px);
-            border-top: 1px solid var(--border-color);
-            z-index: 110;
-            justify-content: space-around;
-            align-items: center;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 10% 10%, rgba(255,255,255,0.03) 0%, transparent 40%);
+            z-index: -1;
+            pointer-events: none;
         }
 
-        .logo-container {
-            width: 40px;
-            height: 40px;
-            background: #fff;
-            border-radius: 12px;
+        /* --- NAVBAR --- */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 2.5rem;
+            width: 100%;
+            z-index: 10;
+        }
+
+        .nav-left {
             display: flex;
             align-items: center;
-            justify-content: center;
-            margin-bottom: 40px;
+            gap: 2rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 1.1rem;
             cursor: pointer;
-            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        .logo-container:hover {
-            transform: scale(1.1);
-        }
-
-        .nav-items {
+        .nav-links {
             display: flex;
-            flex-direction: column;
-            gap: 20px;
-            flex-grow: 1;
+            gap: 1.5rem;
         }
 
-        .nav-item {
+        .nav-link {
             color: var(--text-dim);
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 10px;
-            border-radius: 12px;
-            transition: all 0.2s;
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.2s;
+        }
+
+        .nav-link:hover { color: #fff; }
+
+        .nav-auth {
             display: flex;
+            gap: 1rem;
+        }
+
+        .btn-ghost {
+            color: var(--text-main);
+            text-decoration: none;
+            font-size: 0.85rem;
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            transition: background 0.2s;
+            cursor: pointer;
+            background: transparent;
+        }
+
+        .btn-ghost:hover {
+            background: var(--accent-soft);
+        }
+
+        .btn-fill {
+            background: #fff;
+            color: #000;
+            text-decoration: none;
+            font-size: 0.85rem;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: transform 0.2s ease;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
         }
 
-        .nav-item:hover, .nav-item.active {
-            color: #fff;
-            background: rgba(255, 255, 255, 0.05);
+        .btn-fill:hover {
+            transform: translateY(-1px);
         }
 
-        .nav-item.active {
-            color: var(--accent-primary);
-        }
-
-        /* Main Content Area */
-        .main-wrapper {
+        /* --- MAIN CONTENT --- */
+        main {
             flex: 1;
             display: flex;
             flex-direction: column;
-            position: relative;
-            z-index: 1;
-            overflow: hidden;
-        }
-
-        /* Top Bar */
-        .top-bar {
-            height: var(--topbar-height);
-            display: flex;
-            justify-content: flex-end;
             align-items: center;
-            padding: 0 24px;
-        }
-
-        .mobile-logo { 
-            display: none; 
-            cursor: pointer;
-            background: #fff; 
-            border-radius: 8px; 
-            width: 32px; 
-            height: 32px; 
-            align-items: center; 
             justify-content: center;
+            padding: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
         }
 
-        .wallet-btn {
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 500;
+            margin-bottom: 2rem;
+            letter-spacing: -0.02em;
+            text-align: center;
+        }
+
+        /* --- SUGGESTION PILLS --- */
+        .suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            justify-content: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .pill {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .pill:hover {
+            border-color: rgba(255,255,255,0.2);
+            color: #fff;
+            background: #252525;
+        }
+
+        /* --- INPUT AREA --- */
+        .chat-container {
+            width: 100%;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            position: relative;
+            transition: border-color 0.3s;
+        }
+
+        .chat-container:focus-within {
+            border-color: rgba(255,255,255,0.15);
+        }
+
+        textarea {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 1rem;
+            resize: none;
+            height: 80px;
+            outline: none;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        textarea::placeholder { color: #555; }
+
+        .chat-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .left-tools {
+            display: flex;
+            gap: 0.8rem;
+        }
+
+        .tool-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: color 0.2s;
+            padding: 4px;
+        }
+
+        .tool-btn:hover { color: #fff; }
+        .tool-btn.active { color: #fff; }
+
+        .voice-btn {
+            background: #252525;
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .voice-btn:hover {
+            background: #333;
+            color: #fff;
+        }
+
+        /* Visual indicator for voice activity */
+        .mic-active {
+            color: #ff4b4b !important;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        /* --- FOOTER --- */
+        footer {
+            padding: 2rem;
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+        }
+
+        footer a { color: var(--text-dim); text-decoration: underline; }
+
+        /* --- AD SYSTEM --- */
+        #adOverlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.95);
+            z-index: 9999;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(15px);
+        }
+
+        #adOverlay.active { display: flex; }
+
+        .ad-box {
+            width: 90%;
+            max-width: 650px;
+            aspect-ratio: 16/9;
+            background: #000;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .ad-media { width: 100%; height: 100%; border: none; }
+
+        .ad-footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 20px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.9));
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .ad-info h4 { font-size: 1rem; color: #fff; }
+        .ad-info p { font-size: 0.8rem; color: #aaa; }
+
+        .btn-visit {
             background: #fff;
             color: #000;
             border: none;
             padding: 8px 16px;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            transition: opacity 0.2s;
-        }
-
-        .wallet-btn:hover { opacity: 0.9; }
-
-        /* Views */
-        .view-section { 
-            display: none; 
-            width: 100%; 
-            height: calc(100vh - var(--topbar-height)); 
-            overflow-y: auto; 
-            padding: 24px;
-            -webkit-overflow-scrolling: touch;
-        }
-        .view-section.active { display: block; }
-
-        .center-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            padding-bottom: 120px;
-            max-width: 1000px;
-            margin: 0 auto;
-            width: 100%;
-        }
-
-        .sparkle-icon {
-            color: var(--accent-primary);
-            margin-bottom: 20px;
-            filter: drop-shadow(0 0 10px var(--accent-primary));
-        }
-
-        .welcome-text {
-            color: var(--text-dim);
-            font-size: 14px;
-            margin-bottom: 8px;
-            text-align: center;
-        }
-
-        .hero-title {
-            font-size: clamp(32px, 8vw, 48px);
+            border-radius: 4px;
             font-weight: 700;
-            margin-bottom: 40px;
-            letter-spacing: -1px;
-            text-align: center;
-            padding: 0 10px;
-        }
-
-        .hero-title span { font-weight: 300; }
-
-        /* Cards */
-        .cards-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 16px;
-            width: 100%;
-            margin-bottom: 48px;
-        }
-
-        .suggestion-card {
-            height: 140px;
-            border-radius: 20px;
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            position: relative;
-            overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .suggestion-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
-        }
-
-        .card-1 { background: var(--card-gradient-1); }
-        .card-2 { background: var(--card-gradient-2); }
-        .card-3 { background: var(--card-gradient-3); }
-
-        .card-label {
-            font-size: 14px;
-            font-weight: 600;
-            color: #fff;
-            line-height: 1.4;
-            max-width: 160px;
-            z-index: 2;
-        }
-
-        /* Input Dock */
-        .input-dock {
-            width: 100%;
-            max-width: 700px;
-            background: rgba(10, 10, 10, 0.9);
-            border: 1px solid var(--border-color);
-            border-radius: 24px;
-            padding: 16px;
-            backdrop-filter: blur(20px);
-            margin-top: auto;
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 12px;
-            margin-bottom: 12px;
-        }
-
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .input-group label {
-            font-size: 10px;
-            text-transform: uppercase;
-            color: var(--text-dim);
-            padding-left: 4px;
-        }
-
-        .dock-input {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            border-radius: 12px;
-            padding: 12px 16px;
-            color: #fff;
-            font-size: 14px;
-            outline: none;
-            transition: 0.2s;
-            width: 100%;
-        }
-
-        .dock-input:focus {
-            background: rgba(255, 255, 255, 0.07);
-            border-color: var(--accent-primary);
-        }
-
-        .action-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-top: 8px;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .selector-pill {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 6px 12px;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 12px;
-            color: var(--text-dim);
+            font-size: 0.75rem;
             cursor: pointer;
         }
 
-        .submit-btn {
-            background: var(--accent-primary);
-            color: #000;
-            border: none;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        /* Results Panel */
-        .result-panel {
-            position: fixed;
-            bottom: -100%;
-            left: var(--sidebar-width);
-            right: 0;
-            height: 70vh;
-            background: #000000;
-            border-top: 1px solid var(--border-color);
-            z-index: 150;
-            transition: bottom 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            padding: 24px;
-            overflow-y: auto;
-        }
-
-        .result-panel.active { bottom: 0; }
-
-        .result-box {
-            max-width: 800px;
-            margin: 0 auto;
-            color: #cbd5e1;
-            line-height: 1.8;
-            font-size: 16px;
-            white-space: pre-wrap;
-        }
-
-        .close-panel {
+        .ad-controls {
             position: absolute;
             top: 20px;
             right: 20px;
-            background: rgba(255,255,255,0.1);
-            border: none;
-            color: #fff;
-            width: 32px;
-            height: 32px;
+            z-index: 10;
+        }
+
+        .mute-toggle {
+            background: rgba(0,0,0,0.6);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 8px;
             border-radius: 50%;
             cursor: pointer;
             display: flex;
@@ -380,477 +348,357 @@
             justify-content: center;
         }
 
-        /* History */
-        .history-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            width: 100%;
-            max-width: 800px;
-        }
-
-        .history-item {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid var(--border-color);
-            padding: 16px;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .history-item:hover {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: var(--accent-primary);
-        }
-
-        .no-history-msg {
-            color: var(--text-dim);
-            font-size: 14px;
-            padding: 40px 0;
+        .skip-section {
+            margin-top: 2rem;
             text-align: center;
-            border: 1px dashed var(--border-color);
-            border-radius: 12px;
         }
 
-        /* Status */
-        .status-pill {
+        #skipBtn {
+            padding: 10px 30px;
+            border-radius: 30px;
+            background: #fff;
+            color: #000;
+            border: none;
+            font-weight: 600;
+            cursor: not-allowed;
+            opacity: 0.3;
+            transition: opacity 0.3s, transform 0.2s;
+        }
+
+        #skipBtn.ready { cursor: pointer; opacity: 1; }
+        #skipBtn.ready:active { transform: scale(0.98); }
+
+        /* --- AUTH MODAL --- */
+        #authModal {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 11px;
-            display: flex;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 10000;
+            display: none;
             align-items: center;
-            gap: 6px;
-            border: 1px solid var(--border-color);
-            z-index: 100;
+            justify-content: center;
+            backdrop-filter: blur(4px);
         }
 
-        .dot { width: 6px; height: 6px; border-radius: 50%; background: #222; }
-        .dot.online { background: #10b981; box-shadow: 0 0 8px #10b981; }
-
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .spinner {
-            width: 20px; height: 20px; border: 2px solid #000;
-            border-top-color: transparent; border-radius: 50%;
-            animation: spin 1s linear infinite;
+        .modal-content {
+            background: #111;
+            padding: 2.5rem;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
         }
 
-        /* Tablet & Mobile Breakpoints */
+        .modal-content h2 { margin-bottom: 1rem; font-weight: 500; }
+        .modal-content p { color: var(--text-dim); margin-bottom: 2rem; font-size: 0.9rem; line-height: 1.5; }
+        
+        .modal-btns { display: flex; flex-direction: column; gap: 0.8rem; }
+        
+        .modal-btns .btn-fill, .modal-btns .btn-ghost {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* --- MOBILE RESPONSIVENESS --- */
         @media (max-width: 768px) {
-            body { flex-direction: column; }
-            .sidebar { display: none; }
-            .mobile-nav { display: flex; }
-            .top-bar { justify-content: space-between; padding: 0 16px; }
-            .mobile-logo { display: flex; }
-            .result-panel { left: 0; height: 80vh; padding-bottom: 80px; }
-            .center-content { padding-bottom: 100px; }
-            .hero-title { margin-bottom: 30px; }
-            .view-section { padding: 16px; height: calc(100vh - 136px); }
-            .status-pill { bottom: 80px; right: 10px; font-size: 10px; }
-            .cards-grid { grid-template-columns: 1fr; }
+            nav { padding: 1rem; }
+            .nav-links { display: none; }
+            h1 { font-size: 1.8rem; }
+            .chat-container { padding: 1rem; }
+            .suggestions { gap: 0.5rem; }
         }
     </style>
 </head>
 <body>
-    <div id="canvas-container"></div>
 
-    <!-- Desktop Sidebar -->
-    <div class="sidebar">
-        <div class="logo-container" onclick="refreshApp()">
-            <i data-lucide="zap" style="color: #000; width: 24px;"></i>
-        </div>
-        <div class="nav-items">
-            <button class="nav-item active desktop-nav-btn" onclick="switchView('strategy', this)" title="Dashboard">
-                <i data-lucide="home"></i>
-            </button>
-            <button class="nav-item desktop-nav-btn" onclick="switchView('history', this)" title="History">
-                <i data-lucide="clock"></i>
-            </button>
-            <button class="nav-item desktop-nav-btn" onclick="switchView('settings', this)" title="Settings">
-                <i data-lucide="settings"></i>
-            </button>
-        </div>
-        <div class="nav-items" style="margin-top: auto;">
-            <button class="nav-item" style="color: #ef4444;" onclick="logout()" title="Logout">
-                <i data-lucide="log-out"></i>
-            </button>
-        </div>
-    </div>
+    <div class="bg-glow"></div>
 
-    <!-- Mobile Navigation Bar -->
-    <nav class="mobile-nav">
-        <button class="nav-item active mobile-nav-btn" onclick="switchView('strategy', this)">
-            <i data-lucide="home"></i>
-        </button>
-        <button class="nav-item mobile-nav-btn" onclick="switchView('history', this)">
-            <i data-lucide="clock"></i>
-        </button>
-        <button class="nav-item mobile-nav-btn" onclick="switchView('settings', this)">
-            <i data-lucide="settings"></i>
-        </button>
-        <button class="nav-item" style="color: #ef4444;" onclick="logout()">
-            <i data-lucide="log-out"></i>
-        </button>
+    <nav>
+        <div class="nav-left">
+            <div class="logo">
+                <i data-lucide="command"></i>
+                Chatbot
+            </div>
+            <div class="nav-links">
+                <a href="#" class="nav-link">New Chat<a/>
+                <a href="#" class="nav-link">Projects<a/>
+            </div>
+        </div>
+        <div class="nav-auth">
+            <button class="btn-ghost" onclick="showAuth()">Log in</button>
+            <button class="btn-fill" onclick="showAuth()">Sign up</button>
+        </div>
     </nav>
 
-    <!-- Main Content -->
-    <div class="main-wrapper">
-        <div class="top-bar">
-            <div class="mobile-logo" onclick="refreshApp()">
-                <i data-lucide="zap" style="color: #000; width: 18px;"></i>
+    <main id="appContent">
+        <h1 id="mainTitle">What can I help with?</h1>
+        
+        <div class="suggestions">
+            <div class="pill" onclick="fillPrompt('Generate a complete marketing strategy for my product')">
+                <i data-lucide="target" size="14"></i> Marketing Strategy
             </div>
-            <button class="wallet-btn" onclick="switchView('strategy')">
-                <i data-lucide="plus" style="width: 16px;"></i>
-                <span>Quick Action</span>
-            </button>
+
+            <div class="pill" onclick="fillPrompt('Generate high-converting ad angles for my product')">
+                <i data-lucide="megaphone" size="14"></i> Ad Angles
+            </div>
+
+            <div class="pill" onclick="fillPrompt('Create detailed customer personas for my product')">
+                <i data-lucide="users" size="14"></i> Customer Personas
+            </div>
+
+            <div class="pill" onclick="fillPrompt('Build irresistible offers for my product')">
+                <i data-lucide="dollar-sign" size="14"></i> Offer Builder
+            </div>
+
+            <div class="pill" onclick="fillPrompt('Write scroll-stopping marketing hooks and headlines')">
+                <i data-lucide="zap" size="14"></i> Marketing Hooks
+            </div>
         </div>
 
-        <!-- Dashboard View -->
-        <section id="strategy-view" class="view-section active">
-            <div class="center-content">
-                <i data-lucide="sparkles" class="sparkle-icon" style="width: 48px; height: 48px;"></i>
-                <p class="welcome-text">Welcome to Leonardo AI Strategist</p>
-                <h1 class="hero-title">How <span>can I help today?</span></h1>
-
-                <div class="cards-grid">
-                    <div class="suggestion-card card-1" onclick="autofill('Lumina Desk Lamp', 49.99, 'Interior Designers')">
-                        <span class="card-label">Generate Ad Angles & Strategy</span>
-                        <i data-lucide="box" style="position: absolute; bottom: -10px; right: -10px; opacity: 0.2; width: 80px; height: 80px;"></i>
-                    </div>
-
-                    <div class="suggestion-card card-2" onclick="autofill('Eco-Friendly Yoga Mats', 85.00, 'Health Conscious Gen Z')">
-                        <span class="card-label">Create Marketing Funnel</span>
-                        <i data-lucide="filter" style="position: absolute; bottom: -10px; right: -10px; opacity: 0.2; width: 80px; height: 80px;"></i>
-                    </div>
-
-                    <div class="suggestion-card card-3" onclick="autofill('Premium Real Estate Consulting', 2500, 'Luxury Property Investors')">
-                        <span class="card-label">Develop Persona & Hooks</span>
-                        <i data-lucide="video" style="position: absolute; bottom: -10px; right: -10px; opacity: 0.2; width: 80px; height: 80px;"></i>
-                    </div>
+        <div class="chat-container">
+            <textarea id="mainPrompt" placeholder="Ask Chatbot to Generate a Prototype..."></textarea>
+            <div class="chat-actions">
+                <div class="left-tools">
+                    <button class="tool-btn" title="Add files"><i data-lucide="plus" size="18"></i></button>
+                    <button class="tool-btn" id="micBtn" title="Voice Input" onclick="toggleVoiceInput()"><i data-lucide="mic" size="18"></i></button>
+                    <button class="tool-btn" id="speakerBtn" title="Speech Output" onclick="toggleSpeaker()"><i data-lucide="volume-2" size="18"></i></button>
+                    <button class="tool-btn" title="Search the web"><i data-lucide="globe" size="18"></i> Search</button>
                 </div>
-
-                <div class="input-dock">
-                    <form id="strategyForm">
-                        <div class="form-grid">
-                            <div class="input-group">
-                                <label>Product Name</label>
-                                <input type="text" id="prodName" class="dock-input" required placeholder="AI Analytics Suite">
-                            </div>
-                            <div class="input-group">
-                                <label>Price ($)</label>
-                                <input type="number" step="0.01" id="prodPrice" class="dock-input" required placeholder="2499.99">
-                            </div>
-                            <div class="input-group">
-                                <label>Audience</label>
-                                <input type="text" id="prodAudience" class="dock-input" required placeholder="IT Managers">
-                            </div>
-                        </div>
-                        <div class="action-bar">
-                            <div class="selector-pill">
-                                <i data-lucide="layers" style="width: 14px;"></i>
-                                <span>Strategy Engine v4</span>
-                                <i data-lucide="chevron-down" style="width: 12px;"></i>
-                            </div>
-                            <button type="submit" class="submit-btn" id="submitBtn">
-                                <i data-lucide="arrow-up" style="width: 20px;"></i>
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                <button class="voice-btn" id="generateBtn" onclick="handleGenerate()">
+                    <i data-lucide="arrow-right" size="16"></i> Generate
+                </button>
             </div>
-        </section>
+        </div>
+    </main>
 
-        <!-- History View -->
-        <section id="history-view" class="view-section">
-            <h1 style="font-size: 32px; margin-bottom: 8px;">Generation History</h1>
-            <p style="color: var(--text-dim); margin-bottom: 40px;">Review your last 5 strategic architectures.</p>
-            <div id="historyList" class="history-list">
-                <!-- History items will be injected here -->
-                <div class="no-history-msg">No history found. Generate your first strategy!</div>
+    <footer>
+        By messaging Chatbot, you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.
+    </footer>
+
+    <!-- Ad Overlay -->
+    <div id="adOverlay">
+        <div class="ad-box">
+            <div class="ad-controls">
+                <button class="mute-toggle" onclick="toggleAdMute()" title="Unmute Video">
+                    <i id="adMuteIcon" data-lucide="volume-x" size="18"></i>
+                </button>
             </div>
-        </section>
-
-        <!-- Settings View -->
-        <section id="settings-view" class="view-section">
-            <h1 style="font-size: 32px; margin-bottom: 8px;">Settings</h1>
-            <p style="color: var(--text-dim); margin-bottom: 40px;">Manage your intelligence preferences and API integrations.</p>
-            
-            <div style="background: rgba(255,255,255,0.03); padding: 24px; border-radius: 16px; border: 1px solid var(--border-color); max-width: 600px;">
-                <h3 style="margin-bottom: 16px;">Preferences</h3>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                    <span>Advanced 3D Effects</span>
-                    <input type="checkbox" checked id="toggle3D" onchange="toggle3D(this.checked)">
+            <div id="adMediaContainer" class="ad-media"></div>
+            <div class="ad-footer">
+                <div class="ad-info">
+                    <h4 id="adTitle">Precision Marketing</h4>
+                    <p id="adDesc">Loading next-gen assets...</p>
                 </div>
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span>Auto-Save History</span>
-                    <input type="checkbox" checked id="autoSave">
-                </div>
-                <div style="margin-top: 24px; border-top: 1px solid var(--border-color); padding-top: 16px;">
-                    <button onclick="clearHistory()" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 13px;">Clear Local Cache</button>
-                </div>
+                <button class="btn-visit" id="adVisitBtn">Visit Site</button>
             </div>
-        </section>
-    </div>
-
-    <!-- Results Overlay -->
-    <div id="resultArea" class="result-panel">
-        <button class="close-panel" onclick="toggleResultPanel(false)">
-            <i data-lucide="x" style="width: 18px;"></i>
-        </button>
-        <div class="result-box">
-            <h2 style="color: var(--accent-primary); margin-bottom: 20px;">Architectural Analysis</h2>
-            <div id="outputContent"></div>
+        </div>
+        <div class="skip-section">
+            <p id="skipTimer" style="margin-bottom: 10px; font-size: 0.8rem; color: #888;">Verifying access...</p>
+            <button id="skipBtn" disabled>Skip Advertisement</button>
         </div>
     </div>
 
-    <!-- Status -->
-    <div class="status-pill">
-        <div id="wsStatusDot" class="dot"></div>
-        <span id="wsStatusText">WebSocket Offline</span>
+    <!-- Auth Modal -->
+    <div id="authModal">
+        <div class="modal-content">
+            <h2>Get Started</h2>
+            <p>To use our premium generation features, please log in or create a account.</p>
+            <div class="modal-btns">
+                <a href="/login-page" class="btn-fill">Login to Dashboard</a>
+                <a href="/signup-page" class="btn-ghost">Create Account</a>
+                <button onclick="hideAuth()" style="background:transparent; border:none; color:#555; margin-top:15px; cursor:pointer; font-size: 0.8rem;">Maybe later</button>
+            </div>
+        </div>
     </div>
 
     <script>
-        let socket = null;
-        let renderer, scene, camera, points;
-        let is3DEnabled = true;
+        let isSpeakerEnabled = false;
+        let isListening = false;
+        let recognition = null;
+        let adMuted = true;
+        let currentAdUrl = "";
 
-        // Initialize Icons
         lucide.createIcons();
 
-        // --- History Logic ---
-        function getHistory() {
-            const data = localStorage.getItem('ai_strategist_history');
-            return data ? JSON.parse(data) : [];
+        const ADS = [
+    {
+        title: "Strategist.AI Pro",
+        desc: "Scale your marketing with precision AI tools.",
+        url: "https://www.youtube.com/embed/ScMzIvxBSi4",
+        link: "https://strategist.ai"
+    },
+    {
+        title: "Next-Gen UI Kit",
+        desc: "Beautiful components for your next project.",
+        url: "https://www.youtube.com/embed/nI3dh2NpXZU",
+        link: "https://google.com"
+    },
+    {
+        title: "Pixup8k",
+        desc: "Pixup8k Convert Blurry Photos into 4k-8k",
+        url: "https://tse3.mm.bing.net/th/id/OIP.57kZM23jGZLONRqoSYCgRQHaJQ?rs=1&pid=ImgDetMain&o=7&rm=3",
+        link: "https://tse3.mm.bing.net/th/id/OIP.57kZM23jGZLONRqoSYCgRQHaJQ?rs=1&pid=ImgDetMain&o=7&rm=3"
+    },
+    {
+        title: "Waris",
+        desc: "ABC",
+        url: "https://www.greatestphysiques.com/wp-content/uploads/2017/10/David-Laid.04-768x956.jpg",
+        link: "https://www.greatestphysiques.com/wp-content/uploads/2017/10/David-Laid.04-768x956.jpg"
+    }
+];
+
+        let adTimer = 8;
+        let adInterval;
+
+        function showAuth() {
+            document.getElementById('authModal').style.display = 'flex';
         }
 
-        function saveToHistory(item) {
-            let history = getHistory();
-            // Add new item to the beginning
-            history.unshift({
-                ...item,
-                id: Date.now(),
-                date: new Date().toLocaleString()
-            });
-            // Keep only the last 5
-            history = history.slice(0, 5);
-            localStorage.setItem('ai_strategist_history', JSON.stringify(history));
-            renderHistory();
+        function hideAuth() {
+            document.getElementById('authModal').style.display = 'none';
         }
 
-        function renderHistory() {
-            const list = document.getElementById('historyList');
-            const history = getHistory();
+        function fillPrompt(text) {
+            const textarea = document.getElementById('mainPrompt');
+            textarea.value = text;
+            textarea.focus();
+            if (isSpeakerEnabled) speakText(`Selected: ${text}`);
+        }
+
+        function toggleAdMute() {
+            adMuted = !adMuted;
+            const iframe = document.querySelector('#adMediaContainer iframe');
+            const icon = document.getElementById('adMuteIcon');
             
-            if (history.length === 0) {
-                list.innerHTML = `<div class="no-history-msg">No history found. Generate your first strategy!</div>`;
-                return;
-            }
-
-            list.innerHTML = history.map(item => `
-                <div class="history-item" onclick="viewHistoryItem(${item.id})">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                        <div>
-                            <div style="font-weight: 600; margin-bottom: 4px;">${item.product_name}</div>
-                            <div style="font-size: 12px; color: var(--text-dim);">${item.date} • Strategy v4</div>
-                        </div>
-                        <div style="font-size: 11px; background: rgba(130, 177, 255, 0.1); color: var(--accent-primary); padding: 2px 8px; border-radius: 4px;">
-                            $${item.price}
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function viewHistoryItem(id) {
-            const history = getHistory();
-            const item = history.find(h => h.id === id);
-            if (item) {
-                toggleResultPanel(true);
-                document.getElementById('outputContent').innerText = item.result || "No data available.";
-            }
-        }
-
-        function clearHistory() {
-            localStorage.removeItem('ai_strategist_history');
-            renderHistory();
-        }
-
-        // --- Core Functions ---
-        function refreshApp() {
-            location.reload();
-        }
-
-        function switchView(id, btn) {
-            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            const muteParam = adMuted ? "1" : "0";
+            iframe.src = `${currentAdUrl}?autoplay=1&mute=${muteParam}&controls=0&modestbranding=1&rel=0`;
             
-            const view = document.getElementById(id + '-view');
-            if(view) view.classList.add('active');
-            
-            if (btn) {
-                btn.classList.add('active');
-            } else {
-                // Sync mobile/desktop nav manually if triggered by code
-                document.querySelectorAll(`.nav-item i[data-lucide="${id === 'strategy' ? 'home' : (id === 'history' ? 'clock' : 'settings')}"]`)
-                    .forEach(icon => icon.parentElement.classList.add('active'));
-            }
-            
-            toggleResultPanel(false);
-            if (id === 'history') renderHistory();
-        }
-
-        function toggleResultPanel(show) {
-            const panel = document.getElementById('resultArea');
-            if(show) panel.classList.add('active');
-            else panel.classList.remove('active');
-        }
-
-        function autofill(name, price, audience) {
-            document.getElementById('prodName').value = name;
-            document.getElementById('prodPrice').value = price;
-            document.getElementById('prodAudience').value = audience;
-            if(window.innerWidth < 768) {
-                document.getElementById('strategyForm').scrollIntoView({ behavior: 'smooth' });
-            }
-        }
-
-        // --- WebSocket Logic ---
-        function connectWebSocket() {
-            const token = localStorage.getItem('access_token');
-            if (!token) {
-                document.getElementById('wsStatusText').innerText = 'Demo Connection Only';
-                return;
-            }
-            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            socket = new WebSocket(`${protocol}//${window.location.host}/ws/generate?token=${token}`);
-
-            socket.onopen = () => {
-                document.getElementById('wsStatusDot').classList.add('online');
-                document.getElementById('wsStatusText').innerText = 'Live Feed Active';
-            };
-
-            socket.onmessage = (event) => {
-                const data = event.data;
-                handleResponse(data);
-                resetSubmitButton();
-            };
-
-            socket.onclose = () => {
-                document.getElementById('wsStatusDot').classList.remove('online');
-                document.getElementById('wsStatusText').innerText = 'Reconnecting...';
-                setTimeout(connectWebSocket, 3000);
-            };
-        }
-
-        function handleResponse(resultText) {
-            toggleResultPanel(true);
-            document.getElementById('outputContent').innerText = resultText;
-            
-            // Save to memory
-            const payload = {
-                product_name: document.getElementById('prodName').value,
-                price: parseFloat(document.getElementById('prodPrice').value),
-                target_audience: document.getElementById('prodAudience').value,
-                result: resultText
-            };
-            saveToHistory(payload);
-        }
-
-        function resetSubmitButton() {
-            const btn = document.getElementById('submitBtn');
-            btn.disabled = false;
-            btn.innerHTML = '<i data-lucide="arrow-up" style="width: 20px;"></i>';
+            icon.setAttribute('data-lucide', adMuted ? 'volume-x' : 'volume-2');
             lucide.createIcons();
         }
 
-        document.getElementById('strategyForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('submitBtn');
-            btn.disabled = true;
-            btn.innerHTML = '<div class="spinner"></div>';
+        function toggleVoiceInput() {
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                return;
+            }
 
-            const payload = {
-                product_name: document.getElementById('prodName').value,
-                price: parseFloat(document.getElementById('prodPrice').value),
-                target_audience: document.getElementById('prodAudience').value
+            const micBtn = document.getElementById('micBtn');
+            const textarea = document.getElementById('mainPrompt');
+
+            if (isListening) {
+                recognition.stop();
+                return;
+            }
+
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+
+            recognition.onstart = () => {
+                isListening = true;
+                micBtn.classList.add('mic-active');
+                textarea.placeholder = "Listening...";
             };
 
-            if (socket && socket.readyState === WebSocket.OPEN) {
-                socket.send(JSON.stringify(payload));
-            } else {
-                // Simulation for environment
-                await new Promise(r => setTimeout(r, 1500));
-                const mockResult = `SYSTEM ANALYZING: ${payload.product_name.toUpperCase()}\n--------------------------------\n\n1. SEGMENTATION\nTargeting ${payload.target_audience} via cognitive-bias marketing hooks.\n\n2. PRICING ARCHITECTURE\n$${payload.price} positioning suggests premium scarcity.\n\n3. AD ANGLES\n- Angle A: Efficiency maximization\n- Angle B: Competitive edge through intelligence\n\nAnalysis Complete. History updated.`;
-                handleResponse(mockResult);
-                resetSubmitButton();
-            }
-        };
+            recognition.onresult = (event) => {
+                const text = event.results[0][0].transcript;
+                textarea.value = text;
+                textarea.placeholder = "Ask Chatbot to Generate a Prototype...";
+            };
 
-        // Modified Logout function to target your FastAPI route
-        function logout() {
-            localStorage.clear();
-            // Redirect to home.html via the @app.get("/") route
-            window.location.href = '/'; 
+            recognition.onend = () => {
+                isListening = false;
+                micBtn.classList.remove('mic-active');
+                textarea.placeholder = "Ask Chatbot to Generate a Prototype...";
+            };
+
+            recognition.start();
         }
 
-        function toggle3D(enabled) {
-            is3DEnabled = enabled;
-            const container = document.getElementById('canvas-container');
-            container.style.opacity = enabled ? '1' : '0';
-        }
-
-        function init3D() {
-            const container = document.getElementById('canvas-container');
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-            renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        function toggleSpeaker() {
+            isSpeakerEnabled = !isSpeakerEnabled;
+            const speakerBtn = document.getElementById('speakerBtn');
             
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            container.innerHTML = '';
-            container.appendChild(renderer.domElement);
-
-            const geo = new THREE.BufferGeometry();
-            const pos = [];
-            const count = window.innerWidth < 768 ? 400 : 1000; 
-            for(let i=0; i<count; i++) {
-                pos.push((Math.random()-0.5)*10, (Math.random()-0.5)*10, (Math.random()-0.5)*10);
+            if (isSpeakerEnabled) {
+                speakerBtn.classList.add('active');
+                speakerBtn.innerHTML = '<i data-lucide="volume-x" size="18"></i>';
+                speakText("Voice system activated.");
+            } else {
+                speakerBtn.classList.remove('active');
+                speakerBtn.innerHTML = '<i data-lucide="volume-2" size="18"></i>';
+                window.speechSynthesis.cancel();
             }
-            geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-            const mat = new THREE.PointsMaterial({ 
-                color: 0x82b1ff, 
-                size: 0.012, 
-                transparent: true, 
-                opacity: 0.2,
-                sizeAttenuation: true
-            });
-            points = new THREE.Points(geo, mat);
-            scene.add(points);
-            camera.position.z = 2.5;
-
-            function anim() {
-                requestAnimationFrame(anim);
-                if(is3DEnabled) {
-                    points.rotation.y += 0.0005;
-                    points.rotation.x += 0.0002;
-                    renderer.render(scene, camera);
-                }
-            }
-            anim();
-
-            window.addEventListener('resize', () => {
-                camera.aspect = window.innerWidth / window.innerHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(window.innerWidth, window.innerHeight);
-            });
+            lucide.createIcons();
         }
+
+        async function speakText(text) {
+            if (!isSpeakerEnabled) return;
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        async function handleGenerate() {
+            const prompt = document.getElementById('mainPrompt').value;
+            if (!prompt.trim()) return;
+            if (isSpeakerEnabled) speakText("Processing your request...");
+            showAuth();
+        }
+
+        function startAdSystem() {
+            if (sessionStorage.getItem('home_ad_seen')) return;
+
+            const overlay = document.getElementById('adOverlay');
+            const media = document.getElementById('adMediaContainer');
+            const skipBtn = document.getElementById('skipBtn');
+            const timerTxt = document.getElementById('skipTimer');
+
+            const randomAd = ADS[Math.floor(Math.random() * ADS.length)];
+            currentAdUrl = randomAd.url;
+            
+            document.getElementById('adTitle').innerText = randomAd.title;
+            document.getElementById('adDesc').innerText = randomAd.desc;
+            document.getElementById('adVisitBtn').onclick = () => window.open(randomAd.link, '_blank');
+            
+            media.innerHTML = `<iframe class="ad-media" src="${randomAd.url}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0" allow="autoplay; encrypted-media" style="pointer-events: none;"></iframe>`;
+            overlay.classList.add('active');
+
+            adInterval = setInterval(() => {
+                adTimer--;
+                if (adTimer > 0) {
+                    timerTxt.innerText = `Accessing Neural Hub in ${adTimer}s...`;
+                } else {
+                    clearInterval(adInterval);
+                    timerTxt.innerText = "Access Granted.";
+                    skipBtn.disabled = false;
+                    skipBtn.classList.add('ready');
+                    skipBtn.innerText = "Continue to Dashboard";
+                }
+            }, 1000);
+
+            skipBtn.onclick = () => {
+                overlay.classList.remove('active');
+                media.innerHTML = ""; 
+                sessionStorage.setItem('home_ad_seen', 'true');
+                if (isSpeakerEnabled) speakText("Welcome to the hub.");
+            };
+        }
+
+        document.getElementById('mainPrompt').addEventListener('keydown', (e) => {
+            if(e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleGenerate();
+            }
+        });
 
         window.onload = () => {
-            init3D();
-            connectWebSocket();
-            renderHistory();
+            startAdSystem();
         };
     </script>
 </body>
