@@ -301,7 +301,7 @@
             position: relative;
         }
 
-        .ad-media { width: 100%; height: 100%; border: none; }
+        .ad-media { width: 100%; height: 100%; border: none; object-fit: cover; }
 
         .ad-footer {
             position: absolute;
@@ -421,17 +421,47 @@
         <div class="nav-left">
             <div class="logo">
                 <i data-lucide="command"></i>
-                Chatbot
+                Strategist.AI
             </div>
             <div class="nav-links">
-                <a href="#" class="nav-link">New Chat<a/>
-                <a href="#" class="nav-link">Projects<a/>
+                <a href="#" class="nav-link">New Chat</a>
+                <a href="#" class="nav-link">Search</a>
+                <a href="#" class="nav-link">Projects</a>
             </div>
         </div>
         <div class="nav-auth">
             <button class="btn-ghost" onclick="showAuth()">Log in</button>
             <button class="btn-fill" onclick="showAuth()">Sign up</button>
         </div>
+           </div>
+
+        </div>
+
+        <!-- Auth Modal -->
+
+    <div id="authModal">
+
+        <div class="modal-content">
+
+            <h2>Get Started</h2>
+
+            <p>To use our premium generation features, please log in or create a free account.</p>
+
+            <div class="modal-btns">
+
+                <a href="/login-page" class="btn-fill">Login to Dashboard</a>
+
+                <a href="/signup-page" class="btn-ghost">Create Free Account</a>
+
+                <button onclick="hideAuth()" style="background:transparent; border:none; color:#555; margin-top:15px; cursor:pointer; font-size: 0.8rem;">Maybe later</button>
+
+            </div>
+
+        </div>
+
+       
+
+    </nav>
     </nav>
 
     <main id="appContent">
@@ -459,8 +489,9 @@
             </div>
         </div>
 
+
         <div class="chat-container">
-            <textarea id="mainPrompt" placeholder="Ask Chatbot to Generate a Prototype..."></textarea>
+            <textarea id="mainPrompt" placeholder="Ask Strategist.AI to Generate a Prototype..."></textarea>
             <div class="chat-actions">
                 <div class="left-tools">
                     <button class="tool-btn" title="Add files"><i data-lucide="plus" size="18"></i></button>
@@ -476,14 +507,14 @@
     </main>
 
     <footer>
-        By messaging Chatbot, you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.
+        By messaging Strategist.AI, you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.
     </footer>
 
     <!-- Ad Overlay -->
     <div id="adOverlay">
         <div class="ad-box">
             <div class="ad-controls">
-                <button class="mute-toggle" onclick="toggleAdMute()" title="Unmute Video">
+                <button class="mute-toggle" id="muteContainer" onclick="toggleAdMute()" title="Unmute Video">
                     <i id="adMuteIcon" data-lucide="volume-x" size="18"></i>
                 </button>
             </div>
@@ -506,10 +537,10 @@
     <div id="authModal">
         <div class="modal-content">
             <h2>Get Started</h2>
-            <p>To use our premium generation features, please log in or create a account.</p>
+            <p>To use our premium generation features, please log in or create a free account.</p>
             <div class="modal-btns">
-                <a href="/login-page" class="btn-fill">Login to Dashboard</a>
-                <a href="/signup-page" class="btn-ghost">Create Account</a>
+                <a href="#" class="btn-fill">Login to Dashboard</a>
+                <a href="#" class="btn-ghost">Create Free Account</a>
                 <button onclick="hideAuth()" style="background:transparent; border:none; color:#555; margin-top:15px; cursor:pointer; font-size: 0.8rem;">Maybe later</button>
             </div>
         </div>
@@ -520,34 +551,33 @@
         let isListening = false;
         let recognition = null;
         let adMuted = true;
-        let currentAdUrl = "";
+        let currentAd = null;
 
         lucide.createIcons();
-
-        const ADS = [
+        
+const ADS = [
     {
-        title: "Strategist.AI Pro",
-        desc: "Scale your marketing with precision AI tools.",
-        url: "https://www.youtube.com/embed/ScMzIvxBSi4",
-        link: "https://strategist.ai"
+        title: "Monday.com | Work OS",
+        desc: "The visual platform that manages your team's projects and workflows.",
+        url: "https://www.youtube.com/embed/0SBOvY9N7m4", 
+        link: "https://monday.com",
+        type: "video"
     },
     {
-        title: "Next-Gen UI Kit",
-        desc: "Beautiful components for your next project.",
-        url: "https://www.youtube.com/embed/nI3dh2NpXZU",
-        link: "https://google.com"
+        title: "Grammarly for Business",
+        desc: "Ensure your team's communication is clear, concise, and professional.",
+        // Changed to a reliable YouTube embed for the prototype
+        url: "https://www.youtube.com/embed/u73H_In_H_8", 
+        link: "https://grammarly.com",
+        type: "video"
     },
     {
-        title: "Pixup8k",
-        desc: "Pixup8k Convert Blurry Photos into 4k-8k",
-        url: "https://tse3.mm.bing.net/th/id/OIP.57kZM23jGZLONRqoSYCgRQHaJQ?rs=1&pid=ImgDetMain&o=7&rm=3",
-        link: "https://tse3.mm.bing.net/th/id/OIP.57kZM23jGZLONRqoSYCgRQHaJQ?rs=1&pid=ImgDetMain&o=7&rm=3"
-    },
-    {
-        title: "Waris",
-        desc: "ABC",
-        url: "https://www.greatestphysiques.com/wp-content/uploads/2017/10/David-Laid.04-768x956.jpg",
-        link: "https://www.greatestphysiques.com/wp-content/uploads/2017/10/David-Laid.04-768x956.jpg"
+        title: "Premium Black Shirt",
+        desc: "The perfect minimalist aesthetic for modern creators.",
+        // Changed to a reliable Unsplash image URL
+        url: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=80",
+        link: "https://example.com/product",
+        type: "image"
     }
 ];
 
@@ -570,21 +600,21 @@
         }
 
         function toggleAdMute() {
+            if (currentAd && currentAd.type === "image") return;
+            
             adMuted = !adMuted;
             const iframe = document.querySelector('#adMediaContainer iframe');
             const icon = document.getElementById('adMuteIcon');
             
             const muteParam = adMuted ? "1" : "0";
-            iframe.src = `${currentAdUrl}?autoplay=1&mute=${muteParam}&controls=0&modestbranding=1&rel=0`;
+            iframe.src = `${currentAd.url}?autoplay=1&mute=${muteParam}&controls=0&modestbranding=1&rel=0`;
             
             icon.setAttribute('data-lucide', adMuted ? 'volume-x' : 'volume-2');
             lucide.createIcons();
         }
 
         function toggleVoiceInput() {
-            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-                return;
-            }
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) return;
 
             const micBtn = document.getElementById('micBtn');
             const textarea = document.getElementById('mainPrompt');
@@ -608,13 +638,12 @@
             recognition.onresult = (event) => {
                 const text = event.results[0][0].transcript;
                 textarea.value = text;
-                textarea.placeholder = "Ask Chatbot to Generate a Prototype...";
             };
 
             recognition.onend = () => {
                 isListening = false;
                 micBtn.classList.remove('mic-active');
-                textarea.placeholder = "Ask Chatbot to Generate a Prototype...";
+                textarea.placeholder = "Ask Strategist.AI to Generate a Prototype...";
             };
 
             recognition.start();
@@ -636,15 +665,13 @@
             lucide.createIcons();
         }
 
-        async function speakText(text) {
+        function speakText(text) {
             if (!isSpeakerEnabled) return;
             const utterance = new SpeechSynthesisUtterance(text);
-            utterance.rate = 1.0;
-            utterance.pitch = 1.0;
             window.speechSynthesis.speak(utterance);
         }
 
-        async function handleGenerate() {
+        function handleGenerate() {
             const prompt = document.getElementById('mainPrompt').value;
             if (!prompt.trim()) return;
             if (isSpeakerEnabled) speakText("Processing your request...");
@@ -658,15 +685,22 @@
             const media = document.getElementById('adMediaContainer');
             const skipBtn = document.getElementById('skipBtn');
             const timerTxt = document.getElementById('skipTimer');
+            const muteContainer = document.getElementById('muteContainer');
 
-            const randomAd = ADS[Math.floor(Math.random() * ADS.length)];
-            currentAdUrl = randomAd.url;
+            currentAd = ADS[Math.floor(Math.random() * ADS.length)];
             
-            document.getElementById('adTitle').innerText = randomAd.title;
-            document.getElementById('adDesc').innerText = randomAd.desc;
-            document.getElementById('adVisitBtn').onclick = () => window.open(randomAd.link, '_blank');
+            document.getElementById('adTitle').innerText = currentAd.title;
+            document.getElementById('adDesc').innerText = currentAd.desc;
+            document.getElementById('adVisitBtn').onclick = () => window.open(currentAd.link, '_blank');
             
-            media.innerHTML = `<iframe class="ad-media" src="${randomAd.url}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0" allow="autoplay; encrypted-media" style="pointer-events: none;"></iframe>`;
+            if (currentAd.type === "image") {
+                media.innerHTML = `<img src="${currentAd.url}" class="ad-media" alt="Advertisement">`;
+                muteContainer.style.display = 'none';
+            } else {
+                media.innerHTML = `<iframe class="ad-media" src="${currentAd.url}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0" allow="autoplay; encrypted-media" style="pointer-events: none;"></iframe>`;
+                muteContainer.style.display = 'flex';
+            }
+            
             overlay.classList.add('active');
 
             adInterval = setInterval(() => {
