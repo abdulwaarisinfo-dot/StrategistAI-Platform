@@ -426,6 +426,7 @@
                 </div>
             </div>
 
+            <!-- Hidden textarea for prompt storage used by features -->
             <textarea id="mainPrompt" style="display:none;"></textarea>
 
             <div class="chat-bottom-bar">
@@ -482,14 +483,19 @@
     </div>
 
     <script>
+        // Global State
         let isSpeakerEnabled = false;
         let isListening = false;
         let recognition = null;
         let adMuted = true;
         let currentAdUrl = "";
+        let adTimer = 8;
+        let adInterval;
 
+        // Initialize Lucide Icons
         lucide.createIcons();
 
+        // Ad Inventory
         const ADS = [
             {
                 title: "Strategist.AI Pro",
@@ -504,16 +510,14 @@
                 link: "https://google.com"
             },
             {
-                title: "Pixup8k",
-                desc: "Convert Blury Photos into 4k-8k High Res.",
-                url: "https://tse3.mm.bing.net/th/id/OIP.57kZM23jGZLONRqoSYCgRQHaJQ?rs=1&pid=ImgDetMain&o=7&rm=3",
+                title: "AI Visual Engine",
+                desc: "Convert concepts into high resolution reality.",
+                url: "https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=80&w=1000",
                 link: "https://strategist.ai"
             }
         ];
 
-        let adTimer = 8;
-        let adInterval;
-
+        // Auth Logic
         function showAuth() {
             document.getElementById('authModal').style.display = 'flex';
         }
@@ -522,30 +526,35 @@
             document.getElementById('authModal').style.display = 'none';
         }
 
+        // Action Handlers
         function fillPrompt(text) {
             const textarea = document.getElementById('mainPrompt');
             textarea.value = text;
-            if (isSpeakerEnabled) speakText(`Selected: ${text}`);
+            if (isSpeakerEnabled) speakText(`Selected strategy: ${text}`);
             handleGenerate();
         }
 
-        function toggleAdMute() {
-            adMuted = !adMuted;
-            const iframe = document.querySelector('#adMediaContainer iframe');
-            const icon = document.getElementById('adMuteIcon');
-            if (iframe && iframe.src.includes('youtube')) {
-                const muteParam = adMuted ? "1" : "0";
-                // Keeping same logic as provided
-                const base = iframe.src.split('?')[0];
-                iframe.src = `${base}?autoplay=1&mute=${muteParam}&controls=0&modestbranding=1&rel=0`;
+        function handleGenerate() {
+            const prodName = document.getElementById('prodName').value;
+            const prompt = document.getElementById('mainPrompt').value || prodName;
+            
+            if (!prompt.trim()) {
+                // Shake effect or simple focus
+                document.getElementById('prodName').focus();
+                return;
             }
-            icon.setAttribute('data-lucide', adMuted ? 'volume-x' : 'volume-2');
-            lucide.createIcons();
+            
+            if (isSpeakerEnabled) speakText("Synthesizing data. Please wait.");
+            showAuth();
         }
 
+        // Voice Systems
         function toggleVoiceInput() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) return;
+            if (!SpeechRecognition) {
+                alert("Speech recognition is not supported in this browser.");
+                return;
+            }
             
             const micBtn = document.getElementById('micBtn');
             const prodInput = document.getElementById('prodName');
@@ -563,7 +572,6 @@
             };
             recognition.onresult = (event) => {
                 const text = event.results[0][0].transcript;
-                document.getElementById('mainPrompt').value = text;
                 prodInput.value = text;
             };
             recognition.onend = () => {
@@ -580,7 +588,7 @@
             if (isSpeakerEnabled) {
                 speakerBtn.style.color = "#3b82f6";
                 speakerBtn.classList.add('active');
-                speakText("Voice system activated.");
+                speakText("Neural voice engine online.");
             } else {
                 speakerBtn.style.color = "";
                 speakerBtn.classList.remove('active');
@@ -591,18 +599,30 @@
         function speakText(text) {
             if (!isSpeakerEnabled) return;
             const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 1.0;
+            utterance.pitch = 0.9;
             window.speechSynthesis.speak(utterance);
         }
 
-        function handleGenerate() {
-            const prompt = document.getElementById('mainPrompt').value || document.getElementById('prodName').value;
-            if (!prompt.trim()) return;
-            if (isSpeakerEnabled) speakText("Processing your request...");
-            showAuth();
+        // Ad System Logic
+        function toggleAdMute() {
+            adMuted = !adMuted;
+            const iframe = document.querySelector('#adMediaContainer iframe');
+            const icon = document.getElementById('adMuteIcon');
+            
+            if (iframe && iframe.src.includes('youtube')) {
+                const muteParam = adMuted ? "1" : "0";
+                const base = iframe.src.split('?')[0];
+                iframe.src = `${base}?autoplay=1&mute=${muteParam}&controls=0&modestbranding=1&rel=0`;
+            }
+            
+            icon.setAttribute('data-lucide', adMuted ? 'volume-x' : 'volume-2');
+            lucide.createIcons();
         }
 
         function startAdSystem() {
-            if (sessionStorage.getItem('home_ad_seen')) return;
+            // Uncomment to prevent ad showing twice in one session
+            // if (sessionStorage.getItem('home_ad_seen')) return;
             
             const overlay = document.getElementById('adOverlay');
             const media = document.getElementById('adMediaContainer');
@@ -616,7 +636,7 @@
             document.getElementById('adDesc').innerText = randomAd.desc;
             document.getElementById('adVisitBtn').onclick = () => window.open(randomAd.link, '_blank');
             
-            if (randomAd.url.includes('youtube')) {
+            if (randomAd.url.includes('youtube') || randomAd.url.includes('embed')) {
                 media.innerHTML = `<iframe class="ad-media" src="${randomAd.url}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0" allow="autoplay; encrypted-media" style="pointer-events: none;"></iframe>`;
             } else {
                 media.innerHTML = `<img src="${randomAd.url}" style="width:100%; height:100%; object-fit:cover;">`;
@@ -641,10 +661,11 @@
                 overlay.classList.remove('active');
                 media.innerHTML = ""; 
                 sessionStorage.setItem('home_ad_seen', 'true');
-                if (isSpeakerEnabled) speakText("Welcome to the hub.");
+                if (isSpeakerEnabled) speakText("Identity verified. Welcome.");
             };
         }
 
+        // Initialize App
         window.onload = () => {
             startAdSystem();
         };
