@@ -9,7 +9,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         :root {
-            /* UPDATED CARD COLORS TO MATCH IMAGE */
+            /* CARD COLORS */
             --bg-dark: #050505;
             --card-purple: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
             --card-teal: linear-gradient(135deg, #0891b2 0%, #0d9488 100%);
@@ -31,7 +31,6 @@
 
         body {
             background-color: var(--bg-dark);
-            /* Subtle Grid Pattern for Premium Look */
             background-image: 
                 linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
@@ -60,7 +59,7 @@
             color: #fff;
             border: 1px solid var(--border);
             padding: 10px 24px;
-            border-radius: 100px; /* Pill shape for modern look */
+            border-radius: 100px;
             font-size: 0.85rem;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -87,6 +86,7 @@
         .hero-section {
             text-align: center;
             margin-bottom: 3rem;
+            width: 100%;
         }
 
         .sparkle-icon {
@@ -104,10 +104,11 @@
         }
 
         h1 {
-            font-size: 3.5rem;
+            font-size: clamp(2rem, 8vw, 3.5rem);
             font-weight: 600;
             margin-bottom: 3rem;
             letter-spacing: -0.02em;
+            line-height: 1.1;
         }
 
         h1 span {
@@ -118,7 +119,7 @@
         /* --- FEATURE CARDS --- */
         .feature-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 1.5rem;
             width: 100%;
             max-width: 1000px;
@@ -126,9 +127,9 @@
         }
 
         .card {
-            height: 220px;
+            min-height: 220px;
             border-radius: 28px;
-            padding: 2.2rem;
+            padding: 2rem;
             position: relative;
             cursor: pointer;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -151,21 +152,21 @@
             max-width: 90%;
             position: relative;
             z-index: 2;
-            font-weight: 600; /* Bolder text like in image */
+            font-weight: 600;
             color: white;
         }
 
         .card-icon-bg {
             position: absolute;
-            bottom: -5px;
-            right: -5px;
-            opacity: 0.2; /* Increased slightly to see the icons better */
+            bottom: -10px;
+            right: -10px;
+            opacity: 0.2;
             transition: opacity 0.3s, transform 0.3s;
         }
 
         .card:hover .card-icon-bg {
             opacity: 0.4;
-            transform: scale(1.1);
+            transform: scale(1.1) rotate(-5deg);
         }
 
         .card.purple { background: var(--card-purple); }
@@ -178,10 +179,12 @@
             max-width: 850px;
             background: rgba(15, 15, 15, 0.8);
             backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
             border: 1px solid var(--border);
             border-radius: 32px;
             padding: 2rem;
             box-shadow: 0 40px 100px rgba(0,0,0,0.5);
+            margin-top: auto;
         }
 
         .input-row {
@@ -213,7 +216,8 @@
             color: #fff;
             font-size: 0.95rem;
             outline: none;
-            transition: border-color 0.2s;
+            width: 100%;
+            transition: border-color 0.2s, background 0.2s;
         }
 
         .field-input:focus {
@@ -227,6 +231,7 @@
             align-items: center;
             border-top: 1px solid rgba(255,255,255,0.06);
             padding-top: 1.5rem;
+            gap: 1rem;
         }
 
         .engine-selector {
@@ -241,6 +246,7 @@
             cursor: pointer;
             border: 1px solid transparent;
             transition: all 0.2s;
+            white-space: nowrap;
         }
 
         .engine-selector:hover {
@@ -253,6 +259,7 @@
             color: #000;
             width: 48px;
             height: 48px;
+            flex-shrink: 0;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -280,6 +287,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
         }
 
         .tool-btn:hover { background: rgba(255,255,255,0.05); color: #888; }
@@ -295,10 +303,11 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            padding: 1rem;
         }
         #adOverlay.active { display: flex; }
         .ad-box {
-            width: 90%;
+            width: 100%;
             max-width: 800px;
             aspect-ratio: 16/9;
             background: #000;
@@ -314,18 +323,19 @@
             bottom: 0;
             left: 0;
             right: 0;
-            padding: 30px;
+            padding: clamp(15px, 4vw, 30px);
             background: linear-gradient(transparent, rgba(0,0,0,0.95));
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 1rem;
         }
-        .ad-info h4 { font-size: 1.1rem; color: #fff; margin-bottom: 4px; }
-        .ad-info p { font-size: 0.85rem; color: #777; }
-        .btn-visit { background: #fff; color: #000; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; }
+        .ad-info h4 { font-size: clamp(0.9rem, 3vw, 1.1rem); color: #fff; margin-bottom: 4px; }
+        .ad-info p { font-size: clamp(0.7rem, 2vw, 0.85rem); color: #777; }
+        .btn-visit { background: #fff; color: #000; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; white-space: nowrap; }
         .skip-section { margin-top: 2.5rem; text-align: center; }
         #skipBtn { padding: 12px 40px; border-radius: 100px; background: transparent; color: #555; border: 1px solid #333; font-weight: 600; cursor: not-allowed; transition: all 0.3s; }
-        #skipBtn.ready { cursor: pointer; background: #fff; color: #000; border-color: #fff; box-shadow: 0 10px 20px rgba(255,255,255,0.1); }
+        #skipBtn.ready { cursor: pointer; background: #fff; color: #000; border-color: #fff; }
 
         /* --- AUTH MODAL --- */
         #authModal {
@@ -337,15 +347,17 @@
             align-items: center;
             justify-content: center;
             backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 1.5rem;
         }
         .modal-content { 
             background: #0a0a0a; 
-            padding: 3.5rem; 
+            padding: clamp(2rem, 5vw, 3.5rem); 
             border: 1px solid #222; 
             border-radius: 40px; 
             text-align: center; 
             max-width: 450px; 
-            width: 90%; 
+            width: 100%; 
             box-shadow: 0 50px 100px rgba(0,0,0,0.8);
         }
         .modal-content h2 { font-size: 2rem; margin-bottom: 1rem; }
@@ -354,14 +366,24 @@
         .btn-modal-fill { background: #fff; color: #000; padding: 16px; border-radius: 16px; text-decoration: none; font-weight: 600; display: block; transition: transform 0.2s; }
         .btn-modal-fill:hover { transform: translateY(-2px); }
         .btn-modal-ghost { border: 1px solid #333; color: #fff; padding: 16px; border-radius: 16px; text-decoration: none; display: block; transition: all 0.2s; }
-        .btn-modal-ghost:hover { border-color: #555; background: rgba(255,255,255,0.02); }
 
+        /* Responsive Adjustments */
         @media (max-width: 768px) {
-            .feature-grid { grid-template-columns: 1fr; }
-            h1 { font-size: 2.2rem; }
-            .input-row { grid-template-columns: 1fr; }
-            nav { padding: 1rem; flex-wrap: wrap; justify-content: center; }
-            .chat-outer-box { padding: 1.5rem; }
+            nav { padding: 1rem 1.5rem; }
+            .input-row { grid-template-columns: 1fr; gap: 0.8rem; }
+            .chat-outer-box { padding: 1.25rem; border-radius: 24px; }
+            .chat-bottom-bar { flex-direction: column; align-items: stretch; }
+            .chat-bottom-bar > div { justify-content: space-between; }
+            .send-btn { width: 100%; border-radius: 14px; height: 50px; }
+            .hero-section { margin-bottom: 2rem; }
+            .feature-grid { margin-bottom: 2rem; }
+            .engine-selector { flex-grow: 1; justify-content: center; }
+        }
+
+        @media (max-width: 480px) {
+            .btn-ghost { padding: 8px 16px; font-size: 0.75rem; }
+            .ad-footer { flex-direction: column; align-items: flex-start; }
+            .btn-visit { width: 100%; text-align: center; }
         }
     </style>
 </head>
@@ -458,15 +480,14 @@
             <h2>Get Started</h2>
             <p>To use our premium generation features, please log in or create an account.</p>
             <div class="modal-btns">
-                <a href="/login-page" class="btn-modal-fill">Login to Dashboard</a>
-                <a href="/signup-page" class="btn-modal-ghost">Create Account</a>
+                <button onclick="window.location.href='/login-page'" class="btn-modal-fill">Login to Dashboard</button>
+                <button onclick="window.location.href='/signup-page'" class="btn-modal-ghost">Create Account</button>
                 <button onclick="hideAuth()" style="background:transparent; border:none; color:#444; margin-top:20px; cursor:pointer; font-size: 0.85rem; text-decoration: underline;">Maybe later</button>
             </div>
         </div>
     </div>
 
     <script>
-        // --- LOGICS MAINTAINED 100% AS IS ---
         let isSpeakerEnabled = false;
         let isListening = false;
         let recognition = null;
@@ -520,7 +541,9 @@
             const icon = document.getElementById('adMuteIcon');
             if (iframe && iframe.src.includes('youtube')) {
                 const muteParam = adMuted ? "1" : "0";
-                iframe.src = `${currentAdUrl}?autoplay=1&mute=${muteParam}&controls=0&modestbranding=1&rel=0`;
+                // Keep same URL but update parameters
+                const base = iframe.src.split('?')[0];
+                iframe.src = `${base}?autoplay=1&mute=${muteParam}&controls=0&modestbranding=1&rel=0`;
             }
             icon.setAttribute('data-lucide', adMuted ? 'volume-x' : 'volume-2');
             lucide.createIcons();
@@ -528,15 +551,16 @@
 
         function toggleVoiceInput() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                return;
-            }
+            if (!SpeechRecognition) return;
+
             const micBtn = document.getElementById('micBtn');
             const prodInput = document.getElementById('prodName');
+
             if (isListening) {
                 recognition.stop();
                 return;
             }
+
             recognition = new SpeechRecognition();
             recognition.onstart = () => {
                 isListening = true;
@@ -570,13 +594,13 @@
             }
         }
 
-        async function speakText(text) {
+        function speakText(text) {
             if (!isSpeakerEnabled) return;
             const utterance = new SpeechSynthesisUtterance(text);
             window.speechSynthesis.speak(utterance);
         }
 
-        async function handleGenerate() {
+        function handleGenerate() {
             const prompt = document.getElementById('mainPrompt').value || document.getElementById('prodName').value;
             if (!prompt.trim()) return;
             if (isSpeakerEnabled) speakText("Processing your request...");
@@ -590,16 +614,20 @@
             const skipBtn = document.getElementById('skipBtn');
             const timerTxt = document.getElementById('skipTimer');
             const randomAd = ADS[Math.floor(Math.random() * ADS.length)];
+            
             currentAdUrl = randomAd.url;
             document.getElementById('adTitle').innerText = randomAd.title;
             document.getElementById('adDesc').innerText = randomAd.desc;
             document.getElementById('adVisitBtn').onclick = () => window.open(randomAd.link, '_blank');
+
             if (randomAd.url.includes('youtube')) {
                 media.innerHTML = `<iframe class="ad-media" src="${randomAd.url}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0" allow="autoplay; encrypted-media" style="pointer-events: none;"></iframe>`;
             } else {
                 media.innerHTML = `<img src="${randomAd.url}" style="width:100%; height:100%; object-fit:cover;">`;
             }
+            
             overlay.classList.add('active');
+            
             adInterval = setInterval(() => {
                 adTimer--;
                 if (adTimer > 0) {
@@ -612,6 +640,7 @@
                     skipBtn.innerText = "Continue to Dashboard";
                 }
             }, 1000);
+
             skipBtn.onclick = () => {
                 overlay.classList.remove('active');
                 media.innerHTML = ""; 
