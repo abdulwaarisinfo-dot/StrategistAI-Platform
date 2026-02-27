@@ -33,6 +33,7 @@
             display: flex;
             flex-direction: column;
             overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
         }
 
         /* --- BACKGROUND GRADIENT --- */
@@ -88,7 +89,7 @@
 
         .nav-auth {
             display: flex;
-            gap: 1rem;
+            gap: 0.75rem;
         }
 
         .btn-ghost {
@@ -134,7 +135,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 2rem;
+            padding: 1.5rem;
             max-width: 800px;
             margin: 0 auto;
             width: 100%;
@@ -169,6 +170,7 @@
             color: var(--text-dim);
             cursor: pointer;
             transition: all 0.2s;
+            white-space: nowrap;
         }
 
         .pill:hover {
@@ -199,7 +201,7 @@
             color: #fff;
             font-size: 1rem;
             resize: none;
-            height: 80px;
+            height: 100px;
             outline: none;
             margin-bottom: 1rem;
             line-height: 1.5;
@@ -211,11 +213,14 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
 
         .left-tools {
             display: flex;
             gap: 0.8rem;
+            align-items: center;
         }
 
         .tool-btn {
@@ -224,33 +229,35 @@
             color: var(--text-dim);
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 6px;
             font-size: 0.8rem;
             cursor: pointer;
             transition: color 0.2s;
-            padding: 4px;
+            padding: 6px;
         }
 
         .tool-btn:hover { color: #fff; }
         .tool-btn.active { color: #fff; }
 
-        .voice-btn {
-            background: #252525;
-            border: 1px solid var(--border);
-            color: var(--text-dim);
-            padding: 8px 16px;
-            border-radius: 20px;
+        .generate-btn {
+            background: #fff;
+            color: #000;
+            padding: 10px 20px;
+            border-radius: 24px;
             display: flex;
             align-items: center;
             gap: 8px;
-            font-size: 0.8rem;
+            font-size: 0.9rem;
+            font-weight: 600;
             cursor: pointer;
+            border: none;
             transition: all 0.2s;
         }
 
-        .voice-btn:hover {
-            background: #333;
-            color: #fff;
+        .generate-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 20px rgba(255,255,255,0.1);
         }
 
         /* Visual indicator for voice activity */
@@ -301,7 +308,7 @@
             position: relative;
         }
 
-        .ad-media { width: 100%; height: 100%; border: none; object-fit: cover; }
+        .ad-media { width: 100%; height: 100%; border: none; }
 
         .ad-footer {
             position: absolute;
@@ -362,7 +369,7 @@
             font-weight: 600;
             cursor: not-allowed;
             opacity: 0.3;
-            transition: opacity 0.3s, transform 0.2s;
+            transition: all 0.3s;
         }
 
         #skipBtn.ready { cursor: pointer; opacity: 1; }
@@ -372,44 +379,50 @@
         #authModal {
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.85);
             z-index: 10000;
             display: none;
             align-items: center;
             justify-content: center;
-            backdrop-filter: blur(4px);
+            backdrop-filter: blur(8px);
         }
 
         .modal-content {
             background: #111;
             padding: 2.5rem;
             border: 1px solid var(--border);
-            border-radius: 16px;
+            border-radius: 20px;
             text-align: center;
             max-width: 400px;
             width: 90%;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
         }
 
-        .modal-content h2 { margin-bottom: 1rem; font-weight: 500; }
-        .modal-content p { color: var(--text-dim); margin-bottom: 2rem; font-size: 0.9rem; line-height: 1.5; }
+        .modal-content h2 { margin-bottom: 1rem; font-weight: 500; font-size: 1.5rem; }
+        .modal-content p { color: var(--text-dim); margin-bottom: 2rem; font-size: 0.95rem; line-height: 1.5; }
         
         .modal-btns { display: flex; flex-direction: column; gap: 0.8rem; }
         
         .modal-btns .btn-fill, .modal-btns .btn-ghost {
             width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            padding: 12px;
+            font-size: 0.95rem;
         }
 
         /* --- MOBILE RESPONSIVENESS --- */
         @media (max-width: 768px) {
-            nav { padding: 1rem; }
+            nav { padding: 1.25rem 1rem; }
             .nav-links { display: none; }
-            h1 { font-size: 1.8rem; }
+            h1 { font-size: 1.75rem; margin-bottom: 1.5rem; }
             .chat-container { padding: 1rem; }
-            .suggestions { gap: 0.5rem; }
+            textarea { height: 120px; font-size: 0.95rem; }
+            .suggestions { gap: 0.5rem; margin-bottom: 1.5rem; }
+            .pill { font-size: 0.75rem; padding: 6px 12px; }
+            .chat-actions { flex-direction: column; align-items: stretch; }
+            .left-tools { justify-content: space-around; }
+            .generate-btn { justify-content: center; }
+            .ad-footer { flex-direction: column; gap: 1rem; text-align: center; }
+            .ad-box { aspect-ratio: 9/16; max-height: 70vh; }
         }
     </style>
 </head>
@@ -421,11 +434,10 @@
         <div class="nav-left">
             <div class="logo">
                 <i data-lucide="command"></i>
-                Strategist.AI
+                Chatbot
             </div>
             <div class="nav-links">
                 <a href="#" class="nav-link">New Chat</a>
-                <a href="#" class="nav-link">Search</a>
                 <a href="#" class="nav-link">Projects</a>
             </div>
         </div>
@@ -433,35 +445,6 @@
             <button class="btn-ghost" onclick="showAuth()">Log in</button>
             <button class="btn-fill" onclick="showAuth()">Sign up</button>
         </div>
-           </div>
-
-        </div>
-
-        <!-- Auth Modal -->
-
-    <div id="authModal">
-
-        <div class="modal-content">
-
-            <h2>Get Started</h2>
-
-            <p>To use our premium generation features, please log in or create a free account.</p>
-
-            <div class="modal-btns">
-
-                <a href="/login-page" class="btn-fill">Login to Dashboard</a>
-
-                <a href="/signup-page" class="btn-ghost">Create Free Account</a>
-
-                <button onclick="hideAuth()" style="background:transparent; border:none; color:#555; margin-top:15px; cursor:pointer; font-size: 0.8rem;">Maybe later</button>
-
-            </div>
-
-        </div>
-
-       
-
-    </nav>
     </nav>
 
     <main id="appContent">
@@ -469,7 +452,7 @@
         
         <div class="suggestions">
             <div class="pill" onclick="fillPrompt('Generate a complete marketing strategy for my product')">
-                <i data-lucide="target" size="14"></i> Marketing Strategy
+                <i data-lucide="target" size="14"></i> Strategy
             </div>
 
             <div class="pill" onclick="fillPrompt('Generate high-converting ad angles for my product')">
@@ -477,7 +460,7 @@
             </div>
 
             <div class="pill" onclick="fillPrompt('Create detailed customer personas for my product')">
-                <i data-lucide="users" size="14"></i> Customer Personas
+                <i data-lucide="users" size="14"></i> Personas
             </div>
 
             <div class="pill" onclick="fillPrompt('Build irresistible offers for my product')">
@@ -485,13 +468,12 @@
             </div>
 
             <div class="pill" onclick="fillPrompt('Write scroll-stopping marketing hooks and headlines')">
-                <i data-lucide="zap" size="14"></i> Marketing Hooks
+                <i data-lucide="zap" size="14"></i> Hooks
             </div>
         </div>
 
-
         <div class="chat-container">
-            <textarea id="mainPrompt" placeholder="Ask Strategist.AI to Generate a Prototype..."></textarea>
+            <textarea id="mainPrompt" placeholder="Ask Chatbot to Generate a Prototype..."></textarea>
             <div class="chat-actions">
                 <div class="left-tools">
                     <button class="tool-btn" title="Add files"><i data-lucide="plus" size="18"></i></button>
@@ -499,22 +481,23 @@
                     <button class="tool-btn" id="speakerBtn" title="Speech Output" onclick="toggleSpeaker()"><i data-lucide="volume-2" size="18"></i></button>
                     <button class="tool-btn" title="Search the web"><i data-lucide="globe" size="18"></i> Search</button>
                 </div>
-                <button class="voice-btn" id="generateBtn" onclick="handleGenerate()">
-                    <i data-lucide="arrow-right" size="16"></i> Generate
+                <button class="generate-btn" id="generateBtn" onclick="handleGenerate()">
+                    <span>Generate</span>
+                    <i data-lucide="arrow-right" size="16"></i>
                 </button>
             </div>
         </div>
     </main>
 
     <footer>
-        By messaging Strategist.AI, you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.
+        By messaging Chatbot, you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.
     </footer>
 
     <!-- Ad Overlay -->
     <div id="adOverlay">
         <div class="ad-box">
             <div class="ad-controls">
-                <button class="mute-toggle" id="muteContainer" onclick="toggleAdMute()" title="Unmute Video">
+                <button class="mute-toggle" onclick="toggleAdMute()" title="Unmute Video">
                     <i id="adMuteIcon" data-lucide="volume-x" size="18"></i>
                 </button>
             </div>
@@ -537,11 +520,11 @@
     <div id="authModal">
         <div class="modal-content">
             <h2>Get Started</h2>
-            <p>To use our premium generation features, please log in or create a free account.</p>
+            <p>To use our premium generation features, please log in or create an account.</p>
             <div class="modal-btns">
-                <a href="#" class="btn-fill">Login to Dashboard</a>
-                <a href="#" class="btn-ghost">Create Free Account</a>
-                <button onclick="hideAuth()" style="background:transparent; border:none; color:#555; margin-top:15px; cursor:pointer; font-size: 0.8rem;">Maybe later</button>
+                <a href="/login-page" class="btn-fill">Login to Dashboard</a>
+                <a href="/signup-page" class="btn-ghost">Create Account</a>
+                <button onclick="hideAuth()" style="background:transparent; border:none; color:#555; margin-top:15px; cursor:pointer; font-size: 0.8rem; text-decoration: underline;">Maybe later</button>
             </div>
         </div>
     </div>
@@ -551,35 +534,30 @@
         let isListening = false;
         let recognition = null;
         let adMuted = true;
-        let currentAd = null;
+        let currentAdUrl = "";
 
         lucide.createIcons();
-        
-const ADS = [
-    {
-        title: "Monday.com | Work OS",
-        desc: "The visual platform that manages your team's projects and workflows.",
-        url: "https://www.youtube.com/embed/0SBOvY9N7m4", 
-        link: "https://monday.com",
-        type: "video"
-    },
-    {
-        title: "Grammarly for Business",
-        desc: "Ensure your team's communication is clear, concise, and professional.",
-        // Changed to a reliable YouTube embed for the prototype
-        url: "https://www.youtube.com/embed/u73H_In_H_8", 
-        link: "https://grammarly.com",
-        type: "video"
-    },
-    {
-        title: "Premium Black Shirt",
-        desc: "The perfect minimalist aesthetic for modern creators.",
-        // Changed to a reliable Unsplash image URL
-        url: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=80",
-        link: "https://example.com/product",
-        type: "image"
-    }
-];
+
+        const ADS = [
+            {
+                title: "Strategist.AI Pro",
+                desc: "Scale your marketing with precision AI tools.",
+                url: "https://www.youtube.com/embed/ScMzIvxBSi4",
+                link: "https://strategist.ai"
+            },
+            {
+                title: "Next-Gen UI Kit",
+                desc: "Beautiful components for your next project.",
+                url: "https://www.youtube.com/embed/nI3dh2NpXZU",
+                link: "https://google.com"
+            },
+            {
+                title: "Pixup8k",
+                desc: "Convert Blury Photos into 4k-8k High Res.",
+                url: "https://tse3.mm.bing.net/th/id/OIP.57kZM23jGZLONRqoSYCgRQHaJQ?rs=1&pid=ImgDetMain&o=7&rm=3",
+                link: "https://strategist.ai"
+            }
+        ];
 
         let adTimer = 8;
         let adInterval;
@@ -600,21 +578,25 @@ const ADS = [
         }
 
         function toggleAdMute() {
-            if (currentAd && currentAd.type === "image") return;
-            
             adMuted = !adMuted;
             const iframe = document.querySelector('#adMediaContainer iframe');
             const icon = document.getElementById('adMuteIcon');
             
-            const muteParam = adMuted ? "1" : "0";
-            iframe.src = `${currentAd.url}?autoplay=1&mute=${muteParam}&controls=0&modestbranding=1&rel=0`;
+            if (iframe && iframe.src.includes('youtube')) {
+                const muteParam = adMuted ? "1" : "0";
+                iframe.src = `${currentAdUrl}?autoplay=1&mute=${muteParam}&controls=0&modestbranding=1&rel=0`;
+            }
             
             icon.setAttribute('data-lucide', adMuted ? 'volume-x' : 'volume-2');
             lucide.createIcons();
         }
 
         function toggleVoiceInput() {
-            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) return;
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                alert("Speech recognition is not supported in this browser.");
+                return;
+            }
 
             const micBtn = document.getElementById('micBtn');
             const textarea = document.getElementById('mainPrompt');
@@ -624,7 +606,6 @@ const ADS = [
                 return;
             }
 
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             recognition = new SpeechRecognition();
             recognition.continuous = false;
             recognition.interimResults = false;
@@ -638,12 +619,13 @@ const ADS = [
             recognition.onresult = (event) => {
                 const text = event.results[0][0].transcript;
                 textarea.value = text;
+                textarea.placeholder = "Ask Chatbot to Generate a Prototype...";
             };
 
             recognition.onend = () => {
                 isListening = false;
                 micBtn.classList.remove('mic-active');
-                textarea.placeholder = "Ask Strategist.AI to Generate a Prototype...";
+                textarea.placeholder = "Ask Chatbot to Generate a Prototype...";
             };
 
             recognition.start();
@@ -665,13 +647,15 @@ const ADS = [
             lucide.createIcons();
         }
 
-        function speakText(text) {
+        async function speakText(text) {
             if (!isSpeakerEnabled) return;
             const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
             window.speechSynthesis.speak(utterance);
         }
 
-        function handleGenerate() {
+        async function handleGenerate() {
             const prompt = document.getElementById('mainPrompt').value;
             if (!prompt.trim()) return;
             if (isSpeakerEnabled) speakText("Processing your request...");
@@ -685,20 +669,18 @@ const ADS = [
             const media = document.getElementById('adMediaContainer');
             const skipBtn = document.getElementById('skipBtn');
             const timerTxt = document.getElementById('skipTimer');
-            const muteContainer = document.getElementById('muteContainer');
 
-            currentAd = ADS[Math.floor(Math.random() * ADS.length)];
+            const randomAd = ADS[Math.floor(Math.random() * ADS.length)];
+            currentAdUrl = randomAd.url;
             
-            document.getElementById('adTitle').innerText = currentAd.title;
-            document.getElementById('adDesc').innerText = currentAd.desc;
-            document.getElementById('adVisitBtn').onclick = () => window.open(currentAd.link, '_blank');
+            document.getElementById('adTitle').innerText = randomAd.title;
+            document.getElementById('adDesc').innerText = randomAd.desc;
+            document.getElementById('adVisitBtn').onclick = () => window.open(randomAd.link, '_blank');
             
-            if (currentAd.type === "image") {
-                media.innerHTML = `<img src="${currentAd.url}" class="ad-media" alt="Advertisement">`;
-                muteContainer.style.display = 'none';
+            if (randomAd.url.includes('youtube')) {
+                media.innerHTML = `<iframe class="ad-media" src="${randomAd.url}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0" allow="autoplay; encrypted-media" style="pointer-events: none;"></iframe>`;
             } else {
-                media.innerHTML = `<iframe class="ad-media" src="${currentAd.url}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0" allow="autoplay; encrypted-media" style="pointer-events: none;"></iframe>`;
-                muteContainer.style.display = 'flex';
+                media.innerHTML = `<img src="${randomAd.url}" style="width:100%; height:100%; object-fit:cover;">`;
             }
             
             overlay.classList.add('active');
