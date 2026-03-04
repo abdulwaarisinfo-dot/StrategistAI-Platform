@@ -70,9 +70,9 @@ def verify_password(password: str, hashed: str) -> bool:
 # ENV VARIABLES
 # ======================================================
 
-MONGO_URI = os.getenv("MONGO_URI", "")
-JWT_SECRET = os.getenv("JWT_SECRET_KEY", "")
-OPEN_API_KEY = os.getenv("OPEN_API_KEY", "")
+MONGO_URI = os.getenv("MONGO_URI")
+JWT_SECRET = os.getenv("JWT_SECRET_KEY")
+OPEN_API_KEY = os.getenv("OPEN_API_KEY")
 ALGORITHM = "HS256"
 
 # ======================================================
