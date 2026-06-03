@@ -1,267 +1,342 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Join AI Strategist</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg: #0a0a0a;
-            --card: #141414;
-            --accent: #00bcd4;
-            --error: #ff4d4d;
-            --input-bg: #1e1e1e;
-            --border: #222;
-            --text-muted: #888;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create Account — Stratum</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --black:#080808;--surface:#0f0f0f;--surface2:#161616;--surface3:#1e1e1e;
+  --border:rgba(255,255,255,0.07);--border-strong:rgba(255,255,255,0.13);
+  --white:#fff;--off-white:#d4d4d4;--muted:#666;--muted2:#444;
+  --accent:#e8ff59;--accent-dim:rgba(232,255,89,0.1);
+  --red:#ff4545;--green:#4ade80;--amber:#f59e0b;
+  --font:'Sora',sans-serif;--mono:'DM Mono',monospace;
+}
+html,body{height:100%}
+body{
+  background:var(--black);color:var(--white);font-family:var(--font);
+  -webkit-font-smoothing:antialiased;display:grid;grid-template-columns:1fr 1fr;min-height:100vh;
+}
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+/* ── LEFT ── */
+.left{
+  background:var(--surface);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;padding:36px 44px;
+  position:relative;overflow:hidden;
+}
+.left-glow{
+  position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 80% 60% at 0% 45%,rgba(232,255,89,0.055) 0%,transparent 68%),
+             radial-gradient(ellipse 45% 45% at 90% 85%,rgba(232,255,89,0.03) 0%,transparent 70%);
+}
+.left-noise{
+  position:absolute;inset:0;z-index:0;pointer-events:none;opacity:.022;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:180px;
+}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;position:relative;z-index:1}
+.logo-mark{width:30px;height:30px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center}
+.logo-mark svg{width:15px;height:15px}
+.logo-name{font-size:14px;font-weight:600;color:var(--white)}
 
-        body {
-            background-color: var(--bg);
-            color: #fff;
-            font-family: 'Inter', sans-serif;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 20px;
-        }
+.left-body{flex:1;display:flex;flex-direction:column;justify-content:center;position:relative;z-index:1;max-width:380px}
+.left-badge{
+  display:inline-flex;align-items:center;gap:7px;
+  font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  color:#000;background:var(--accent);padding:5px 12px;border-radius:100px;
+  margin-bottom:22px;width:fit-content;font-weight:600;
+}
+.left-title{font-size:clamp(30px,3.8vw,50px);font-weight:700;letter-spacing:-.045em;line-height:.96;color:var(--white);margin-bottom:18px}
+.left-title em{font-style:normal;color:var(--accent)}
+.left-desc{font-size:13px;color:var(--muted);line-height:1.72;margin-bottom:32px}
 
-        .card {
-            background: var(--card);
-            padding: 2.5rem;
-            border-radius: 16px;
-            width: 100%;
-            max-width: 420px;
-            border: 1px solid var(--border);
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
-            transition: transform 0.3s ease;
-        }
+.plan-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:20px}
+.plan-label{font-family:var(--mono);font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+.plan-title{font-size:17px;font-weight:700;color:var(--white);margin-bottom:3px}
+.plan-sub{font-size:11px;color:var(--muted);margin-bottom:14px}
+.plan-perks{display:flex;flex-direction:column;gap:8px}
+.plan-perk{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--off-white)}
+.perk-check{
+  width:18px;height:18px;border-radius:50%;background:var(--accent-dim);
+  border:1px solid rgba(232,255,89,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.perk-check svg{width:9px;height:9px;stroke:var(--accent);fill:none;stroke-width:2.5}
 
-        h2 { 
-            margin-bottom: 0.5rem; 
-            font-size: 1.75rem; 
-            letter-spacing: -0.025em;
-            text-align: center;
-        }
-        
-        p.subtitle { 
-            color: var(--text-muted); 
-            margin-bottom: 2rem; 
-            font-size: 0.95rem; 
-            line-height: 1.5;
-            text-align: center;
-        }
+.left-foot{position:relative;z-index:1;font-size:11px;color:var(--muted2)}
 
-        .form-group { 
-            margin-bottom: 1.25rem; 
-        }
-        
-        label { 
-            display: block; 
-            margin-bottom: 0.6rem; 
-            color: #ccc; 
-            font-size: 0.85rem; 
-            font-weight: 500;
-        }
+/* ── RIGHT ── */
+.right{
+  display:flex;align-items:center;justify-content:center;
+  padding:40px 32px;overflow-y:auto;
+}
+.form-wrap{width:100%;max-width:360px}
 
-        input {
-            width: 100%;
-            padding: 0.85rem 1rem;
-            background: var(--input-bg);
-            border: 1px solid #333;
-            border-radius: 8px;
-            color: white;
-            font-size: 1rem;
-            outline: none;
-            transition: all 0.2s ease;
-            -webkit-appearance: none;
-        }
+.form-head{margin-bottom:24px}
+.form-head h1{font-size:21px;font-weight:600;letter-spacing:-.02em;color:var(--white);margin-bottom:5px}
+.form-head p{font-size:13px;color:var(--muted)}
 
-        input:focus { 
-            border-color: var(--accent); 
-            box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.1);
-        }
+/* TABS */
+.tabs{display:flex;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:3px;margin-bottom:22px}
+.tab{
+  flex:1;padding:8px;border-radius:7px;font-size:12px;font-weight:500;text-align:center;
+  cursor:pointer;color:var(--muted);background:none;border:none;font-family:var(--font);
+  transition:all .2s;text-decoration:none;display:block;
+}
+.tab.active{background:var(--surface3);color:var(--white);box-shadow:0 1px 4px rgba(0,0,0,.4)}
 
-        input::placeholder {
-            color: #555;
-        }
+/* FIELDS */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.field{margin-bottom:13px}
+.field-label{font-size:10px;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;display:block}
+.field-wrap{position:relative}
+.field-input,.field-select{
+  width:100%;background:var(--surface2);border:1px solid var(--border);
+  border-radius:8px;padding:10px 13px;color:var(--white);
+  font-size:13px;font-family:var(--font);outline:none;transition:all .2s;appearance:none;
+}
+.field-input:focus,.field-select:focus{border-color:rgba(232,255,89,.32);background:var(--surface3)}
+.field-input::placeholder{color:var(--muted2)}
+.field-select option{background:var(--surface2)}
+.pwd-input{padding-right:42px}
+.eye-btn{
+  position:absolute;right:11px;top:50%;transform:translateY(-50%);
+  background:none;border:none;cursor:pointer;color:var(--muted);display:flex;align-items:center;transition:color .2s;
+}
+.eye-btn:hover{color:var(--off-white)}
+.eye-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.5}
 
-        .btn {
-            width: 100%;
-            padding: 1rem;
-            background: var(--accent);
-            border: none;
-            border-radius: 8px;
-            color: #000;
-            font-weight: 600;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            margin-top: 1rem;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+/* PASSWORD STRENGTH */
+.strength-bars{display:flex;gap:4px;margin-top:6px}
+.strength-bar{height:2px;flex:1;border-radius:2px;background:var(--surface3);transition:background .3s}
+.strength-bar.weak{background:var(--red)}
+.strength-bar.fair{background:var(--amber)}
+.strength-bar.strong{background:var(--green)}
+.strength-label{font-size:10px;color:var(--muted);margin-top:4px;min-height:14px}
 
-        .btn:hover { 
-            opacity: 0.9; 
-            transform: translateY(-1px);
-        }
-        
-        .btn:active {
-            transform: translateY(0);
-        }
+/* TERMS */
+.terms-row{display:flex;align-items:flex-start;gap:10px;font-size:11px;color:var(--muted);margin:12px 0;line-height:1.55}
+.terms-row a{color:var(--accent);text-decoration:none}
+.check-box{
+  width:16px;height:16px;border:1px solid var(--border-strong);border-radius:4px;
+  background:var(--surface2);flex-shrink:0;margin-top:1px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all .2s;
+}
+.check-box.checked{background:var(--accent);border-color:var(--accent)}
+.check-box svg{width:9px;height:9px;stroke:#000;fill:none;stroke-width:2.5;display:none}
+.check-box.checked svg{display:block}
 
-        .btn:disabled { 
-            opacity: 0.5; 
-            cursor: not-allowed; 
-            transform: none;
-        }
+/* SUBMIT */
+.submit{
+  width:100%;padding:12px;border-radius:8px;background:var(--accent);border:none;
+  font-size:13px;font-weight:600;color:#000;cursor:pointer;font-family:var(--font);
+  transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.submit:hover{opacity:.86;transform:translateY(-1px)}
+.submit:disabled{opacity:.4;cursor:not-allowed;transform:none}
 
-        .footer-link {
-            text-align: center;
-            margin-top: 1.5rem;
-            font-size: 0.9rem;
-            color: var(--text-muted);
-        }
+/* ALERT */
+.alert{border-radius:8px;padding:10px 13px;font-size:12px;margin-bottom:13px;display:none;border:1px solid}
+.alert.error{color:var(--red);background:rgba(255,69,69,.07);border-color:rgba(255,69,69,.15)}
+.alert.success{color:var(--green);background:rgba(74,222,128,.07);border-color:rgba(74,222,128,.15)}
+.alert.show{display:block}
 
-        .footer-link a { 
-            color: var(--accent); 
-            text-decoration: none; 
-            font-weight: 600;
-        }
-        
-        .footer-link a:hover {
-            text-decoration: underline;
-        }
-        
-        .message-box {
-            display: none;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1.5rem;
-            font-size: 0.875rem;
-            line-height: 1.4;
-            border: 1px solid transparent;
-        }
+/* SPINNER */
+.spinner{width:15px;height:15px;border:2px solid rgba(0,0,0,.3);border-top-color:#000;border-radius:50%;animation:spin .75s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-        @media (max-width: 480px) {
-            .card {
-                padding: 1.5rem;
-                border-radius: 12px;
-            }
-            
-            h2 {
-                font-size: 1.5rem;
-            }
-
-            .form-group {
-                margin-bottom: 1rem;
-            }
-
-            input {
-                padding: 0.75rem;
-            }
-        }
-    </style>
+@media(max-width:860px){
+  body{grid-template-columns:1fr}
+  .left{display:none}
+  .right{min-height:100dvh;align-items:flex-start;padding-top:64px}
+  .form-row{grid-template-columns:1fr}
+}
+</style>
 </head>
 <body>
-    <div class="card">
-        <h2>Create Account</h2>
-        <p class="subtitle">Join the future of marketing automation.</p>
 
-        <div id="message" class="message-box"></div>
+<!-- LEFT -->
+<div class="left">
+  <div class="left-glow"></div>
+  <div class="left-noise"></div>
+  <a href="/" class="brand">
+    <div class="logo-mark"><svg viewBox="0 0 16 16" fill="none"><path d="M2 13L8 3l6 10H2z" fill="#000"/></svg></div>
+    <span class="logo-name">Stratum</span>
+  </a>
+  <div class="left-body">
+    <div class="left-badge">Free forever · No card needed</div>
+    <h1 class="left-title">Start with<br><em>intelligence.</em></h1>
+    <p class="left-desc">Join operators using Stratum to generate strategy, copy, and insights — in seconds, not hours.</p>
+    <div class="plan-card">
+      <div class="plan-label">Free Plan · Included</div>
+      <div class="plan-title">Everything to start.</div>
+      <div class="plan-sub">No credit card. No catch.</div>
+      <div class="plan-perks">
+        <div class="plan-perk"><div class="perk-check"><svg viewBox="0 0 9 9"><polyline points="1 4.5 3.5 7 8 2"/></svg></div>10 AI generations every day</div>
+        <div class="plan-perk"><div class="perk-check"><svg viewBox="0 0 9 9"><polyline points="1 4.5 3.5 7 8 2"/></svg></div>Access to all 10 tools</div>
+        <div class="plan-perk"><div class="perk-check"><svg viewBox="0 0 9 9"><polyline points="1 4.5 3.5 7 8 2"/></svg></div>Full generation history</div>
+        <div class="plan-perk"><div class="perk-check"><svg viewBox="0 0 9 9"><polyline points="1 4.5 3.5 7 8 2"/></svg></div>Real-time WebSocket streaming</div>
+      </div>
+    </div>
+  </div>
+  <div class="left-foot">© 2025 Stratum. All rights reserved.</div>
+</div>
 
-        <form id="signupForm">
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" id="username" name="username" required placeholder="johndoe" autocomplete="username">
-            </div>
-            <div class="form-group">
-                <label for="email">Email Address</label>
-                <input type="email" id="email" name="email" required placeholder="john@example.com" autocomplete="email">
-            </div>
-            <div class="form-group">
-                <label for="phone">Phone Number</label>
-                <input type="tel" id="phone" name="phone" required placeholder="+923001234567" pattern="^\+?[1-9]\d{1,14}$" title="Please enter a valid phone number (e.g. +923001234567)">
-            </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" required placeholder="••••••••" autocomplete="new-password">
-            </div>
-            <div class="form-group">
-                <label for="country">Country</label>
-                <input type="text" id="country" name="country" required placeholder="United States">
-            </div>
-            <button type="submit" class="btn" id="submitBtn">Sign Up</button>
-        </form>
-
-        <div class="footer-link">
-            Already have an account? <a href="/login-page">Log in</a>
-        </div>
+<!-- RIGHT -->
+<div class="right">
+  <div class="form-wrap">
+    <div class="form-head">
+      <h1>Create account</h1>
+      <p>Set up your free workspace in under a minute.</p>
     </div>
 
-    <script>
-        const form = document.getElementById('signupForm');
-        const msgBox = document.getElementById('message');
-        const btn = document.getElementById('submitBtn');
+    <div class="tabs">
+      <a href="/login-page" class="tab">Sign in</a>
+      <span class="tab active">Create account</span>
+    </div>
 
-        form.onsubmit = async (e) => {
-            e.preventDefault();
-            
-            // UI Feedback
-            btn.disabled = true;
-            btn.innerText = "Creating Account...";
-            msgBox.style.display = 'none';
+    <div class="alert" id="signupAlert"></div>
 
-            const formData = new FormData(form);
+    <!-- Fields match POST /signup: username, email, phone, password, country -->
+    <form id="signupForm" onsubmit="handleSignup(event)">
+      <div class="form-row">
+        <div class="field">
+          <label class="field-label">Full name</label>
+          <input type="text" class="field-input" name="username" placeholder="Alex Johnson" required autocomplete="name">
+        </div>
+        <div class="field">
+          <label class="field-label">Phone</label>
+          <input type="text" class="field-input" name="phone" placeholder="+1 555 000 0000" required>
+        </div>
+      </div>
 
-            try {
-                // Fetch call to the backend signup endpoint defined in main.py
-                const response = await fetch('/signup', {
-                    method: 'POST',
-                    body: formData
-                });
+      <div class="field">
+        <label class="field-label">Email</label>
+        <input type="email" class="field-input" name="email" placeholder="name@company.com" required autocomplete="email">
+      </div>
 
-                const data = await response.json();
+      <div class="field">
+        <label class="field-label">Country</label>
+        <select class="field-select" name="country" required>
+          <option value="" disabled selected>Select country…</option>
+          <option>United States</option><option>United Kingdom</option>
+          <option>Canada</option><option>Australia</option>
+          <option>Germany</option><option>France</option>
+          <option>Netherlands</option><option>Singapore</option>
+          <option>United Arab Emirates</option><option>Pakistan</option>
+          <option>India</option><option>Nigeria</option>
+          <option>South Africa</option><option>Brazil</option>
+          <option>Mexico</option><option>Philippines</option>
+          <option>Indonesia</option><option>Other</option>
+        </select>
+      </div>
 
-                if (response.ok) {
-                    msgBox.style.display = 'block';
-                    msgBox.style.background = 'rgba(0, 188, 212, 0.1)';
-                    msgBox.style.borderColor = 'rgba(0, 188, 212, 0.2)';
-                    msgBox.style.color = 'var(--accent)';
-                    msgBox.innerText = "Success! Account created. Granting access...";
-                    
-                    // Save token if returned (backend returns access_token)
-                    if (data.access_token) {
-                        localStorage.setItem('access_token', data.access_token);
-                    }
-                    
-                    setTimeout(() => {
-                        window.location.href = '/page';
-                    }, 1500);
-                } else {
-                    throw new Error(data.detail || "Signup failed. Please check your details.");
-                }
-            } catch (err) {
-                msgBox.style.display = 'block';
-                msgBox.style.background = 'rgba(255, 77, 77, 0.1)';
-                msgBox.style.borderColor = 'rgba(255, 77, 77, 0.2)';
-                msgBox.style.color = 'var(--error)';
-                msgBox.innerText = err.message;
-                
-                // Reset button for retry
-                btn.disabled = false;
-                btn.innerText = "Sign Up";
-            }
-        };
-    </script>
+      <div class="field">
+        <label class="field-label">Password</label>
+        <div class="field-wrap">
+          <input type="password" class="field-input pwd-input" name="password" id="pwdInput"
+            placeholder="Min 8 chars, 1 uppercase, 1 number"
+            required oninput="checkStrength(this.value)" autocomplete="new-password">
+          <button type="button" class="eye-btn" onclick="togglePwd('pwdInput',this)" aria-label="Toggle password">
+            <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+        <div class="strength-bars">
+          <div class="strength-bar" id="sb1"></div>
+          <div class="strength-bar" id="sb2"></div>
+          <div class="strength-bar" id="sb3"></div>
+        </div>
+        <div class="strength-label" id="strengthLabel"></div>
+      </div>
+
+      <div class="terms-row">
+        <div class="check-box" id="termsBox" onclick="toggleTerms()">
+          <svg viewBox="0 0 9 9"><polyline points="1 4.5 3.5 7 8 2"/></svg>
+        </div>
+        <span>I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>. I understand this is a free plan with a 10 generation/day limit.</span>
+      </div>
+
+      <button type="submit" class="submit" id="signupBtn">
+        Create free account
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+      </button>
+    </form>
+
+    <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:18px">
+      Already have an account? <a href="/login-page" style="color:var(--accent);text-decoration:none">Sign in →</a>
+    </p>
+  </div>
+</div>
+
+<script>
+// ── AUTH GUARD ──
+if(localStorage.getItem('access_token')){window.location.href='/dashboard';}
+
+let termsAccepted=false;
+
+function toggleTerms(){
+  termsAccepted=!termsAccepted;
+  document.getElementById('termsBox').classList.toggle('checked',termsAccepted);
+}
+
+function checkStrength(val){
+  const bars=[document.getElementById('sb1'),document.getElementById('sb2'),document.getElementById('sb3')];
+  const lbl=document.getElementById('strengthLabel');
+  let score=0;
+  if(val.length>=8)score++;
+  if(/[A-Z]/.test(val))score++;
+  if(/[0-9]/.test(val))score++;
+  bars.forEach(b=>b.className='strength-bar');
+  if(score===1){bars[0].classList.add('weak');lbl.textContent='Weak';lbl.style.color='var(--red)';}
+  else if(score===2){bars[0].classList.add('fair');bars[1].classList.add('fair');lbl.textContent='Fair';lbl.style.color='var(--amber)';}
+  else if(score===3){bars.forEach(b=>b.classList.add('strong'));lbl.textContent='Strong';lbl.style.color='var(--green)';}
+  else{lbl.textContent='';}
+}
+
+// ── SIGNUP → POST /signup ──
+// Backend expects: username, email, phone, password, country (all Form fields)
+// Returns: {status:"success", access_token, user?}
+// Note: signup response only returns access_token (no user object in the backend response),
+// so we do an immediate /me call to populate localStorage.
+async function handleSignup(e){
+  e.preventDefault();
+  if(!termsAccepted){showAlert('signupAlert','Please accept the Terms of Service to continue.','error');return;}
+  const btn=document.getElementById('signupBtn');
+  btn.disabled=true;btn.innerHTML='<div class="spinner"></div>';
+  showAlert('signupAlert','','');
+  try{
+    const res=await fetch('/signup',{method:'POST',body:new FormData(e.target)});
+    const data=await res.json();
+    if(!res.ok)throw new Error(data.detail||'Sign up failed.');
+    localStorage.setItem('access_token',data.access_token);
+    // Fetch user profile immediately since /signup only returns the token
+    try{
+      const meRes=await fetch('/me',{headers:{Authorization:`Bearer ${data.access_token}`}});
+      if(meRes.ok){const me=await meRes.json();localStorage.setItem('user',JSON.stringify(me));}
+    }catch(_){}
+    showAlert('signupAlert','Account created! Redirecting…','success');
+    setTimeout(()=>window.location.href='/dashboard',1200);
+  }catch(err){
+    showAlert('signupAlert',err.message,'error');
+    btn.disabled=false;
+    btn.innerHTML='Create free account <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg>';
+  }
+}
+
+function showAlert(id,msg,type){
+  const el=document.getElementById(id);
+  el.textContent=msg;
+  el.className='alert'+(msg?' show '+type:'');
+}
+function togglePwd(fieldId,btn){
+  const f=document.getElementById(fieldId);
+  const isPassword=f.type==='password';
+  f.type=isPassword?'text':'password';
+  btn.querySelector('svg').style.opacity=isPassword?'.45':'1';
+}
+</script>
 </body>
 </html>
