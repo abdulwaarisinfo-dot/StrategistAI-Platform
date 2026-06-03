@@ -16,273 +16,201 @@
   --red:#ff4545;--green:#4ade80;
   --font:'Sora',sans-serif;--mono:'DM Mono',monospace;
 }
-html{font-size:16px}
+html,body{height:100%}
 body{
   background:var(--black);color:var(--white);font-family:var(--font);
-  -webkit-font-smoothing:antialiased;min-height:100vh;
-  display:grid;grid-template-columns:1fr 1fr;
-  overflow:hidden;
+  -webkit-font-smoothing:antialiased;display:grid;grid-template-columns:1fr 1fr;
+  min-height:100vh;
 }
 
-/* ── LEFT PANEL ── */
-.left-panel{
-  display:flex;flex-direction:column;
-  padding:36px 40px;position:relative;overflow:hidden;
+/* ── LEFT ── */
+.left{
   background:var(--surface);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;padding:36px 44px;
+  position:relative;overflow:hidden;
 }
-
-.left-bg{
-  position:absolute;inset:0;pointer-events:none;z-index:0;
-  background:
-    radial-gradient(ellipse 60% 50% at 50% 0%,rgba(232,255,89,0.06) 0%,transparent 70%),
-    radial-gradient(ellipse 40% 40% at 100% 100%,rgba(232,255,89,0.03) 0%,transparent 70%);
+.left-glow{
+  position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 70% 55% at 50% 0%,rgba(232,255,89,0.07) 0%,transparent 68%),
+             radial-gradient(ellipse 40% 40% at 95% 95%,rgba(232,255,89,0.03) 0%,transparent 70%);
 }
 .left-noise{
-  position:absolute;inset:0;z-index:0;pointer-events:none;opacity:0.03;
-  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size:200px;
+  position:absolute;inset:0;z-index:0;pointer-events:none;opacity:.025;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:180px;
 }
-
-.left-nav{
-  display:flex;align-items:center;gap:10px;
-  text-decoration:none;position:relative;z-index:1;
-}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;position:relative;z-index:1}
 .logo-mark{width:30px;height:30px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center}
-.logo-mark svg{width:16px;height:16px}
+.logo-mark svg{width:15px;height:15px}
 .logo-name{font-size:14px;font-weight:600;color:var(--white)}
 
-.left-content{
-  flex:1;display:flex;flex-direction:column;
-  justify-content:center;position:relative;z-index:1;
-  max-width:400px;
-}
+.left-body{flex:1;display:flex;flex-direction:column;justify-content:center;position:relative;z-index:1;max-width:380px}
 .left-eyebrow{
-  font-family:var(--mono);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;
-  color:var(--accent);margin-bottom:20px;display:flex;align-items:center;gap:8px;
+  font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--accent);margin-bottom:18px;display:flex;align-items:center;gap:8px;
 }
-.left-eyebrow::before{content:'';width:20px;height:1px;background:var(--accent)}
-.left-title{
-  font-size:clamp(32px,4vw,52px);font-weight:700;letter-spacing:-0.04em;
-  line-height:1.0;color:var(--white);margin-bottom:20px;
-}
+.left-eyebrow::before{content:'';width:18px;height:1px;background:var(--accent)}
+.left-title{font-size:clamp(30px,3.8vw,50px);font-weight:700;letter-spacing:-.045em;line-height:.96;color:var(--white);margin-bottom:18px}
 .left-title em{font-style:normal;color:var(--accent)}
-.left-desc{font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:40px}
+.left-desc{font-size:13px;color:var(--muted);line-height:1.72;margin-bottom:36px}
 
-.feature-list{display:flex;flex-direction:column;gap:12px}
-.feature-item{
-  display:flex;align-items:center;gap:12px;
-  font-size:13px;color:var(--off-white);
+.feature-list{display:flex;flex-direction:column;gap:11px}
+.feature-item{display:flex;align-items:center;gap:11px;font-size:13px;color:var(--off-white)}
+.feat-check{
+  width:20px;height:20px;border-radius:50%;background:var(--accent-dim);
+  border:1px solid rgba(232,255,89,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;
 }
-.feature-check{
-  width:20px;height:20px;border-radius:50%;
-  background:var(--accent-dim);border:1px solid rgba(232,255,89,0.2);
-  display:flex;align-items:center;justify-content:center;flex-shrink:0;
-}
-.feature-check svg{width:10px;height:10px;stroke:var(--accent);stroke-width:2.5;fill:none}
+.feat-check svg{width:10px;height:10px;stroke:var(--accent);fill:none;stroke-width:2.5}
 
-.left-footer{
-  position:relative;z-index:1;
-  font-size:11px;color:var(--muted2);
-}
+.left-foot{position:relative;z-index:1;font-size:11px;color:var(--muted2)}
 
-/* ── RIGHT PANEL ── */
-.right-panel{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:40px;overflow-y:auto;
+/* ── RIGHT ── */
+.right{
+  display:flex;align-items:center;justify-content:center;
+  padding:40px 32px;overflow-y:auto;
 }
+.form-wrap{width:100%;max-width:360px}
 
-.form-card{width:100%;max-width:380px}
-.form-card-top{margin-bottom:32px}
-.form-card-top h1{font-size:22px;font-weight:600;letter-spacing:-0.02em;color:var(--white);margin-bottom:6px}
-.form-card-top p{font-size:13px;color:var(--muted)}
+.form-head{margin-bottom:28px}
+.form-head h1{font-size:21px;font-weight:600;letter-spacing:-.02em;color:var(--white);margin-bottom:5px}
+.form-head p{font-size:13px;color:var(--muted)}
 
-/* ── TABS ── */
-.auth-tabs{
-  display:flex;gap:0;background:var(--surface2);border:1px solid var(--border);
-  border-radius:9px;padding:3px;margin-bottom:28px;
+/* TABS */
+.tabs{display:flex;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:3px;margin-bottom:26px}
+.tab{
+  flex:1;padding:8px;border-radius:7px;font-size:12px;font-weight:500;text-align:center;
+  cursor:pointer;color:var(--muted);background:none;border:none;font-family:var(--font);
+  transition:all .2s;text-decoration:none;display:block;
 }
-.auth-tab{
-  flex:1;padding:8px;border-radius:7px;font-size:12px;font-weight:500;
-  text-align:center;cursor:pointer;color:var(--muted);
-  background:none;border:none;font-family:var(--font);transition:all 0.2s;
-  text-decoration:none;display:block;
-}
-.auth-tab.active{background:var(--surface3);color:var(--white);box-shadow:0 1px 3px rgba(0,0,0,0.4)}
+.tab.active{background:var(--surface3);color:var(--white);box-shadow:0 1px 4px rgba(0,0,0,.4)}
 
-/* ── FIELDS ── */
-.form-field{margin-bottom:16px}
-.field-label{
-  font-size:11px;font-family:var(--mono);letter-spacing:0.1em;text-transform:uppercase;
-  color:var(--muted);margin-bottom:7px;display:block;
-}
+/* FIELDS */
+.field{margin-bottom:15px}
+.field-label{font-size:10px;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;display:block}
 .field-wrap{position:relative}
 .field-input{
   width:100%;background:var(--surface2);border:1px solid var(--border);
-  border-radius:9px;padding:11px 14px;color:var(--white);
-  font-size:13px;font-family:var(--font);outline:none;transition:all 0.2s;
+  border-radius:8px;padding:11px 14px;color:var(--white);
+  font-size:13px;font-family:var(--font);outline:none;transition:all .2s;
 }
-.field-input:focus{border-color:rgba(232,255,89,0.35);background:var(--surface3)}
+.field-input:focus{border-color:rgba(232,255,89,.32);background:var(--surface3)}
 .field-input::placeholder{color:var(--muted2)}
-.field-eye{
-  position:absolute;right:12px;top:50%;transform:translateY(-50%);
+.pwd-input{padding-right:42px}
+.eye-btn{
+  position:absolute;right:11px;top:50%;transform:translateY(-50%);
   background:none;border:none;cursor:pointer;color:var(--muted);
-  display:flex;align-items:center;
+  display:flex;align-items:center;transition:color .2s;
 }
-.field-eye svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.5}
-.field-eye:hover{color:var(--off-white)}
+.eye-btn:hover{color:var(--off-white)}
+.eye-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.5}
 
-/* ── FORGOT ── */
-.forgot-row{display:flex;justify-content:flex-end;margin-top:-8px;margin-bottom:16px}
-.forgot-link{font-size:11px;color:var(--muted);cursor:pointer;text-decoration:none;transition:color 0.2s}
+.forgot-row{display:flex;justify-content:flex-end;margin-top:-8px;margin-bottom:14px}
+.forgot-link{font-size:11px;color:var(--muted);text-decoration:none;cursor:pointer;transition:color .2s}
 .forgot-link:hover{color:var(--accent)}
 
-/* ── SUBMIT ── */
-.submit-btn{
-  width:100%;padding:13px;border-radius:9px;
-  background:var(--accent);border:none;
-  font-size:13px;font-weight:600;color:#000;
-  cursor:pointer;font-family:var(--font);
-  transition:all 0.2s;margin-top:4px;
-  display:flex;align-items:center;justify-content:center;gap:8px;
+/* SUBMIT */
+.submit{
+  width:100%;padding:12px;border-radius:8px;background:var(--accent);border:none;
+  font-size:13px;font-weight:600;color:#000;cursor:pointer;font-family:var(--font);
+  transition:all .2s;margin-top:4px;display:flex;align-items:center;justify-content:center;gap:8px;
 }
-.submit-btn:hover{opacity:0.88;transform:translateY(-1px)}
-.submit-btn:disabled{opacity:0.4;cursor:not-allowed;transform:none}
-.submit-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2}
+.submit:hover{opacity:.86;transform:translateY(-1px)}
+.submit:disabled{opacity:.4;cursor:not-allowed;transform:none}
 
-/* ── DIVIDER ── */
-.divider{
-  display:flex;align-items:center;gap:12px;
-  margin:20px 0;font-size:11px;color:var(--muted2);
-}
+/* DIVIDER */
+.divider{display:flex;align-items:center;gap:10px;margin:18px 0;font-size:11px;color:var(--muted2)}
 .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
 
-/* ── ALERTS ── */
-.alert{
-  border-radius:8px;padding:10px 14px;font-size:12px;
-  margin-bottom:16px;display:none;
-  border:1px solid;
-}
-.alert.error{color:var(--red);background:rgba(255,69,69,0.07);border-color:rgba(255,69,69,0.15)}
-.alert.success{color:var(--green);background:rgba(74,222,128,0.07);border-color:rgba(74,222,128,0.15)}
+/* ALERT */
+.alert{border-radius:8px;padding:10px 13px;font-size:12px;margin-bottom:14px;display:none;border:1px solid}
+.alert.error{color:var(--red);background:rgba(255,69,69,.07);border-color:rgba(255,69,69,.15)}
+.alert.success{color:var(--green);background:rgba(74,222,128,.07);border-color:rgba(74,222,128,.15)}
 .alert.show{display:block}
 
-/* ── MODAL ── */
-.modal-overlay{
-  position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:500;
-  display:none;align-items:center;justify-content:center;
-  backdrop-filter:blur(12px);padding:20px;
-}
-.modal-overlay.open{display:flex}
-.modal-box{
-  background:var(--surface);border:1px solid var(--border-strong);
-  border-radius:16px;padding:32px;width:100%;max-width:360px;
-}
-.modal-box h2{font-size:18px;font-weight:600;margin-bottom:6px}
-.modal-box p{font-size:12px;color:var(--muted);margin-bottom:24px;line-height:1.6}
-.modal-close{
-  float:right;background:none;border:none;color:var(--muted);
-  font-size:20px;cursor:pointer;line-height:1;margin-top:-4px;
-}
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:800;display:none;align-items:center;justify-content:center;backdrop-filter:blur(14px);padding:20px}
+.modal-bg.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border-strong);border-radius:16px;padding:30px;width:100%;max-width:340px}
+.modal-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px}
+.modal-top h2{font-size:17px;font-weight:600;color:var(--white)}
+.modal-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:20px;line-height:1;padding:0;transition:color .2s}
+.modal-close:hover{color:var(--white)}
+.modal-sub{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:22px}
 
-/* ── SPINNER ── */
-.spinner{
-  width:16px;height:16px;border:2px solid rgba(0,0,0,0.3);
-  border-top-color:#000;border-radius:50%;
-  animation:spin 0.8s linear infinite;
-}
+/* SPINNER */
+.spinner{width:15px;height:15px;border:2px solid rgba(0,0,0,.3);border-top-color:#000;border-radius:50%;animation:spin .75s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* ── RESPONSIVE ── */
-@media(max-width:900px){
-  body{grid-template-columns:1fr;overflow-y:auto}
-  .left-panel{display:none}
-  .right-panel{min-height:100vh}
+@media(max-width:860px){
+  body{grid-template-columns:1fr}
+  .left{display:none}
+  .right{min-height:100dvh;align-items:flex-start;padding-top:64px}
 }
 </style>
 </head>
 <body>
 
-<!-- LEFT PANEL -->
-<div class="left-panel">
-  <div class="left-bg"></div>
+<!-- LEFT -->
+<div class="left">
+  <div class="left-glow"></div>
   <div class="left-noise"></div>
-
-  <a href="/" class="left-nav">
+  <a href="/" class="brand">
     <div class="logo-mark"><svg viewBox="0 0 16 16" fill="none"><path d="M2 13L8 3l6 10H2z" fill="#000"/></svg></div>
     <span class="logo-name">Stratum</span>
   </a>
-
-  <div class="left-content">
+  <div class="left-body">
     <div class="left-eyebrow">AI Commerce Intelligence</div>
     <h1 class="left-title">Welcome<br>back to<br><em>Stratum.</em></h1>
     <p class="left-desc">Your AI-powered strategy engine for e-commerce growth. Pick up where you left off.</p>
-
     <div class="feature-list">
-      <div class="feature-item">
-        <div class="feature-check"><svg viewBox="0 0 10 10"><polyline points="1.5 5 4 7.5 8.5 2.5"/></svg></div>
-        10 precision AI tools in one platform
-      </div>
-      <div class="feature-item">
-        <div class="feature-check"><svg viewBox="0 0 10 10"><polyline points="1.5 5 4 7.5 8.5 2.5"/></svg></div>
-        Real-time streaming generation
-      </div>
-      <div class="feature-item">
-        <div class="feature-check"><svg viewBox="0 0 10 10"><polyline points="1.5 5 4 7.5 8.5 2.5"/></svg></div>
-        Full generation history saved
-      </div>
-      <div class="feature-item">
-        <div class="feature-check"><svg viewBox="0 0 10 10"><polyline points="1.5 5 4 7.5 8.5 2.5"/></svg></div>
-        10 free generations every day
-      </div>
+      <div class="feature-item"><div class="feat-check"><svg viewBox="0 0 10 10"><polyline points="1.5 5 4 7.5 8.5 2.5"/></svg></div>10 precision AI tools in one platform</div>
+      <div class="feature-item"><div class="feat-check"><svg viewBox="0 0 10 10"><polyline points="1.5 5 4 7.5 8.5 2.5"/></svg></div>Real-time streaming generation</div>
+      <div class="feature-item"><div class="feat-check"><svg viewBox="0 0 10 10"><polyline points="1.5 5 4 7.5 8.5 2.5"/></svg></div>Full generation history saved</div>
+      <div class="feature-item"><div class="feat-check"><svg viewBox="0 0 10 10"><polyline points="1.5 5 4 7.5 8.5 2.5"/></svg></div>10 free generations every day</div>
     </div>
   </div>
-
-  <div class="left-footer">© 2025 Stratum. All rights reserved.</div>
+  <div class="left-foot">© 2025 Stratum. All rights reserved.</div>
 </div>
 
-<!-- RIGHT PANEL -->
-<div class="right-panel">
-  <div class="form-card">
-    <div class="form-card-top">
+<!-- RIGHT -->
+<div class="right">
+  <div class="form-wrap">
+    <div class="form-head">
       <h1>Sign in</h1>
       <p>Access your intelligence dashboard.</p>
     </div>
 
-    <div class="auth-tabs">
-      <span class="auth-tab active">Sign in</span>
-      <a href="/signup-page" class="auth-tab">Create account</a>
+    <div class="tabs">
+      <span class="tab active">Sign in</span>
+      <a href="/signup-page" class="tab">Create account</a>
     </div>
 
     <div class="alert" id="loginAlert"></div>
 
     <form id="loginForm" onsubmit="handleLogin(event)">
-      <div class="form-field">
+      <div class="field">
         <label class="field-label">Email</label>
         <input type="email" class="field-input" name="email" placeholder="name@company.com" required autocomplete="email">
       </div>
-
-      <div class="form-field">
+      <div class="field">
         <label class="field-label">Password</label>
         <div class="field-wrap">
-          <input type="password" class="field-input" name="password" placeholder="••••••••" required id="pwdField" autocomplete="current-password" style="padding-right:40px">
-          <button type="button" class="field-eye" onclick="togglePwd('pwdField',this)">
-            <svg viewBox="0 0 24 24" id="eyeIcon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          <input type="password" class="field-input pwd-input" name="password" id="loginPwd" placeholder="••••••••" required autocomplete="current-password">
+          <button type="button" class="eye-btn" onclick="togglePwd('loginPwd',this)" aria-label="Toggle password">
+            <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
           </button>
         </div>
       </div>
-
       <div class="forgot-row">
         <span class="forgot-link" onclick="openForgot()">Forgot password?</span>
       </div>
-
-      <button type="submit" class="submit-btn" id="loginBtn">
+      <button type="submit" class="submit" id="loginBtn">
         Sign in
-        <svg viewBox="0 0 16 16"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
       </button>
     </form>
 
     <div class="divider">or</div>
-
     <p style="text-align:center;font-size:12px;color:var(--muted)">
       Don't have an account? <a href="/signup-page" style="color:var(--accent);text-decoration:none">Create one free →</a>
     </p>
@@ -290,132 +218,145 @@ body{
 </div>
 
 <!-- FORGOT PASSWORD MODAL -->
-<div class="modal-overlay" id="forgotModal">
-  <div class="modal-box">
-    <button class="modal-close" onclick="closeForgot()">×</button>
-    <h2 id="forgotTitle">Reset password</h2>
-    <p id="forgotSub">Enter your email and phone number to receive a verification code.</p>
+<div class="modal-bg" id="forgotModal">
+  <div class="modal">
+    <div class="modal-top">
+      <h2 id="forgotTitle">Reset password</h2>
+      <button class="modal-close" onclick="closeForgot()">×</button>
+    </div>
+    <p class="modal-sub" id="forgotSub">Enter your email and phone number to receive a verification code.</p>
 
     <div class="alert" id="forgotAlert"></div>
 
-    <!-- Step 1: Request code -->
-    <div id="forgotStep1">
-      <form id="forgotForm1" onsubmit="requestCode(event)">
-        <div class="form-field">
+    <!-- Step 1 -->
+    <div id="step1">
+      <form id="form1" onsubmit="requestCode(event)">
+        <div class="field">
           <label class="field-label">Email</label>
-          <input type="email" class="field-input" name="email" id="forgotEmail" required placeholder="name@company.com">
+          <input type="email" class="field-input" name="email" id="fEmail" required placeholder="name@company.com">
         </div>
-        <div class="form-field">
+        <div class="field">
           <label class="field-label">Phone</label>
-          <input type="text" class="field-input" name="phone" id="forgotPhone" required placeholder="+1 555 000 0000">
+          <input type="text" class="field-input" name="phone" required placeholder="+1 555 000 0000">
         </div>
-        <button type="submit" class="submit-btn" id="codeBtn">Send code</button>
+        <button type="submit" class="submit" id="codeBtn">Send verification code</button>
       </form>
     </div>
 
-    <!-- Step 2: Verify + new password -->
-    <div id="forgotStep2" style="display:none">
-      <form id="forgotForm2" onsubmit="resetPassword(event)">
-        <div class="form-field">
+    <!-- Step 2 -->
+    <div id="step2" style="display:none">
+      <form id="form2" onsubmit="resetPassword(event)">
+        <div class="field">
           <label class="field-label">Verification Code</label>
-          <input type="text" class="field-input" name="code" maxlength="6" required placeholder="6-digit code" style="letter-spacing:0.2em;text-align:center;font-size:18px">
+          <input type="text" class="field-input" name="code" maxlength="6" required placeholder="6-digit code" style="letter-spacing:.22em;text-align:center;font-size:20px;font-family:var(--mono)">
         </div>
-        <div class="form-field">
+        <div class="field">
           <label class="field-label">New Password</label>
-          <input type="password" class="field-input" name="new_password" required placeholder="••••••••" minlength="8">
+          <input type="password" class="field-input" name="new_password" required placeholder="Min 8 chars, 1 uppercase, 1 number" minlength="8">
         </div>
-        <button type="submit" class="submit-btn" id="resetBtn">Update password</button>
+        <button type="submit" class="submit" id="resetBtn">Update password</button>
       </form>
     </div>
   </div>
 </div>
 
 <script>
+// ── AUTH GUARD: already logged in → go to dashboard ──
+if(localStorage.getItem('access_token')){window.location.href='/dashboard';}
+
 // ── LOGIN ──
 async function handleLogin(e){
   e.preventDefault();
   const btn=document.getElementById('loginBtn');
-  setAlert('loginAlert','','');
+  showAlert('loginAlert','','');
   btn.disabled=true;
   btn.innerHTML='<div class="spinner"></div>';
-
   try{
     const res=await fetch('/login',{method:'POST',body:new FormData(e.target)});
     const data=await res.json();
     if(!res.ok)throw new Error(data.detail||'Login failed.');
     localStorage.setItem('access_token',data.access_token);
-    localStorage.setItem('user',JSON.stringify(data.user||data.user_profile||{}));
-    window.location.href='/login';
+    // Backend returns user object nested under 'user'
+    localStorage.setItem('user',JSON.stringify(data.user||{}));
+    window.location.href='/dashboard';
   }catch(err){
-    setAlert('loginAlert',err.message,'error');
+    showAlert('loginAlert',err.message,'error');
     btn.disabled=false;
-    btn.innerHTML='Sign in <svg viewBox="0 0 16 16" style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2"><path d="M3 8h10M9 4l4 4-4 4"/></svg>';
+    btn.innerHTML='Sign in <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg>';
   }
 }
 
-// ── FORGOT ──
-function openForgot(){document.getElementById('forgotModal').classList.add('open')}
+// ── FORGOT MODAL ──
+function openForgot(){
+  document.getElementById('forgotModal').classList.add('open');
+}
 function closeForgot(){
   document.getElementById('forgotModal').classList.remove('open');
-  document.getElementById('forgotStep1').style.display='block';
-  document.getElementById('forgotStep2').style.display='none';
-  setAlert('forgotAlert','','');
+  document.getElementById('step1').style.display='block';
+  document.getElementById('step2').style.display='none';
+  document.getElementById('forgotTitle').textContent='Reset password';
+  document.getElementById('forgotSub').textContent='Enter your email and phone number to receive a verification code.';
+  document.getElementById('form1').reset();
+  document.getElementById('form2').reset();
+  showAlert('forgotAlert','','');
 }
 
+// ── REQUEST CODE → POST /forgot-password ──
 async function requestCode(e){
   e.preventDefault();
   const btn=document.getElementById('codeBtn');
   btn.disabled=true;btn.innerHTML='<div class="spinner"></div>';
-  setAlert('forgotAlert','','');
+  showAlert('forgotAlert','','');
   try{
     const res=await fetch('/forgot-password',{method:'POST',body:new FormData(e.target)});
     const data=await res.json();
-    if(!res.ok)throw new Error(data.detail||'Error');
-    setAlert('forgotAlert',data.message||'Code sent.','success');
-    document.getElementById('forgotStep1').style.display='none';
-    document.getElementById('forgotStep2').style.display='block';
+    if(!res.ok)throw new Error(data.detail||'Error sending code.');
+    showAlert('forgotAlert',data.message||'Code sent.','success');
+    document.getElementById('step1').style.display='none';
+    document.getElementById('step2').style.display='block';
     document.getElementById('forgotTitle').textContent='Verify & reset';
-    document.getElementById('forgotSub').textContent='Enter the 6-digit code sent to your phone.';
+    document.getElementById('forgotSub').textContent='Enter the 6-digit code sent to your phone, then choose a new password.';
   }catch(err){
-    setAlert('forgotAlert',err.message,'error');
+    showAlert('forgotAlert',err.message,'error');
   }
-  btn.disabled=false;btn.innerHTML='Send code';
+  btn.disabled=false;btn.textContent='Send verification code';
 }
 
+// ── RESET PASSWORD → POST /reset-password ──
+// Note: /verify-reset-code is called implicitly by /reset-password on the backend;
+// the frontend sends email+code+new_password in a single step matching main.py.
 async function resetPassword(e){
   e.preventDefault();
   const btn=document.getElementById('resetBtn');
   btn.disabled=true;btn.innerHTML='<div class="spinner"></div>';
+  showAlert('forgotAlert','','');
   const fd=new FormData(e.target);
-  fd.append('email',document.getElementById('forgotEmail').value);
+  // Append email collected in step 1
+  fd.append('email',document.getElementById('fEmail').value);
   try{
     const res=await fetch('/reset-password',{method:'POST',body:fd});
     const data=await res.json();
-    if(!res.ok)throw new Error(data.detail||'Error');
-    setAlert('forgotAlert','Password updated. You can now sign in.','success');
+    if(!res.ok)throw new Error(data.detail||'Reset failed.');
+    showAlert('forgotAlert','Password updated. You can now sign in.','success');
     setTimeout(closeForgot,2000);
   }catch(err){
-    setAlert('forgotAlert',err.message,'error');
+    showAlert('forgotAlert',err.message,'error');
   }
-  btn.disabled=false;btn.innerHTML='Update password';
+  btn.disabled=false;btn.textContent='Update password';
 }
 
 // ── HELPERS ──
-function setAlert(id,msg,type){
+function showAlert(id,msg,type){
   const el=document.getElementById(id);
   el.textContent=msg;
   el.className='alert'+(msg?' show '+type:'');
 }
-
 function togglePwd(fieldId,btn){
   const f=document.getElementById(fieldId);
-  const show=f.type==='password';
-  f.type=show?'text':'password';
-  btn.querySelector('svg').style.opacity=show?'0.5':'1';
+  const isPassword=f.type==='password';
+  f.type=isPassword?'text':'password';
+  btn.querySelector('svg').style.opacity=isPassword?'.45':'1';
 }
-
-// Redirect if already logged in
-if(localStorage.getItem('access_token')){window.location.href='/dashboard'}
 </script>
 </body>
 </html>
