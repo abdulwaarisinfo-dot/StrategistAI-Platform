@@ -345,7 +345,7 @@ async function handleLogin(e){
     if(!res.ok)throw new Error(data.detail||'Login failed.');
     localStorage.setItem('access_token',data.access_token);
     localStorage.setItem('user',JSON.stringify(data.user||data.user_profile||{}));
-    window.location.href='/dashboard';
+    window.location.href='/login';
   }catch(err){
     setAlert('loginAlert',err.message,'error');
     btn.disabled=false;
