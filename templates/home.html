@@ -8,413 +8,232 @@
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-
 :root{
-  --black:#080808;
-  --surface:#0f0f0f;
-  --surface2:#161616;
-  --border:rgba(255,255,255,0.06);
-  --border-strong:rgba(255,255,255,0.12);
-  --white:#ffffff;
-  --off-white:#d4d4d4;
-  --muted:#6b6b6b;
-  --accent:#e8ff59;
-  --accent-dim:rgba(232,255,89,0.12);
-  --accent-dim2:rgba(232,255,89,0.06);
-  --red:#ff4545;
-  --font:'Sora',sans-serif;
-  --mono:'DM Mono',monospace;
+  --black:#080808;--surface:#0f0f0f;--surface2:#161616;--surface3:#1c1c1c;
+  --border:rgba(255,255,255,0.06);--border-strong:rgba(255,255,255,0.12);
+  --white:#fff;--off-white:#d4d4d4;--muted:#6b6b6b;--muted2:#3a3a3a;
+  --accent:#e8ff59;--accent-dim:rgba(232,255,89,0.1);--accent-glow:rgba(232,255,89,0.06);
+  --red:#ff4545;--green:#4ade80;
+  --font:'Sora',sans-serif;--mono:'DM Mono',monospace;
 }
-
-html{scroll-behavior:smooth;font-size:16px}
+html{scroll-behavior:smooth}
 body{background:var(--black);color:var(--white);font-family:var(--font);-webkit-font-smoothing:antialiased;overflow-x:hidden}
-
-/* ── SCROLLBAR ── */
-::-webkit-scrollbar{width:4px}
-::-webkit-scrollbar-track{background:var(--black)}
+::-webkit-scrollbar{width:3px}
 ::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:2px}
 
 /* ── NAV ── */
 nav{
-  position:fixed;top:0;left:0;right:0;z-index:900;
+  position:fixed;top:0;left:0;right:0;z-index:900;height:64px;
   display:flex;align-items:center;justify-content:space-between;
-  padding:0 40px;height:68px;
-  background:rgba(8,8,8,0.85);
-  backdrop-filter:blur(20px);
+  padding:0 40px;
+  background:rgba(8,8,8,0.8);backdrop-filter:blur(24px);
   border-bottom:1px solid var(--border);
 }
-
-.nav-logo{
-  display:flex;align-items:center;gap:10px;
-  text-decoration:none;
-}
-.logo-mark{
-  width:32px;height:32px;background:var(--accent);border-radius:8px;
-  display:flex;align-items:center;justify-content:center;
-}
-.logo-mark svg{width:18px;height:18px}
-.logo-name{font-size:15px;font-weight:600;color:var(--white);letter-spacing:-0.3px}
-
-.nav-links{display:flex;align-items:center;gap:32px}
-.nav-links a{
-  font-size:13px;font-weight:400;color:var(--muted);
-  text-decoration:none;letter-spacing:0.01em;transition:color 0.2s;
-}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.logo-mark{width:30px;height:30px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-mark svg{width:16px;height:16px}
+.logo-name{font-size:14px;font-weight:600;color:var(--white)}
+.nav-links{display:flex;align-items:center;gap:28px}
+.nav-links a{font-size:13px;color:var(--muted);text-decoration:none;transition:color .2s}
 .nav-links a:hover{color:var(--white)}
-
-.nav-ctas{display:flex;align-items:center;gap:12px}
-.btn-ghost-nav{
-  font-size:13px;font-weight:500;color:var(--off-white);
-  background:none;border:1px solid var(--border-strong);
-  padding:8px 20px;border-radius:8px;cursor:pointer;
-  text-decoration:none;transition:all 0.2s;
-}
-.btn-ghost-nav:hover{border-color:rgba(255,255,255,0.3);color:var(--white)}
-.btn-solid-nav{
-  font-size:13px;font-weight:600;color:#000;
-  background:var(--accent);border:none;
-  padding:8px 20px;border-radius:8px;cursor:pointer;
-  text-decoration:none;transition:opacity 0.2s;
-}
-.btn-solid-nav:hover{opacity:0.88}
+.nav-ctas{display:flex;align-items:center;gap:10px}
+.btn-ghost{font-size:13px;font-weight:500;color:var(--off-white);background:none;border:1px solid var(--border-strong);padding:8px 18px;border-radius:8px;cursor:pointer;text-decoration:none;transition:all .2s}
+.btn-ghost:hover{border-color:rgba(255,255,255,.3);color:var(--white)}
+.btn-solid{font-size:13px;font-weight:600;color:#000;background:var(--accent);border:none;padding:8px 18px;border-radius:8px;cursor:pointer;text-decoration:none;transition:opacity .2s}
+.btn-solid:hover{opacity:.85}
 
 /* ── HERO ── */
 .hero{
-  min-height:100vh;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:120px 40px 80px;
-  position:relative;overflow:hidden;
-  text-align:center;
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:128px 40px 80px;text-align:center;position:relative;overflow:hidden;
 }
-
-.hero-noise{
-  position:absolute;inset:0;z-index:0;pointer-events:none;
-  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
-  background-size:200px 200px;opacity:0.4;
-}
-
 .hero-glow{
-  position:absolute;
-  width:700px;height:700px;
-  border-radius:50%;
-  background:radial-gradient(circle,rgba(232,255,89,0.07) 0%,transparent 70%);
-  top:50%;left:50%;transform:translate(-50%,-60%);
-  pointer-events:none;z-index:0;
+  position:absolute;width:800px;height:800px;border-radius:50%;
+  background:radial-gradient(circle,var(--accent-glow) 0%,transparent 65%);
+  top:50%;left:50%;transform:translate(-50%,-60%);pointer-events:none;
 }
-
+.hero-grid{
+  position:absolute;inset:0;pointer-events:none;opacity:.04;
+  background-image:linear-gradient(var(--border-strong) 1px,transparent 1px),linear-gradient(90deg,var(--border-strong) 1px,transparent 1px);
+  background-size:60px 60px;
+}
 .hero-eyebrow{
   display:inline-flex;align-items:center;gap:8px;
-  font-family:var(--mono);font-size:11px;letter-spacing:0.12em;
-  color:var(--accent);text-transform:uppercase;
-  border:1px solid rgba(232,255,89,0.2);
-  background:rgba(232,255,89,0.05);
-  padding:6px 14px;border-radius:100px;
-  margin-bottom:36px;position:relative;z-index:1;
+  font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--accent);border:1px solid rgba(232,255,89,.18);background:rgba(232,255,89,.05);
+  padding:6px 14px;border-radius:100px;margin-bottom:32px;position:relative;z-index:1;
+  animation:fadeUp .6s ease both;
 }
-.eyebrow-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s ease-in-out infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.eyebrow-dot{width:5px;height:5px;border-radius:50%;background:var(--accent);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.2}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
 
 .hero h1{
-  font-size:clamp(42px,7vw,88px);font-weight:700;
-  letter-spacing:-0.04em;line-height:1.0;
-  color:var(--white);
-  position:relative;z-index:1;
-  max-width:900px;
-  animation:fadeUp 0.8s ease both;
+  font-size:clamp(44px,8vw,96px);font-weight:700;letter-spacing:-.05em;line-height:.95;
+  color:var(--white);position:relative;z-index:1;max-width:880px;
+  animation:fadeUp .7s .1s ease both;
 }
-.hero h1 em{
-  font-style:normal;
-  color:var(--accent);
-  position:relative;
-}
-
+.hero h1 .accent{color:var(--accent)}
 .hero-sub{
-  font-size:clamp(15px,1.8vw,18px);font-weight:300;color:var(--muted);
-  max-width:560px;line-height:1.7;
-  margin:24px auto 0;position:relative;z-index:1;
-  animation:fadeUp 0.8s 0.15s ease both;
+  font-size:clamp(14px,1.6vw,17px);font-weight:300;color:var(--muted);
+  max-width:520px;line-height:1.75;margin:24px auto 0;
+  position:relative;z-index:1;animation:fadeUp .7s .22s ease both;
 }
-
 .hero-actions{
-  display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:center;
-  margin-top:44px;position:relative;z-index:1;
-  animation:fadeUp 0.8s 0.3s ease both;
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:center;
+  margin-top:40px;position:relative;z-index:1;animation:fadeUp .7s .34s ease both;
 }
-
 .btn-primary{
-  display:inline-flex;align-items:center;gap:10px;
-  font-size:14px;font-weight:600;color:#000;
-  background:var(--accent);border:none;padding:14px 28px;border-radius:10px;
-  cursor:pointer;text-decoration:none;transition:all 0.2s;
+  display:inline-flex;align-items:center;gap:9px;
+  font-size:14px;font-weight:600;color:#000;background:var(--accent);
+  border:none;padding:13px 26px;border-radius:9px;cursor:pointer;text-decoration:none;transition:all .2s;
 }
-.btn-primary:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(232,255,89,0.25)}
-.btn-primary svg{width:16px;height:16px}
-
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(232,255,89,.22)}
+.btn-primary svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2}
 .btn-secondary{
   display:inline-flex;align-items:center;gap:8px;
-  font-size:14px;font-weight:400;color:var(--off-white);
-  background:none;border:1px solid var(--border-strong);
-  padding:14px 28px;border-radius:10px;
-  cursor:pointer;text-decoration:none;transition:all 0.2s;
+  font-size:14px;font-weight:400;color:var(--off-white);background:none;
+  border:1px solid var(--border-strong);padding:13px 26px;border-radius:9px;cursor:pointer;text-decoration:none;transition:all .2s;
 }
-.btn-secondary:hover{border-color:rgba(255,255,255,0.25);color:var(--white)}
+.btn-secondary:hover{border-color:rgba(255,255,255,.28);color:var(--white)}
 
 .hero-trust{
-  display:flex;align-items:center;gap:24px;flex-wrap:wrap;justify-content:center;
-  margin-top:56px;position:relative;z-index:1;
-  animation:fadeUp 0.8s 0.45s ease both;
+  display:flex;align-items:center;gap:20px;flex-wrap:wrap;justify-content:center;
+  margin-top:48px;position:relative;z-index:1;animation:fadeUp .7s .46s ease both;
 }
-.trust-item{
-  display:flex;align-items:center;gap:8px;
-  font-size:12px;color:var(--muted);
-}
-.trust-item svg{width:14px;height:14px;color:var(--accent)}
-.trust-sep{width:4px;height:4px;border-radius:50%;background:var(--border-strong)}
-
-@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.trust-item{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted)}
+.trust-dot{width:4px;height:4px;border-radius:50%;background:var(--muted2)}
+.check-icon{width:14px;height:14px;stroke:var(--accent);fill:none;stroke-width:2}
 
 /* ── MARQUEE ── */
-.marquee-section{
-  border-top:1px solid var(--border);
-  border-bottom:1px solid var(--border);
-  padding:18px 0;overflow:hidden;
-  background:var(--surface);
-}
-.marquee-track{
-  display:flex;gap:60px;white-space:nowrap;
-  animation:marquee 28s linear infinite;
-}
+.marquee-wrap{border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:16px 0;overflow:hidden;background:var(--surface)}
+.marquee-track{display:flex;gap:56px;white-space:nowrap;animation:marquee 30s linear infinite}
 .marquee-track:hover{animation-play-state:paused}
 @keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-.marquee-item{
-  display:flex;align-items:center;gap:10px;
-  font-family:var(--mono);font-size:11px;letter-spacing:0.1em;
-  color:var(--muted);text-transform:uppercase;flex-shrink:0;
-}
-.marquee-item span{color:var(--accent)}
+.marquee-item{display:flex;align-items:center;gap:9px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;flex-shrink:0}
+.marquee-item .m-dot{color:var(--accent);font-size:12px}
 
-/* ── SECTION LAYOUT ── */
-.section{padding:100px 40px;max-width:1200px;margin:0 auto}
-.section-label{
-  font-family:var(--mono);font-size:11px;letter-spacing:0.15em;
-  color:var(--accent);text-transform:uppercase;margin-bottom:16px;
-}
-.section-title{
-  font-size:clamp(28px,4vw,44px);font-weight:700;letter-spacing:-0.03em;
-  color:var(--white);line-height:1.1;max-width:600px;
-}
-.section-title em{font-style:normal;color:var(--muted)}
+/* ── SECTION ── */
+.section{padding:96px 40px;max-width:1200px;margin:0 auto}
+.sec-label{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
+.sec-title{font-size:clamp(26px,3.8vw,44px);font-weight:700;letter-spacing:-.03em;line-height:1.08;color:var(--white);max-width:580px}
+.sec-title em{font-style:normal;color:var(--muted)}
 
 /* ── TOOLS GRID ── */
-.tools-wrap{width:100%;max-width:1200px;margin:0 auto;padding:80px 40px}
-.tools-header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:48px}
-
+.tools-outer{max-width:1200px;margin:0 auto;padding:64px 40px 96px}
+.tools-header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:44px;gap:20px;flex-wrap:wrap}
 .tools-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
-  gap:1px;
-  background:var(--border);
-  border:1px solid var(--border);
-  border-radius:16px;overflow:hidden;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+  gap:1px;background:var(--border);border:1px solid var(--border);border-radius:16px;overflow:hidden;
 }
 .tool-card{
-  background:var(--black);
-  padding:32px;cursor:pointer;
-  transition:background 0.2s;
-  position:relative;
+  background:var(--black);padding:28px;cursor:pointer;position:relative;transition:background .18s;
 }
 .tool-card:hover{background:var(--surface)}
-.tool-card::after{
-  content:'';position:absolute;inset:0;
-  border:1px solid transparent;border-radius:0;
-  transition:border-color 0.2s;pointer-events:none;
+.tool-num{font-family:var(--mono);font-size:10px;color:var(--muted2);margin-bottom:16px;letter-spacing:.1em}
+.tool-icon-wrap{
+  width:38px;height:38px;border-radius:9px;background:var(--surface3);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;margin-bottom:14px;
 }
-.tool-card:hover::after{border-color:rgba(232,255,89,0.08)}
-
-.tool-index{
-  font-family:var(--mono);font-size:11px;color:var(--muted);
-  margin-bottom:20px;letter-spacing:0.1em;
-}
-.tool-icon{
-  width:40px;height:40px;border-radius:10px;
-  background:var(--surface2);border:1px solid var(--border);
-  display:flex;align-items:center;justify-content:center;
-  margin-bottom:16px;
-}
-.tool-icon svg{width:20px;height:20px;stroke:var(--accent)}
-.tool-name{font-size:15px;font-weight:600;color:var(--white);margin-bottom:8px}
-.tool-desc{font-size:13px;color:var(--muted);line-height:1.6}
+.tool-icon-wrap svg{width:18px;height:18px;stroke:var(--accent);fill:none;stroke-width:1.5}
+.tool-name{font-size:14px;font-weight:600;color:var(--white);margin-bottom:7px}
+.tool-desc{font-size:12px;color:var(--muted);line-height:1.65}
 .tool-arrow{
-  position:absolute;bottom:28px;right:28px;
-  width:28px;height:28px;border-radius:50%;
-  background:var(--surface2);border:1px solid var(--border);
+  position:absolute;bottom:24px;right:24px;width:26px;height:26px;border-radius:50%;
+  background:var(--surface3);border:1px solid var(--border);
   display:flex;align-items:center;justify-content:center;
-  opacity:0;transition:opacity 0.2s;
+  opacity:0;transition:opacity .18s;
 }
 .tool-card:hover .tool-arrow{opacity:1}
-.tool-arrow svg{width:12px;height:12px;stroke:var(--white)}
+.tool-arrow svg{width:11px;height:11px;stroke:var(--white);fill:none;stroke-width:2}
 
-/* ── HOW IT WORKS ── */
-.steps-grid{
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
-  gap:32px;margin-top:56px;
+/* ── STEPS ── */
+.steps-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px;margin-top:48px}
+.step{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px;position:relative;overflow:hidden}
+.step-bg-num{
+  font-family:var(--mono);font-size:72px;font-weight:700;color:rgba(255,255,255,.03);
+  position:absolute;top:-12px;right:10px;line-height:1;pointer-events:none;
 }
-.step-card{
-  padding:32px;
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:14px;
-  position:relative;overflow:hidden;
-}
-.step-num{
-  font-family:var(--mono);font-size:64px;font-weight:500;
-  color:rgba(255,255,255,0.03);
-  position:absolute;top:-10px;right:12px;line-height:1;
-}
-.step-badge{
-  font-family:var(--mono);font-size:10px;color:var(--accent);
-  letter-spacing:0.12em;text-transform:uppercase;
-  margin-bottom:16px;
-}
-.step-title{font-size:16px;font-weight:600;color:var(--white);margin-bottom:8px}
-.step-desc{font-size:13px;color:var(--muted);line-height:1.6}
+.step-label{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
+.step-title{font-size:15px;font-weight:600;color:var(--white);margin-bottom:7px}
+.step-desc{font-size:12px;color:var(--muted);line-height:1.65}
 
 /* ── STATS ── */
-.stats-section{
-  background:var(--surface);
-  border-top:1px solid var(--border);
-  border-bottom:1px solid var(--border);
-  padding:64px 40px;
-}
-.stats-inner{
-  max-width:1100px;margin:0 auto;
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-  gap:40px;
-}
+.stats-band{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:56px 40px}
+.stats-inner{max-width:1000px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:32px}
 .stat{text-align:center}
-.stat-val{
-  font-size:clamp(36px,5vw,56px);font-weight:700;letter-spacing:-0.03em;
-  color:var(--white);line-height:1;margin-bottom:8px;
-}
+.stat-val{font-size:clamp(36px,5vw,56px);font-weight:700;letter-spacing:-.04em;color:var(--white);line-height:1;margin-bottom:6px}
 .stat-val span{color:var(--accent)}
-.stat-label{font-size:13px;color:var(--muted)}
+.stat-label{font-size:12px;color:var(--muted)}
 
 /* ── TESTIMONIALS ── */
-.testimonials-grid{
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
-  gap:16px;margin-top:48px;
-}
-.testimonial{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:14px;padding:28px;
-}
-.t-stars{
-  display:flex;gap:3px;margin-bottom:16px;
-}
-.t-star{width:12px;height:12px;fill:var(--accent);stroke:none}
-.t-text{font-size:14px;color:var(--off-white);line-height:1.7;margin-bottom:20px}
-.t-author{display:flex;align-items:center;gap:12px}
-.t-avatar{
-  width:36px;height:36px;border-radius:50%;
-  background:var(--surface2);border:1px solid var(--border);
-  display:flex;align-items:center;justify-content:center;
-  font-size:13px;font-weight:600;color:var(--accent);
-}
-.t-name{font-size:13px;font-weight:600;color:var(--white)}
-.t-role{font-size:11px;color:var(--muted)}
+.testi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-top:44px}
+.testi{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px}
+.testi-stars{display:flex;gap:3px;margin-bottom:14px}
+.testi-stars svg{width:11px;height:11px;fill:var(--accent)}
+.testi-text{font-size:13px;color:var(--off-white);line-height:1.72;margin-bottom:18px}
+.testi-author{display:flex;align-items:center;gap:10px}
+.testi-av{width:34px;height:34px;border-radius:50%;background:var(--surface3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--accent);flex-shrink:0}
+.testi-name{font-size:12px;font-weight:600;color:var(--white)}
+.testi-role{font-size:10px;color:var(--muted);margin-top:1px}
 
-/* ── CTA ── */
-.cta-section{
-  max-width:800px;margin:0 auto;padding:100px 40px;
-  text-align:center;
-}
+/* ── CTA BAND ── */
+.cta-outer{padding:80px 40px;max-width:760px;margin:0 auto;text-align:center}
 .cta-box{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:24px;padding:64px 48px;
-  position:relative;overflow:hidden;
+  background:var(--surface);border:1px solid var(--border);border-radius:20px;
+  padding:56px 40px;position:relative;overflow:hidden;
 }
 .cta-box::before{
-  content:'';position:absolute;
-  width:500px;height:500px;border-radius:50%;
-  background:radial-gradient(circle,rgba(232,255,89,0.06) 0%,transparent 70%);
-  top:-200px;left:50%;transform:translateX(-50%);pointer-events:none;
+  content:'';position:absolute;width:500px;height:500px;border-radius:50%;
+  background:radial-gradient(circle,var(--accent-glow) 0%,transparent 68%);
+  top:-220px;left:50%;transform:translateX(-50%);pointer-events:none;
 }
-.cta-box h2{
-  font-size:clamp(28px,4vw,48px);font-weight:700;letter-spacing:-0.03em;
-  color:var(--white);line-height:1.1;margin-bottom:16px;position:relative;
-}
-.cta-box p{font-size:15px;color:var(--muted);margin-bottom:36px;position:relative}
+.cta-box h2{font-size:clamp(26px,4vw,44px);font-weight:700;letter-spacing:-.03em;line-height:1.08;color:var(--white);margin-bottom:14px;position:relative}
+.cta-box p{font-size:14px;color:var(--muted);margin-bottom:32px;position:relative}
 .cta-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;position:relative}
-
-/* ── FOOTER ── */
-footer{
-  border-top:1px solid var(--border);
-  padding:40px;
-  display:flex;align-items:center;justify-content:space-between;
-  flex-wrap:wrap;gap:20px;
-}
-.footer-copy{font-size:12px;color:var(--muted)}
-.footer-links{display:flex;gap:24px}
-.footer-links a{font-size:12px;color:var(--muted);text-decoration:none;transition:color 0.2s}
-.footer-links a:hover{color:var(--white)}
 
 /* ── AD OVERLAY ── */
 #adOverlay{
-  position:fixed;inset:0;background:rgba(0,0,0,0.96);
-  z-index:9999;display:flex;align-items:center;justify-content:center;
-  backdrop-filter:blur(12px);
+  position:fixed;inset:0;background:rgba(0,0,0,.94);z-index:9999;
+  display:flex;align-items:center;justify-content:center;
+  backdrop-filter:blur(16px);
 }
-.ad-container{
-  width:100%;max-width:720px;margin:0 20px;
-  background:var(--surface);border:1px solid var(--border-strong);
-  border-radius:20px;overflow:hidden;
+.ad-box{
+  width:100%;max-width:700px;margin:0 20px;
+  background:var(--surface);border:1px solid var(--border-strong);border-radius:18px;overflow:hidden;
 }
-.ad-media-wrap{
-  position:relative;width:100%;
-  background:#000;
-  aspect-ratio:16/9;overflow:hidden;
-}
-.ad-media-wrap img{width:100%;height:100%;object-fit:cover;display:block}
-.ad-media-wrap iframe{width:100%;height:100%;border:none;display:block}
+.ad-media{position:relative;width:100%;aspect-ratio:16/9;background:#000;overflow:hidden}
 .ad-badge{
-  position:absolute;top:14px;left:14px;
-  font-family:var(--mono);font-size:9px;letter-spacing:0.12em;text-transform:uppercase;
-  background:rgba(0,0,0,0.7);color:var(--muted);
-  border:1px solid var(--border-strong);padding:4px 10px;border-radius:4px;
+  position:absolute;top:12px;left:12px;
+  font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;
+  background:rgba(0,0,0,.7);color:var(--muted);border:1px solid var(--border-strong);
+  padding:4px 10px;border-radius:4px;z-index:2;
 }
-.ad-skip-area{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:20px 24px;gap:12px;flex-wrap:wrap;
-}
-.ad-meta{flex:1}
+.ad-footer{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;gap:12px;flex-wrap:wrap}
 .ad-meta-title{font-size:13px;font-weight:600;color:var(--white)}
 .ad-meta-sub{font-size:11px;color:var(--muted);margin-top:2px}
-.ad-visit{
-  font-size:12px;font-weight:600;color:#000;background:var(--accent);
-  border:none;padding:8px 18px;border-radius:7px;cursor:pointer;
-  text-decoration:none;white-space:nowrap;transition:opacity 0.2s;
-}
-.ad-visit:hover{opacity:0.85}
-.ad-skip{
-  font-size:12px;font-weight:500;color:var(--muted);
-  background:none;border:1px solid var(--border-strong);
-  padding:8px 18px;border-radius:7px;cursor:not-allowed;
-  white-space:nowrap;transition:all 0.3s;
-}
-.ad-skip.ready{cursor:pointer;color:var(--white);border-color:rgba(255,255,255,0.25)}
-.ad-skip.ready:hover{border-color:var(--white)}
+.ad-visit{font-size:12px;font-weight:600;color:#000;background:var(--accent);border:none;padding:8px 16px;border-radius:7px;cursor:pointer;text-decoration:none;white-space:nowrap;transition:opacity .2s}
+.ad-visit:hover{opacity:.85}
+.ad-skip{font-size:12px;font-weight:500;color:var(--muted);background:none;border:1px solid var(--border-strong);padding:8px 16px;border-radius:7px;cursor:not-allowed;white-space:nowrap;transition:all .25s}
+.ad-skip.ready{cursor:pointer;color:var(--white);border-color:rgba(255,255,255,.25)}
 
+/* ── FOOTER ── */
+footer{border-top:1px solid var(--border);padding:36px 40px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+.footer-copy{font-size:11px;color:var(--muted)}
+.footer-links{display:flex;gap:22px}
+.footer-links a{font-size:11px;color:var(--muted);text-decoration:none;transition:color .2s}
+.footer-links a:hover{color:var(--white)}
+
+/* ── RESPONSIVE ── */
 @media(max-width:768px){
-  nav{padding:0 20px}
+  nav{padding:0 18px}
   .nav-links{display:none}
-  .hero{padding:100px 20px 60px}
-  .section{padding:60px 20px}
-  .tools-wrap{padding:60px 20px}
-  .tools-header{flex-direction:column;align-items:flex-start;gap:16px}
-  .stats-section{padding:48px 20px}
-  .cta-section{padding:60px 20px}
-  .cta-box{padding:40px 24px}
+  .hero{padding:96px 20px 64px}
+  .section,.tools-outer{padding-left:20px;padding-right:20px}
+  .stats-band{padding:44px 20px}
+  .cta-outer{padding:64px 20px}
   footer{padding:28px 20px}
+  .tools-header{flex-direction:column;align-items:flex-start}
 }
 </style>
 </head>
@@ -422,18 +241,18 @@ footer{
 
 <!-- AD OVERLAY -->
 <div id="adOverlay">
-  <div class="ad-container">
-    <div class="ad-media-wrap">
+  <div class="ad-box">
+    <div class="ad-media">
       <span class="ad-badge">Advertisement</span>
-      <div id="adMedia"></div>
+      <div id="adContent" style="width:100%;height:100%"></div>
     </div>
-    <div class="ad-skip-area">
-      <div class="ad-meta">
-        <div class="ad-meta-title" id="adTitle">Stratum Pro Access</div>
-        <div class="ad-meta-sub" id="adSubtitle">AI-powered growth for modern commerce</div>
+    <div class="ad-footer">
+      <div>
+        <div class="ad-meta-title" id="adTitle">Stratum Intelligence</div>
+        <div class="ad-meta-sub" id="adSub">AI-powered growth for modern commerce</div>
       </div>
       <a id="adVisit" href="#" target="_blank" class="ad-visit">Learn More</a>
-      <button id="adSkip" class="ad-skip" disabled>Skip in <span id="adCountdown">6</span>s</button>
+      <button id="adSkip" class="ad-skip" disabled>Skip in <span id="adTimer">6</span>s</button>
     </div>
   </div>
 </div>
@@ -441,25 +260,23 @@ footer{
 <!-- NAV -->
 <nav>
   <a href="/" class="nav-logo">
-    <div class="logo-mark">
-      <svg viewBox="0 0 18 18" fill="none"><path d="M3 14L9 4l6 10H3z" fill="#000"/></svg>
-    </div>
+    <div class="logo-mark"><svg viewBox="0 0 16 16" fill="none"><path d="M2 13L8 3l6 10H2z" fill="#000"/></svg></div>
     <span class="logo-name">Stratum</span>
   </a>
   <div class="nav-links">
     <a href="#tools">Tools</a>
-    <a href="#how">How it Works</a>
+    <a href="#how">How it works</a>
     <a href="#results">Results</a>
   </div>
   <div class="nav-ctas">
-    <a href="/login-page" class="btn-ghost-nav">Sign in</a>
-    <a href="/signup-page" class="btn-solid-nav">Start free</a>
+    <a href="/login-page" class="btn-ghost">Sign in</a>
+    <a href="/signup-page" class="btn-solid">Start free</a>
   </div>
 </nav>
 
 <!-- HERO -->
 <section class="hero">
-  <div class="hero-noise"></div>
+  <div class="hero-grid"></div>
   <div class="hero-glow"></div>
 
   <div class="hero-eyebrow">
@@ -467,7 +284,7 @@ footer{
     AI Commerce Intelligence Platform
   </div>
 
-  <h1>Strategy that<br><em>converts.</em></h1>
+  <h1>Strategy that<br><span class="accent">converts.</span></h1>
 
   <p class="hero-sub">
     Ten precision AI tools. One platform. Built for store owners, marketers, and operators who need results — not theory.
@@ -476,184 +293,82 @@ footer{
   <div class="hero-actions">
     <a href="/signup-page" class="btn-primary">
       Get started free
-      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+      <svg viewBox="0 0 16 16"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
     </a>
     <a href="/login-page" class="btn-secondary">Sign in to dashboard</a>
   </div>
 
   <div class="hero-trust">
     <div class="trust-item">
-      <svg viewBox="0 0 14 14" fill="currentColor"><path d="M7 0l1.8 5.4H14L9.6 8.7l1.7 5.3L7 10.7l-4.3 3.3 1.7-5.3L0 5.4h5.2z"/></svg>
+      <svg class="check-icon" viewBox="0 0 14 14"><polyline points="2 7 5.5 10.5 12 3.5"/></svg>
       10 AI tools included
     </div>
-    <div class="trust-sep"></div>
+    <div class="trust-dot"></div>
     <div class="trust-item">
-      <svg viewBox="0 0 14 14" fill="currentColor"><path d="M7 0l1.8 5.4H14L9.6 8.7l1.7 5.3L7 10.7l-4.3 3.3 1.7-5.3L0 5.4h5.2z"/></svg>
+      <svg class="check-icon" viewBox="0 0 14 14"><polyline points="2 7 5.5 10.5 12 3.5"/></svg>
       No credit card
     </div>
-    <div class="trust-sep"></div>
+    <div class="trust-dot"></div>
     <div class="trust-item">
-      <svg viewBox="0 0 14 14" fill="currentColor"><path d="M7 0l1.8 5.4H14L9.6 8.7l1.7 5.3L7 10.7l-4.3 3.3 1.7-5.3L0 5.4h5.2z"/></svg>
+      <svg class="check-icon" viewBox="0 0 14 14"><polyline points="2 7 5.5 10.5 12 3.5"/></svg>
       Instant results
     </div>
   </div>
 </section>
 
 <!-- MARQUEE -->
-<div class="marquee-section">
-  <div class="marquee-track" id="marqueeTrack">
-    <div class="marquee-item"><span>✦</span> Marketing Strategy</div>
-    <div class="marquee-item"><span>✦</span> Product Descriptions</div>
-    <div class="marquee-item"><span>✦</span> Ad Copy Generator</div>
-    <div class="marquee-item"><span>✦</span> Abandoned Cart Emails</div>
-    <div class="marquee-item"><span>✦</span> SEO Titles</div>
-    <div class="marquee-item"><span>✦</span> Review Responses</div>
-    <div class="marquee-item"><span>✦</span> Audience Finder</div>
-    <div class="marquee-item"><span>✦</span> Hashtag Generator</div>
-    <div class="marquee-item"><span>✦</span> Profit Analyser</div>
-    <div class="marquee-item"><span>✦</span> Store Health Check</div>
-    <div class="marquee-item"><span>✦</span> Marketing Strategy</div>
-    <div class="marquee-item"><span>✦</span> Product Descriptions</div>
-    <div class="marquee-item"><span>✦</span> Ad Copy Generator</div>
-    <div class="marquee-item"><span>✦</span> Abandoned Cart Emails</div>
-    <div class="marquee-item"><span>✦</span> SEO Titles</div>
-    <div class="marquee-item"><span>✦</span> Review Responses</div>
-    <div class="marquee-item"><span>✦</span> Audience Finder</div>
-    <div class="marquee-item"><span>✦</span> Hashtag Generator</div>
-    <div class="marquee-item"><span>✦</span> Profit Analyser</div>
-    <div class="marquee-item"><span>✦</span> Store Health Check</div>
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    <div class="marquee-item"><span class="m-dot">✦</span> Marketing Strategy</div>
+    <div class="marquee-item"><span class="m-dot">✦</span> Product Descriptions</div>
+    <div class="marquee-item"><span class="m-dot">✦</span> Ad Copy Generator</div>
+    <div class="marquee-item"><span class="m-dot">✦</span> Abandoned Cart Emails</div>
+    <div class="marquee-item"><span class="m-dot">✦</span> SEO Titles</div>
+    <div class="marquee-item"><span class="m-dot">✦</span> Review Responses</div>
+    <div class="marquee-item"><span class="m-dot">✦</span> Audience Finder</div>
+    <div class="marquee-item"><span class="m-dot">✦</span> Hashtag Generator</div>
+    <div class="marquee-item"><span class="m-dot">✦</span> Profit Analyser</div>
+    <div class="marquee-item"><span class="m-dot">✦</span> Store Health Check</div>
+    <!-- duplicate for seamless loop -->
+    <div class="marquee-item"><span class="m-dot">✦</span> Marketing Strategy</div>
+    <div class="marquee-item"><span class="m-dot">✦</span> Product Descriptions</div>
+    <div class="marquee-item"><span class="m-dot">✦</span> Ad Copy Generator</div>
+    <div class="marquee-item"><span class="m-dot">✦</span> Abandoned Cart Emails</div>
+    <div class="marquee-item"><span class="m-dot">✦</span> SEO Titles</div>
+    <div class="marquee-item"><span class="m-dot">✦</span> Review Responses</div>
+    <div class="marquee-item"><span class="m-dot">✦</span> Audience Finder</div>
+    <div class="marquee-item"><span class="m-dot">✦</span> Hashtag Generator</div>
+    <div class="marquee-item"><span class="m-dot">✦</span> Profit Analyser</div>
+    <div class="marquee-item"><span class="m-dot">✦</span> Store Health Check</div>
   </div>
 </div>
 
 <!-- TOOLS -->
-<div class="tools-wrap" id="tools">
+<div class="tools-outer" id="tools">
   <div class="tools-header">
     <div>
-      <div class="section-label">The Arsenal</div>
-      <div class="section-title">Ten tools.<br><em>Zero fluff.</em></div>
+      <div class="sec-label">The Arsenal</div>
+      <div class="sec-title">Ten tools.<br><em>Zero fluff.</em></div>
     </div>
     <a href="/signup-page" class="btn-secondary" style="white-space:nowrap">Access all tools →</a>
   </div>
-
-  <div class="tools-grid">
-
-    <div class="tool-card" onclick="location.href='/signup-page'">
-      <div class="tool-index">01</div>
-      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg></div>
-      <div class="tool-name">Marketing Strategy</div>
-      <div class="tool-desc">5 ad angles, 3 buyer personas, objection handlers, urgency triggers — the full conversion stack.</div>
-      <div class="tool-arrow"><svg viewBox="0 0 12 12" fill="none" stroke-width="1.5"><path d="M2 6h8M6 2l4 4-4 4"/></svg></div>
-    </div>
-
-    <div class="tool-card" onclick="location.href='/signup-page'">
-      <div class="tool-index">02</div>
-      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg></div>
-      <div class="tool-name">Product Description</div>
-      <div class="tool-desc">SEO-optimised titles, benefit-led copy, bullet points, and a single sharp call to action.</div>
-      <div class="tool-arrow"><svg viewBox="0 0 12 12" fill="none" stroke-width="1.5"><path d="M2 6h8M6 2l4 4-4 4"/></svg></div>
-    </div>
-
-    <div class="tool-card" onclick="location.href='/signup-page'">
-      <div class="tool-index">03</div>
-      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><path d="M15 10l4.553-2.069A1 1 0 0121 8.87V15.13a1 1 0 01-1.447.899L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg></div>
-      <div class="tool-name">Ad Copy Generator</div>
-      <div class="tool-desc">Facebook, Instagram, TikTok — primary text, headlines, video hooks, carousel copy.</div>
-      <div class="tool-arrow"><svg viewBox="0 0 12 12" fill="none" stroke-width="1.5"><path d="M2 6h8M6 2l4 4-4 4"/></svg></div>
-    </div>
-
-    <div class="tool-card" onclick="location.href='/signup-page'">
-      <div class="tool-index">04</div>
-      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></div>
-      <div class="tool-name">Abandoned Cart Emails</div>
-      <div class="tool-desc">3-email recovery sequence — timed, personal, conversion-tuned. Recover lost revenue on autopilot.</div>
-      <div class="tool-arrow"><svg viewBox="0 0 12 12" fill="none" stroke-width="1.5"><path d="M2 6h8M6 2l4 4-4 4"/></svg></div>
-    </div>
-
-    <div class="tool-card" onclick="location.href='/signup-page'">
-      <div class="tool-index">05</div>
-      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg></div>
-      <div class="tool-name">SEO Titles</div>
-      <div class="tool-desc">Keyword-first page titles, meta descriptions, alt text, URL slugs. Rank and click.</div>
-      <div class="tool-arrow"><svg viewBox="0 0 12 12" fill="none" stroke-width="1.5"><path d="M2 6h8M6 2l4 4-4 4"/></svg></div>
-    </div>
-
-    <div class="tool-card" onclick="location.href='/signup-page'">
-      <div class="tool-index">06</div>
-      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg></div>
-      <div class="tool-name">Review Responder</div>
-      <div class="tool-desc">Short, detailed, and recovery responses for any review rating. Brand voice preserved every time.</div>
-      <div class="tool-arrow"><svg viewBox="0 0 12 12" fill="none" stroke-width="1.5"><path d="M2 6h8M6 2l4 4-4 4"/></svg></div>
-    </div>
-
-    <div class="tool-card" onclick="location.href='/signup-page'">
-      <div class="tool-index">07</div>
-      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg></div>
-      <div class="tool-name">Audience Finder</div>
-      <div class="tool-desc">Primary, secondary, and negative personas. Buying triggers, content strategy, where to find them.</div>
-      <div class="tool-arrow"><svg viewBox="0 0 12 12" fill="none" stroke-width="1.5"><path d="M2 6h8M6 2l4 4-4 4"/></svg></div>
-    </div>
-
-    <div class="tool-card" onclick="location.href='/signup-page'">
-      <div class="tool-index">08</div>
-      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><path d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/></svg></div>
-      <div class="tool-name">Hashtag Generator</div>
-      <div class="tool-desc">Tiered strategy — high volume, mid, niche, branded, and trending. Ready-to-copy blocks.</div>
-      <div class="tool-arrow"><svg viewBox="0 0 12 12" fill="none" stroke-width="1.5"><path d="M2 6h8M6 2l4 4-4 4"/></svg></div>
-    </div>
-
-    <div class="tool-card" onclick="location.href='/signup-page'">
-      <div class="tool-index">09</div>
-      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg></div>
-      <div class="tool-name">Profit Analyser</div>
-      <div class="tool-desc">Margins, net profit, break-even, scale projections, pricing recommendations. CFO-level clarity.</div>
-      <div class="tool-arrow"><svg viewBox="0 0 12 12" fill="none" stroke-width="1.5"><path d="M2 6h8M6 2l4 4-4 4"/></svg></div>
-    </div>
-
-    <div class="tool-card" onclick="location.href='/signup-page'">
-      <div class="tool-index">10</div>
-      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg></div>
-      <div class="tool-name">Store Health Check</div>
-      <div class="tool-desc">Conversion killers, trust signals, mobile audit, checkout friction — ranked by revenue impact.</div>
-      <div class="tool-arrow"><svg viewBox="0 0 12 12" fill="none" stroke-width="1.5"><path d="M2 6h8M6 2l4 4-4 4"/></svg></div>
-    </div>
-
-  </div>
+  <div class="tools-grid" id="toolsGrid"></div>
 </div>
 
 <!-- HOW IT WORKS -->
 <section class="section" id="how">
-  <div class="section-label">Process</div>
-  <div class="section-title">Built for speed.<br><em>Designed for results.</em></div>
+  <div class="sec-label">Process</div>
+  <div class="sec-title">From input to<br><em>live strategy.</em></div>
   <div class="steps-grid">
-    <div class="step-card">
-      <div class="step-num">1</div>
-      <div class="step-badge">Step 01</div>
-      <div class="step-title">Input your details</div>
-      <div class="step-desc">Enter your product, price, and target audience. Takes under 30 seconds.</div>
-    </div>
-    <div class="step-card">
-      <div class="step-num">2</div>
-      <div class="step-badge">Step 02</div>
-      <div class="step-title">AI generates strategy</div>
-      <div class="step-desc">Our engine builds a complete, actionable output — tailored, specific, professional.</div>
-    </div>
-    <div class="step-card">
-      <div class="step-num">3</div>
-      <div class="step-badge">Step 03</div>
-      <div class="step-title">Deploy and scale</div>
-      <div class="step-desc">Copy, publish, ship. From dashboard to live campaign in minutes, not days.</div>
-    </div>
-    <div class="step-card">
-      <div class="step-num">4</div>
-      <div class="step-badge">Step 04</div>
-      <div class="step-title">Review history</div>
-      <div class="step-desc">Every generation saved. Revisit, iterate, and refine as your strategy evolves.</div>
-    </div>
+    <div class="step"><div class="step-bg-num">1</div><div class="step-label">Step 01</div><div class="step-title">Enter your details</div><div class="step-desc">Product, price, audience — takes under 30 seconds. No jargon, no setup.</div></div>
+    <div class="step"><div class="step-bg-num">2</div><div class="step-label">Step 02</div><div class="step-title">AI generates strategy</div><div class="step-desc">A complete, actionable output tailored to your exact inputs. Specific, not generic.</div></div>
+    <div class="step"><div class="step-bg-num">3</div><div class="step-label">Step 03</div><div class="step-title">Deploy and scale</div><div class="step-desc">Copy, publish, ship. From dashboard to live campaign in minutes, not days.</div></div>
+    <div class="step"><div class="step-bg-num">4</div><div class="step-label">Step 04</div><div class="step-title">Review & iterate</div><div class="step-desc">Every generation saved to history. Revisit, refine, and build on what works.</div></div>
   </div>
 </section>
 
 <!-- STATS -->
-<div class="stats-section">
+<div class="stats-band">
   <div class="stats-inner">
     <div class="stat"><div class="stat-val">10<span>+</span></div><div class="stat-label">Specialised AI tools</div></div>
     <div class="stat"><div class="stat-val">2<span>k</span></div><div class="stat-label">Tokens per generation</div></div>
@@ -664,63 +379,54 @@ footer{
 
 <!-- TESTIMONIALS -->
 <section class="section" id="results">
-  <div class="section-label">Proof</div>
-  <div class="section-title">Operators who<br><em>use Stratum.</em></div>
-  <div class="testimonials-grid">
-    <div class="testimonial">
-      <div class="t-stars">
-        <svg class="t-star" viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
-        <svg class="t-star" viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
-        <svg class="t-star" viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
-        <svg class="t-star" viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
-        <svg class="t-star" viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
+  <div class="sec-label">Proof</div>
+  <div class="sec-title">Operators who<br><em>use Stratum.</em></div>
+  <div class="testi-grid">
+    <div class="testi">
+      <div class="testi-stars">
+        <svg viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
+        <svg viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
+        <svg viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
+        <svg viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
+        <svg viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
       </div>
-      <div class="t-text">"The ad copy generator alone saved me 4 hours per launch. The angles it produces are sharper than most freelancers I've hired."</div>
-      <div class="t-author">
-        <div class="t-avatar">SR</div>
-        <div><div class="t-name">Sarah R.</div><div class="t-role">DTC Skincare Brand</div></div>
-      </div>
+      <div class="testi-text">"The ad copy generator alone saved me 4 hours per launch. The angles it produces are sharper than most freelancers I've hired."</div>
+      <div class="testi-author"><div class="testi-av">SR</div><div><div class="testi-name">Sarah R.</div><div class="testi-role">DTC Skincare Brand</div></div></div>
     </div>
-    <div class="testimonial">
-      <div class="t-stars">
-        <svg class="t-star" viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
-        <svg class="t-star" viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
-        <svg class="t-star" viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
-        <svg class="t-star" viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
-        <svg class="t-star" viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
+    <div class="testi">
+      <div class="testi-stars">
+        <svg viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
+        <svg viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
+        <svg viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
+        <svg viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
+        <svg viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
       </div>
-      <div class="t-text">"Profit Analyser changed how I price. I was leaving 18% margin on the table. Fixed that in one generation."</div>
-      <div class="t-author">
-        <div class="t-avatar">MK</div>
-        <div><div class="t-name">Marcus K.</div><div class="t-role">Shopify Store Owner</div></div>
-      </div>
+      <div class="testi-text">"Profit Analyser changed how I price. I was leaving 18% margin on the table. Fixed that in one generation."</div>
+      <div class="testi-author"><div class="testi-av">MK</div><div><div class="testi-name">Marcus K.</div><div class="testi-role">Shopify Store Owner</div></div></div>
     </div>
-    <div class="testimonial">
-      <div class="t-stars">
-        <svg class="t-star" viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
-        <svg class="t-star" viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
-        <svg class="t-star" viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
-        <svg class="t-star" viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
-        <svg class="t-star" viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
+    <div class="testi">
+      <div class="testi-stars">
+        <svg viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
+        <svg viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
+        <svg viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
+        <svg viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
+        <svg viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
       </div>
-      <div class="t-text">"Store Health Check identified 6 conversion killers on my product page I'd been blind to for months. Revenue up 23% in 3 weeks."</div>
-      <div class="t-author">
-        <div class="t-avatar">AL</div>
-        <div><div class="t-name">Aisha L.</div><div class="t-role">E-Commerce Consultant</div></div>
-      </div>
+      <div class="testi-text">"Store Health Check found 6 conversion killers I'd been blind to for months. Revenue up 23% in 3 weeks after fixing them."</div>
+      <div class="testi-author"><div class="testi-av">AL</div><div><div class="testi-name">Aisha L.</div><div class="testi-role">E-Commerce Consultant</div></div></div>
     </div>
   </div>
 </section>
 
 <!-- CTA -->
-<div class="cta-section">
+<div class="cta-outer">
   <div class="cta-box">
     <h2>Start building.<br>Start converting.</h2>
     <p>Free account. 10 generations per day. No card required.</p>
     <div class="cta-actions">
       <a href="/signup-page" class="btn-primary">
         Create free account
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        <svg viewBox="0 0 16 16"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
       </a>
       <a href="/login-page" class="btn-secondary">I have an account</a>
     </div>
@@ -734,48 +440,67 @@ footer{
     <a href="/login-page">Sign In</a>
     <a href="/signup-page">Sign Up</a>
     <a href="#tools">Tools</a>
+    <a href="#how">How it works</a>
   </div>
 </footer>
 
 <script>
-// ── AD SYSTEM ──
-const ADS=[
-  {title:"Stratum Pro",subtitle:"Unlimited generations & priority AI",media:{type:"gradient",color1:"#e8ff59",color2:"#1a1a00"},link:"#"},
-  {title:"E-Commerce Mastery",subtitle:"Scale your store with precision strategy",media:{type:"gradient",color1:"#5970ff",color2:"#0a0f2e"},link:"#"},
-  {title:"Growth Intelligence",subtitle:"Data-driven decisions for modern brands",media:{type:"gradient",color1:"#ff5959",color2:"#1a0000"},link:"#"},
+// ── TOOLS DATA ──
+const TOOLS=[
+  {id:"marketing_strategy",num:"01",name:"Marketing Strategy",desc:"5 ad angles, 3 buyer personas, objection handlers, urgency triggers — the full conversion stack.",icon:'<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>'},
+  {id:"product_description",num:"02",name:"Product Description",desc:"SEO-optimised titles, benefit-led copy, bullet points, and a single sharp call to action.",icon:'<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>'},
+  {id:"ad_copy",num:"03",name:"Ad Copy Generator",desc:"Facebook, Instagram, TikTok — primary text, headlines, video hooks, carousel copy.",icon:'<rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>'},
+  {id:"cart_email",num:"04",name:"Abandoned Cart Emails",desc:"3-email recovery sequence — timed, personal, conversion-tuned. Recover lost revenue on autopilot.",icon:'<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>'},
+  {id:"seo_titles",num:"05",name:"SEO Titles",desc:"Keyword-first page titles, meta descriptions, alt text, URL slugs. Rank and click.",icon:'<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>'},
+  {id:"review_response",num:"06",name:"Review Responder",desc:"Short, detailed, and recovery responses for any review rating. Brand voice, every time.",icon:'<path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>'},
+  {id:"audience_finder",num:"07",name:"Audience Finder",desc:"Primary, secondary, and negative personas. Buying triggers, content strategy, where to find them.",icon:'<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>'},
+  {id:"hashtags",num:"08",name:"Hashtag Generator",desc:"Tiered strategy — high volume, mid, niche, branded, and trending. Ready-to-copy blocks.",icon:'<line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/>'},
+  {id:"profit_insights",num:"09",name:"Profit Analyser",desc:"Margins, net profit, break-even, scale projections, pricing recommendations. CFO-level clarity.",icon:'<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>'},
+  {id:"store_health",num:"10",name:"Store Health Check",desc:"Conversion killers, trust signals, mobile audit, checkout friction — ranked by revenue impact.",icon:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>'},
 ];
 
-(function initAd(){
-  if(sessionStorage.getItem('ad_seen'))return document.getElementById('adOverlay').style.display='none';
-  const ad=ADS[Math.floor(Math.random()*ADS.length)];
-  const m=ad.media;
-  document.getElementById('adMedia').innerHTML=
-    `<div style="width:100%;height:100%;background:linear-gradient(135deg,${m.color1}22,${m.color2});display:flex;align-items:center;justify-content:center;">
+const grid=document.getElementById('toolsGrid');
+grid.innerHTML=TOOLS.map(t=>`
+  <div class="tool-card" onclick="location.href='/tools/${t.id}'">
+    <div class="tool-num">${t.num}</div>
+    <div class="tool-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5">${t.icon}</svg></div>
+    <div class="tool-name">${t.name}</div>
+    <div class="tool-desc">${t.desc}</div>
+    <div class="tool-arrow"><svg viewBox="0 0 12 12" fill="none" stroke-width="2"><path d="M2 6h8M6 2l4 4-4 4"/></svg></div>
+  </div>
+`).join('');
+
+// ── AD SYSTEM ──
+(function(){
+  if(sessionStorage.getItem('ad_seen')){
+    document.getElementById('adOverlay').style.display='none';return;
+  }
+  const ads=[
+    {title:"Stratum Pro",sub:"Unlimited generations & priority AI",c1:"#e8ff59",c2:"#1a1a00",link:"#"},
+    {title:"E-Commerce Mastery",sub:"Scale your store with precision strategy",c1:"#5970ff",c2:"#0a0f2e",link:"#"},
+    {title:"Growth Intelligence",sub:"Data-driven decisions for modern brands",c1:"#ff5959",c2:"#1a0000",link:"#"},
+  ];
+  const ad=ads[Math.floor(Math.random()*ads.length)];
+  document.getElementById('adContent').innerHTML=`
+    <div style="width:100%;height:100%;background:linear-gradient(135deg,${ad.c1}22,${ad.c2});display:flex;align-items:center;justify-content:center;">
       <div style="text-align:center;">
-        <div style="font-family:'Sora',sans-serif;font-size:clamp(24px,5vw,48px);font-weight:700;color:#fff;letter-spacing:-0.03em;">${ad.title}</div>
-        <div style="font-family:'DM Mono',monospace;font-size:12px;color:rgba(255,255,255,0.4);margin-top:12px;letter-spacing:0.1em;text-transform:uppercase;">${ad.subtitle}</div>
+        <div style="font-family:'Sora',sans-serif;font-size:clamp(22px,5vw,46px);font-weight:700;color:#fff;letter-spacing:-.04em">${ad.title}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.38);margin-top:10px;letter-spacing:.1em;text-transform:uppercase">${ad.sub}</div>
       </div>
     </div>`;
   document.getElementById('adTitle').textContent=ad.title;
-  document.getElementById('adSubtitle').textContent=ad.subtitle;
+  document.getElementById('adSub').textContent=ad.sub;
   document.getElementById('adVisit').href=ad.link;
 
   let t=6;
-  const cd=document.getElementById('adCountdown');
+  const cd=document.getElementById('adTimer');
   const skip=document.getElementById('adSkip');
   const iv=setInterval(()=>{
     t--;cd.textContent=t;
-    if(t<=0){
-      clearInterval(iv);
-      skip.disabled=false;skip.classList.add('ready');
-      skip.innerHTML='Continue';
-    }
+    if(t<=0){clearInterval(iv);skip.disabled=false;skip.classList.add('ready');skip.textContent='Continue';}
   },1000);
   skip.onclick=()=>{
-    if(!skip.disabled){
-      document.getElementById('adOverlay').style.display='none';
-      sessionStorage.setItem('ad_seen','1');
-    }
+    if(!skip.disabled){document.getElementById('adOverlay').style.display='none';sessionStorage.setItem('ad_seen','1');}
   };
 })();
 </script>
