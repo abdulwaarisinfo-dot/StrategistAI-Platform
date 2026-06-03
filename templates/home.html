@@ -1,683 +1,783 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatbot | Strategist.AI</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        :root {
-            --bg-dark: #050505;
-            --card-purple: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-            --card-teal: linear-gradient(135deg, #0891b2 0%, #0d9488 100%);
-            --card-orange: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
-            --input-bg: rgba(20, 20, 20, 0.9);
-            --border: rgba(255, 255, 255, 0.08);
-            --text-main: #ffffff;
-            --text-dim: #888888;
-            --accent-blue: #3b82f6;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stratum — AI Commerce Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-        }
+:root{
+  --black:#080808;
+  --surface:#0f0f0f;
+  --surface2:#161616;
+  --border:rgba(255,255,255,0.06);
+  --border-strong:rgba(255,255,255,0.12);
+  --white:#ffffff;
+  --off-white:#d4d4d4;
+  --muted:#6b6b6b;
+  --accent:#e8ff59;
+  --accent-dim:rgba(232,255,89,0.12);
+  --accent-dim2:rgba(232,255,89,0.06);
+  --red:#ff4545;
+  --font:'Sora',sans-serif;
+  --mono:'DM Mono',monospace;
+}
 
-        body {
-            background-color: var(--bg-dark);
-            background-image: 
-                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-            background-size: 40px 40px;
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow-x: hidden;
-            -webkit-tap-highlight-color: transparent;
-        }
+html{scroll-behavior:smooth;font-size:16px}
+body{background:var(--black);color:var(--white);font-family:var(--font);-webkit-font-smoothing:antialiased;overflow-x:hidden}
 
-        /* --- NAVBAR --- */
-        nav {
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            padding: 1.5rem 2.5rem;
-            width: 100%;
-            z-index: 10;
-            gap: 1rem;
-        }
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--black)}
+::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:2px}
 
-        .btn-ghost {
-            background: transparent;
-            color: #fff;
-            border: 1px solid var(--border);
-            padding: 10px 24px;
-            border-radius: 100px;
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .btn-ghost:hover {
-            background: #fff;
-            color: #000;
-            border-color: #fff;
-        }
+/* ── NAV ── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:900;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 40px;height:68px;
+  background:rgba(8,8,8,0.85);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
 
-        /* --- MAIN CONTENT --- */
-        main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 2rem 1.5rem;
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+.nav-logo{
+  display:flex;align-items:center;gap:10px;
+  text-decoration:none;
+}
+.logo-mark{
+  width:32px;height:32px;background:var(--accent);border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+}
+.logo-mark svg{width:18px;height:18px}
+.logo-name{font-size:15px;font-weight:600;color:var(--white);letter-spacing:-0.3px}
 
-        .hero-section {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
+.nav-links{display:flex;align-items:center;gap:32px}
+.nav-links a{
+  font-size:13px;font-weight:400;color:var(--muted);
+  text-decoration:none;letter-spacing:0.01em;transition:color 0.2s;
+}
+.nav-links a:hover{color:var(--white)}
 
-        .sparkle-icon {
-            color: var(--accent-blue);
-            margin-bottom: 1.5rem;
-            filter: drop-shadow(0 0 15px rgba(59, 130, 246, 0.4));
-        }
+.nav-ctas{display:flex;align-items:center;gap:12px}
+.btn-ghost-nav{
+  font-size:13px;font-weight:500;color:var(--off-white);
+  background:none;border:1px solid var(--border-strong);
+  padding:8px 20px;border-radius:8px;cursor:pointer;
+  text-decoration:none;transition:all 0.2s;
+}
+.btn-ghost-nav:hover{border-color:rgba(255,255,255,0.3);color:var(--white)}
+.btn-solid-nav{
+  font-size:13px;font-weight:600;color:#000;
+  background:var(--accent);border:none;
+  padding:8px 20px;border-radius:8px;cursor:pointer;
+  text-decoration:none;transition:opacity 0.2s;
+}
+.btn-solid-nav:hover{opacity:0.88}
 
-        .welcome-text {
-            color: var(--text-dim);
-            font-size: 0.75rem;
-            margin-bottom: 0.75rem;
-            letter-spacing: 0.25em;
-            text-transform: uppercase;
-        }
+/* ── HERO ── */
+.hero{
+  min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:120px 40px 80px;
+  position:relative;overflow:hidden;
+  text-align:center;
+}
 
-        h1 {
-            font-size: clamp(2rem, 8vw, 3.5rem);
-            font-weight: 600;
-            margin-bottom: 1rem;
-            letter-spacing: -0.02em;
-            line-height: 1.1;
-        }
+.hero-noise{
+  position:absolute;inset:0;z-index:0;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
+  background-size:200px 200px;opacity:0.4;
+}
 
-        h1 span {
-            color: #444;
-            font-weight: 300;
-        }
+.hero-glow{
+  position:absolute;
+  width:700px;height:700px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(232,255,89,0.07) 0%,transparent 70%);
+  top:50%;left:50%;transform:translate(-50%,-60%);
+  pointer-events:none;z-index:0;
+}
 
-        /* --- FEATURE CARDS --- */
-        .feature-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
-            width: 100%;
-            max-width: 1000px;
-            margin-bottom: 3rem;
-        }
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:var(--mono);font-size:11px;letter-spacing:0.12em;
+  color:var(--accent);text-transform:uppercase;
+  border:1px solid rgba(232,255,89,0.2);
+  background:rgba(232,255,89,0.05);
+  padding:6px 14px;border-radius:100px;
+  margin-bottom:36px;position:relative;z-index:1;
+}
+.eyebrow-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
 
-        .card {
-            height: 200px;
-            border-radius: 28px;
-            padding: 2rem;
-            position: relative;
-            cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
+.hero h1{
+  font-size:clamp(42px,7vw,88px);font-weight:700;
+  letter-spacing:-0.04em;line-height:1.0;
+  color:var(--white);
+  position:relative;z-index:1;
+  max-width:900px;
+  animation:fadeUp 0.8s ease both;
+}
+.hero h1 em{
+  font-style:normal;
+  color:var(--accent);
+  position:relative;
+}
 
-        .card:hover {
-            transform: translateY(-8px);
-            border-color: rgba(255,255,255,0.3);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-        }
+.hero-sub{
+  font-size:clamp(15px,1.8vw,18px);font-weight:300;color:var(--muted);
+  max-width:560px;line-height:1.7;
+  margin:24px auto 0;position:relative;z-index:1;
+  animation:fadeUp 0.8s 0.15s ease both;
+}
 
-        .card h3 {
-            font-size: 1.2rem;
-            line-height: 1.4;
-            max-width: 85%;
-            position: relative;
-            z-index: 2;
-            font-weight: 600;
-            color: white;
-        }
+.hero-actions{
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:center;
+  margin-top:44px;position:relative;z-index:1;
+  animation:fadeUp 0.8s 0.3s ease both;
+}
 
-        .card-icon-bg {
-            position: absolute;
-            bottom: -10px;
-            right: -10px;
-            opacity: 0.15;
-            transition: opacity 0.3s, transform 0.3s;
-        }
+.btn-primary{
+  display:inline-flex;align-items:center;gap:10px;
+  font-size:14px;font-weight:600;color:#000;
+  background:var(--accent);border:none;padding:14px 28px;border-radius:10px;
+  cursor:pointer;text-decoration:none;transition:all 0.2s;
+}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(232,255,89,0.25)}
+.btn-primary svg{width:16px;height:16px}
 
-        .card:hover .card-icon-bg {
-            opacity: 0.35;
-            transform: scale(1.1) rotate(-5deg);
-        }
+.btn-secondary{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:14px;font-weight:400;color:var(--off-white);
+  background:none;border:1px solid var(--border-strong);
+  padding:14px 28px;border-radius:10px;
+  cursor:pointer;text-decoration:none;transition:all 0.2s;
+}
+.btn-secondary:hover{border-color:rgba(255,255,255,0.25);color:var(--white)}
 
-        .card.purple { background: var(--card-purple); }
-        .card.teal { background: var(--card-teal); }
-        .card.orange { background: var(--card-orange); }
+.hero-trust{
+  display:flex;align-items:center;gap:24px;flex-wrap:wrap;justify-content:center;
+  margin-top:56px;position:relative;z-index:1;
+  animation:fadeUp 0.8s 0.45s ease both;
+}
+.trust-item{
+  display:flex;align-items:center;gap:8px;
+  font-size:12px;color:var(--muted);
+}
+.trust-item svg{width:14px;height:14px;color:var(--accent)}
+.trust-sep{width:4px;height:4px;border-radius:50%;background:var(--border-strong)}
 
-        /* --- CHAT INPUT AREA --- */
-        .chat-outer-box {
-            width: 100%;
-            max-width: 850px;
-            background: rgba(10, 10, 10, 0.7);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border: 1px solid var(--border);
-            border-radius: 32px;
-            padding: 1.5rem;
-            box-shadow: 0 40px 100px rgba(0,0,0,0.6);
-            margin-bottom: 2rem;
-        }
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 
-        .input-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
+/* ── MARQUEE ── */
+.marquee-section{
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  padding:18px 0;overflow:hidden;
+  background:var(--surface);
+}
+.marquee-track{
+  display:flex;gap:60px;white-space:nowrap;
+  animation:marquee 28s linear infinite;
+}
+.marquee-track:hover{animation-play-state:paused}
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.marquee-item{
+  display:flex;align-items:center;gap:10px;
+  font-family:var(--mono);font-size:11px;letter-spacing:0.1em;
+  color:var(--muted);text-transform:uppercase;flex-shrink:0;
+}
+.marquee-item span{color:var(--accent)}
 
-        .field-group {
-            flex: 1;
-            min-width: 180px;
-            display: flex;
-            flex-direction: column;
-            gap: 0.6rem;
-        }
+/* ── SECTION LAYOUT ── */
+.section{padding:100px 40px;max-width:1200px;margin:0 auto}
+.section-label{
+  font-family:var(--mono);font-size:11px;letter-spacing:0.15em;
+  color:var(--accent);text-transform:uppercase;margin-bottom:16px;
+}
+.section-title{
+  font-size:clamp(28px,4vw,44px);font-weight:700;letter-spacing:-0.03em;
+  color:var(--white);line-height:1.1;max-width:600px;
+}
+.section-title em{font-style:normal;color:var(--muted)}
 
-        .field-label {
-            font-size: 0.6rem;
-            text-transform: uppercase;
-            color: #666;
-            font-weight: 800;
-            letter-spacing: 0.15em;
-        }
+/* ── TOOLS GRID ── */
+.tools-wrap{width:100%;max-width:1200px;margin:0 auto;padding:80px 40px}
+.tools-header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:48px}
 
-        .field-input {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 14px;
-            padding: 14px 18px;
-            color: #fff;
-            font-size: 0.9rem;
-            outline: none;
-            transition: all 0.2s;
-            width: 100%;
-        }
+.tools-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
+  gap:1px;
+  background:var(--border);
+  border:1px solid var(--border);
+  border-radius:16px;overflow:hidden;
+}
+.tool-card{
+  background:var(--black);
+  padding:32px;cursor:pointer;
+  transition:background 0.2s;
+  position:relative;
+}
+.tool-card:hover{background:var(--surface)}
+.tool-card::after{
+  content:'';position:absolute;inset:0;
+  border:1px solid transparent;border-radius:0;
+  transition:border-color 0.2s;pointer-events:none;
+}
+.tool-card:hover::after{border-color:rgba(232,255,89,0.08)}
 
-        .field-input:focus {
-            border-color: var(--accent-blue);
-            background: rgba(255,255,255,0.06);
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
-        }
+.tool-index{
+  font-family:var(--mono);font-size:11px;color:var(--muted);
+  margin-bottom:20px;letter-spacing:0.1em;
+}
+.tool-icon{
+  width:40px;height:40px;border-radius:10px;
+  background:var(--surface2);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:16px;
+}
+.tool-icon svg{width:20px;height:20px;stroke:var(--accent)}
+.tool-name{font-size:15px;font-weight:600;color:var(--white);margin-bottom:8px}
+.tool-desc{font-size:13px;color:var(--muted);line-height:1.6}
+.tool-arrow{
+  position:absolute;bottom:28px;right:28px;
+  width:28px;height:28px;border-radius:50%;
+  background:var(--surface2);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity 0.2s;
+}
+.tool-card:hover .tool-arrow{opacity:1}
+.tool-arrow svg{width:12px;height:12px;stroke:var(--white)}
 
-        .chat-bottom-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-top: 1px solid rgba(255,255,255,0.06);
-            padding-top: 1.25rem;
-            gap: 1rem;
-        }
+/* ── HOW IT WORKS ── */
+.steps-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:32px;margin-top:56px;
+}
+.step-card{
+  padding:32px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:14px;
+  position:relative;overflow:hidden;
+}
+.step-num{
+  font-family:var(--mono);font-size:64px;font-weight:500;
+  color:rgba(255,255,255,0.03);
+  position:absolute;top:-10px;right:12px;line-height:1;
+}
+.step-badge{
+  font-family:var(--mono);font-size:10px;color:var(--accent);
+  letter-spacing:0.12em;text-transform:uppercase;
+  margin-bottom:16px;
+}
+.step-title{font-size:16px;font-weight:600;color:var(--white);margin-bottom:8px}
+.step-desc{font-size:13px;color:var(--muted);line-height:1.6}
 
-        .engine-selector {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(255,255,255,0.04);
-            padding: 8px 16px;
-            border-radius: 100px;
-            font-size: 0.75rem;
-            color: #888;
-            cursor: pointer;
-            border: 1px solid transparent;
-            transition: all 0.2s;
-            white-space: nowrap;
-        }
+/* ── STATS ── */
+.stats-section{
+  background:var(--surface);
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  padding:64px 40px;
+}
+.stats-inner{
+  max-width:1100px;margin:0 auto;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:40px;
+}
+.stat{text-align:center}
+.stat-val{
+  font-size:clamp(36px,5vw,56px);font-weight:700;letter-spacing:-0.03em;
+  color:var(--white);line-height:1;margin-bottom:8px;
+}
+.stat-val span{color:var(--accent)}
+.stat-label{font-size:13px;color:var(--muted)}
 
-        .engine-selector:hover {
-            background: rgba(255,255,255,0.08);
-            color: #fff;
-        }
+/* ── TESTIMONIALS ── */
+.testimonials-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+  gap:16px;margin-top:48px;
+}
+.testimonial{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;padding:28px;
+}
+.t-stars{
+  display:flex;gap:3px;margin-bottom:16px;
+}
+.t-star{width:12px;height:12px;fill:var(--accent);stroke:none}
+.t-text{font-size:14px;color:var(--off-white);line-height:1.7;margin-bottom:20px}
+.t-author{display:flex;align-items:center;gap:12px}
+.t-avatar{
+  width:36px;height:36px;border-radius:50%;
+  background:var(--surface2);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:600;color:var(--accent);
+}
+.t-name{font-size:13px;font-weight:600;color:var(--white)}
+.t-role{font-size:11px;color:var(--muted)}
 
-        .send-btn {
-            background: #fff;
-            color: #000;
-            width: 44px;
-            height: 44px;
-            min-width: 44px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
+/* ── CTA ── */
+.cta-section{
+  max-width:800px;margin:0 auto;padding:100px 40px;
+  text-align:center;
+}
+.cta-box{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:24px;padding:64px 48px;
+  position:relative;overflow:hidden;
+}
+.cta-box::before{
+  content:'';position:absolute;
+  width:500px;height:500px;border-radius:50%;
+  background:radial-gradient(circle,rgba(232,255,89,0.06) 0%,transparent 70%);
+  top:-200px;left:50%;transform:translateX(-50%);pointer-events:none;
+}
+.cta-box h2{
+  font-size:clamp(28px,4vw,48px);font-weight:700;letter-spacing:-0.03em;
+  color:var(--white);line-height:1.1;margin-bottom:16px;position:relative;
+}
+.cta-box p{font-size:15px;color:var(--muted);margin-bottom:36px;position:relative}
+.cta-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;position:relative}
 
-        .send-btn:hover {
-            transform: scale(1.1) rotate(5deg);
-            background: var(--accent-blue);
-            color: #fff;
-        }
+/* ── FOOTER ── */
+footer{
+  border-top:1px solid var(--border);
+  padding:40px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:20px;
+}
+.footer-copy{font-size:12px;color:var(--muted)}
+.footer-links{display:flex;gap:24px}
+.footer-links a{font-size:12px;color:var(--muted);text-decoration:none;transition:color 0.2s}
+.footer-links a:hover{color:var(--white)}
 
-        .tool-btn { 
-            background: none; 
-            border: none; 
-            color: #555; 
-            cursor: pointer; 
-            transition: all 0.2s; 
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+/* ── AD OVERLAY ── */
+#adOverlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.96);
+  z-index:9999;display:flex;align-items:center;justify-content:center;
+  backdrop-filter:blur(12px);
+}
+.ad-container{
+  width:100%;max-width:720px;margin:0 20px;
+  background:var(--surface);border:1px solid var(--border-strong);
+  border-radius:20px;overflow:hidden;
+}
+.ad-media-wrap{
+  position:relative;width:100%;
+  background:#000;
+  aspect-ratio:16/9;overflow:hidden;
+}
+.ad-media-wrap img{width:100%;height:100%;object-fit:cover;display:block}
+.ad-media-wrap iframe{width:100%;height:100%;border:none;display:block}
+.ad-badge{
+  position:absolute;top:14px;left:14px;
+  font-family:var(--mono);font-size:9px;letter-spacing:0.12em;text-transform:uppercase;
+  background:rgba(0,0,0,0.7);color:var(--muted);
+  border:1px solid var(--border-strong);padding:4px 10px;border-radius:4px;
+}
+.ad-skip-area{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 24px;gap:12px;flex-wrap:wrap;
+}
+.ad-meta{flex:1}
+.ad-meta-title{font-size:13px;font-weight:600;color:var(--white)}
+.ad-meta-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.ad-visit{
+  font-size:12px;font-weight:600;color:#000;background:var(--accent);
+  border:none;padding:8px 18px;border-radius:7px;cursor:pointer;
+  text-decoration:none;white-space:nowrap;transition:opacity 0.2s;
+}
+.ad-visit:hover{opacity:0.85}
+.ad-skip{
+  font-size:12px;font-weight:500;color:var(--muted);
+  background:none;border:1px solid var(--border-strong);
+  padding:8px 18px;border-radius:7px;cursor:not-allowed;
+  white-space:nowrap;transition:all 0.3s;
+}
+.ad-skip.ready{cursor:pointer;color:var(--white);border-color:rgba(255,255,255,0.25)}
+.ad-skip.ready:hover{border-color:var(--white)}
 
-        .tool-btn:hover { background: rgba(255,255,255,0.05); color: #aaa; }
-        .tool-btn.active { color: #fff; background: rgba(59, 130, 246, 0.2); }
-
-        /* --- AD SYSTEM --- */
-        #adOverlay {
-            position: fixed;
-            inset: 0;
-            background: #000;
-            z-index: 9999;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
-        }
-        #adOverlay.active { display: flex; }
-        
-        .ad-box {
-            width: 100%;
-            max-width: 800px;
-            aspect-ratio: 16/9;
-            background: #111;
-            border: 1px solid #222;
-            border-radius: 16px;
-            overflow: hidden;
-            position: relative;
-            box-shadow: 0 0 100px rgba(59, 130, 246, 0.15);
-        }
-        
-        .ad-media { width: 100%; height: 100%; border: none; }
-        
-        .ad-footer {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 20px;
-            background: linear-gradient(transparent, rgba(0,0,0,0.95));
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 1rem;
-        }
-        
-        .ad-info h4 { font-size: 1rem; color: #fff; margin-bottom: 2px; }
-        .ad-info p { font-size: 0.75rem; color: #777; }
-        
-        .btn-visit { 
-            background: #fff; 
-            color: #000; 
-            border: none; 
-            padding: 8px 16px; 
-            border-radius: 8px; 
-            font-weight: 700; 
-            font-size: 0.8rem;
-            cursor: pointer; 
-            white-space: nowrap;
-        }
-        
-        .skip-section { margin-top: 2rem; text-align: center; }
-        
-        #skipBtn { 
-            padding: 12px 32px; 
-            border-radius: 100px; 
-            background: transparent; 
-            color: #444; 
-            border: 1px solid #222; 
-            font-weight: 600; 
-            font-size: 0.9rem;
-            cursor: not-allowed; 
-            transition: all 0.3s; 
-        }
-        
-        #skipBtn.ready { 
-            cursor: pointer; 
-            background: #fff; 
-            color: #000; 
-            border-color: #fff; 
-            box-shadow: 0 10px 20px rgba(255,255,255,0.1); 
-        }
-
-        /* --- AUTH MODAL --- */
-        #authModal {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.85);
-            z-index: 10000;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            padding: 1.5rem;
-        }
-        .modal-content { 
-            background: #0a0a0a; 
-            padding: 2.5rem; 
-            border: 1px solid #222; 
-            border-radius: 32px; 
-            text-align: center; 
-            max-width: 400px; 
-            width: 100%; 
-            box-shadow: 0 50px 100px rgba(0,0,0,0.9);
-        }
-        .modal-content h2 { font-size: 1.75rem; margin-bottom: 0.75rem; }
-        .modal-content p { color: #666; font-size: 0.9rem; margin-bottom: 2rem; line-height: 1.5; }
-        .modal-btns { display: flex; flex-direction: column; gap: 0.75rem; }
-        .btn-modal-fill { background: #fff; color: #000; padding: 14px; border-radius: 12px; text-decoration: none; font-weight: 600; font-size: 0.9rem; display: block; transition: transform 0.2s; }
-        .btn-modal-ghost { border: 1px solid #222; color: #fff; padding: 14px; border-radius: 12px; text-decoration: none; font-size: 0.9rem; display: block; transition: all 0.2s; }
-        .btn-modal-ghost:hover { border-color: #444; background: rgba(255,255,255,0.02); }
-
-        /* --- RESPONSIVE ADJUSTMENTS --- */
-        @media (max-width: 640px) {
-            nav { padding: 1rem; justify-content: center; }
-            .btn-ghost { padding: 8px 16px; font-size: 0.75rem; }
-            .welcome-text { font-size: 0.65rem; }
-            .feature-grid { grid-template-columns: 1fr; }
-            .chat-outer-box { padding: 1rem; border-radius: 24px; }
-            .input-row { flex-direction: column; }
-            .field-group { min-width: 100%; }
-            .chat-bottom-bar { flex-direction: column; align-items: stretch; }
-            .engine-selector { justify-content: center; width: 100%; }
-            .bottom-actions { display: flex; justify-content: center; gap: 10px; width: 100%; }
-            .ad-box { aspect-ratio: 4/5; } /* Vertical ad for mobile */
-            .ad-footer { flex-direction: column; text-align: center; }
-        }
-    </style>
+@media(max-width:768px){
+  nav{padding:0 20px}
+  .nav-links{display:none}
+  .hero{padding:100px 20px 60px}
+  .section{padding:60px 20px}
+  .tools-wrap{padding:60px 20px}
+  .tools-header{flex-direction:column;align-items:flex-start;gap:16px}
+  .stats-section{padding:48px 20px}
+  .cta-section{padding:60px 20px}
+  .cta-box{padding:40px 24px}
+  footer{padding:28px 20px}
+}
+</style>
 </head>
 <body>
 
-    <nav>
-        <button class="btn-ghost" onclick="showAuth()">Log in</button>
-        <button class="btn-ghost" onclick="showAuth()">Signup</button>
-    </nav>
+<!-- AD OVERLAY -->
+<div id="adOverlay">
+  <div class="ad-container">
+    <div class="ad-media-wrap">
+      <span class="ad-badge">Advertisement</span>
+      <div id="adMedia"></div>
+    </div>
+    <div class="ad-skip-area">
+      <div class="ad-meta">
+        <div class="ad-meta-title" id="adTitle">Stratum Pro Access</div>
+        <div class="ad-meta-sub" id="adSubtitle">AI-powered growth for modern commerce</div>
+      </div>
+      <a id="adVisit" href="#" target="_blank" class="ad-visit">Learn More</a>
+      <button id="adSkip" class="ad-skip" disabled>Skip in <span id="adCountdown">6</span>s</button>
+    </div>
+  </div>
+</div>
 
-    <main>
-        <div class="hero-section">
-            <div class="sparkle-icon"><i data-lucide="sparkles" size="48"></i></div>
-            <p class="welcome-text">Leonardo AI Strategist</p>
-            <h1>How <span>can I help today?</span></h1>
-        </div>
+<!-- NAV -->
+<nav>
+  <a href="/" class="nav-logo">
+    <div class="logo-mark">
+      <svg viewBox="0 0 18 18" fill="none"><path d="M3 14L9 4l6 10H3z" fill="#000"/></svg>
+    </div>
+    <span class="logo-name">Stratum</span>
+  </a>
+  <div class="nav-links">
+    <a href="#tools">Tools</a>
+    <a href="#how">How it Works</a>
+    <a href="#results">Results</a>
+  </div>
+  <div class="nav-ctas">
+    <a href="/login-page" class="btn-ghost-nav">Sign in</a>
+    <a href="/signup-page" class="btn-solid-nav">Start free</a>
+  </div>
+</nav>
 
-        <div class="feature-grid">
-            <div class="card purple" onclick="fillPrompt('Generate Ad Angles & Strategy')">
-                <h3>Generate Ad Angles & Strategy</h3>
-                <div class="card-icon-bg"><i data-lucide="box" size="90"></i></div>
-            </div>
-            <div class="card teal" onclick="fillPrompt('Create Marketing Funnel')">
-                <h3>Create Marketing Funnel</h3>
-                <div class="card-icon-bg"><i data-lucide="filter" size="90"></i></div>
-            </div>
-            <div class="card orange" onclick="fillPrompt('Develop Persona & Hooks')">
-                <h3>Develop Persona & Hooks</h3>
-                <div class="card-icon-bg"><i data-lucide="video" size="90"></i></div>
-            </div>
-        </div>
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-noise"></div>
+  <div class="hero-glow"></div>
 
-        <div class="chat-outer-box">
-            <div class="input-row">
-                <div class="field-group">
-                    <label class="field-label">Product Name</label>
-                    <input type="text" id="prodName" class="field-input" placeholder="AI Analytics Suite">
-                </div>
-                <div class="field-group">
-                    <label class="field-label">Price ($)</label>
-                    <input type="text" id="prodPrice" class="field-input" placeholder="2499.99">
-                </div>
-                <div class="field-group">
-                    <label class="field-label">Audience</label>
-                    <input type="text" id="prodAudience" class="field-input" placeholder="IT Managers">
-                </div>
-            </div>
+  <div class="hero-eyebrow">
+    <span class="eyebrow-dot"></span>
+    AI Commerce Intelligence Platform
+  </div>
 
-            <textarea id="mainPrompt" style="display:none;"></textarea>
+  <h1>Strategy that<br><em>converts.</em></h1>
 
-            <div class="chat-bottom-bar">
-                <div style="display:flex; gap: 6px; align-items:center;">
-                    <button class="tool-btn" id="micBtn" onclick="toggleVoiceInput()"><i data-lucide="mic" size="18"></i></button>
-                    <button class="tool-btn" id="speakerBtn" onclick="toggleSpeaker()"><i data-lucide="volume-2" size="18"></i></button>
-                </div>
-                <button class="send-btn" id="generateBtn" onclick="handleGenerate()">
-                    <i data-lucide="arrow-up" size="22"></i>
-                </button>
-            </div>
-        </div>
-    </main>
+  <p class="hero-sub">
+    Ten precision AI tools. One platform. Built for store owners, marketers, and operators who need results — not theory.
+  </p>
 
-    <!-- Ad Overlay -->
-    <div id="adOverlay">
-        <div class="ad-box">
-            <div style="position:absolute; top:15px; right:15px; z-index:10;">
-                <button onclick="toggleAdMute()" style="background:rgba(0,0,0,0.6); border:none; color:white; padding:8px; border-radius:50%; cursor:pointer; display:flex;">
-                    <i id="adMuteIcon" data-lucide="volume-x" size="18"></i>
-                </button>
-            </div>
-            <div id="adMediaContainer" class="ad-media"></div>
-            <div class="ad-footer">
-                <div class="ad-info">
-                    <h4 id="adTitle">Precision Marketing</h4>
-                    <p id="adDesc">Loading next-gen assets...</p>
-                </div>
-                <button class="btn-visit" id="adVisitBtn">Visit Site</button>
-            </div>
-        </div>
-        <div class="skip-section">
-            <p id="skipTimer" style="margin-bottom: 12px; font-size: 0.8rem; color: #444; letter-spacing: 0.05em;">Verifying access...</p>
-            <button id="skipBtn" disabled>Skip Advertisement</button>
-        </div>
+  <div class="hero-actions">
+    <a href="/signup-page" class="btn-primary">
+      Get started free
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+    </a>
+    <a href="/login-page" class="btn-secondary">Sign in to dashboard</a>
+  </div>
+
+  <div class="hero-trust">
+    <div class="trust-item">
+      <svg viewBox="0 0 14 14" fill="currentColor"><path d="M7 0l1.8 5.4H14L9.6 8.7l1.7 5.3L7 10.7l-4.3 3.3 1.7-5.3L0 5.4h5.2z"/></svg>
+      10 AI tools included
+    </div>
+    <div class="trust-sep"></div>
+    <div class="trust-item">
+      <svg viewBox="0 0 14 14" fill="currentColor"><path d="M7 0l1.8 5.4H14L9.6 8.7l1.7 5.3L7 10.7l-4.3 3.3 1.7-5.3L0 5.4h5.2z"/></svg>
+      No credit card
+    </div>
+    <div class="trust-sep"></div>
+    <div class="trust-item">
+      <svg viewBox="0 0 14 14" fill="currentColor"><path d="M7 0l1.8 5.4H14L9.6 8.7l1.7 5.3L7 10.7l-4.3 3.3 1.7-5.3L0 5.4h5.2z"/></svg>
+      Instant results
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-section">
+  <div class="marquee-track" id="marqueeTrack">
+    <div class="marquee-item"><span>✦</span> Marketing Strategy</div>
+    <div class="marquee-item"><span>✦</span> Product Descriptions</div>
+    <div class="marquee-item"><span>✦</span> Ad Copy Generator</div>
+    <div class="marquee-item"><span>✦</span> Abandoned Cart Emails</div>
+    <div class="marquee-item"><span>✦</span> SEO Titles</div>
+    <div class="marquee-item"><span>✦</span> Review Responses</div>
+    <div class="marquee-item"><span>✦</span> Audience Finder</div>
+    <div class="marquee-item"><span>✦</span> Hashtag Generator</div>
+    <div class="marquee-item"><span>✦</span> Profit Analyser</div>
+    <div class="marquee-item"><span>✦</span> Store Health Check</div>
+    <div class="marquee-item"><span>✦</span> Marketing Strategy</div>
+    <div class="marquee-item"><span>✦</span> Product Descriptions</div>
+    <div class="marquee-item"><span>✦</span> Ad Copy Generator</div>
+    <div class="marquee-item"><span>✦</span> Abandoned Cart Emails</div>
+    <div class="marquee-item"><span>✦</span> SEO Titles</div>
+    <div class="marquee-item"><span>✦</span> Review Responses</div>
+    <div class="marquee-item"><span>✦</span> Audience Finder</div>
+    <div class="marquee-item"><span>✦</span> Hashtag Generator</div>
+    <div class="marquee-item"><span>✦</span> Profit Analyser</div>
+    <div class="marquee-item"><span>✦</span> Store Health Check</div>
+  </div>
+</div>
+
+<!-- TOOLS -->
+<div class="tools-wrap" id="tools">
+  <div class="tools-header">
+    <div>
+      <div class="section-label">The Arsenal</div>
+      <div class="section-title">Ten tools.<br><em>Zero fluff.</em></div>
+    </div>
+    <a href="/signup-page" class="btn-secondary" style="white-space:nowrap">Access all tools →</a>
+  </div>
+
+  <div class="tools-grid">
+
+    <div class="tool-card" onclick="location.href='/signup-page'">
+      <div class="tool-index">01</div>
+      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg></div>
+      <div class="tool-name">Marketing Strategy</div>
+      <div class="tool-desc">5 ad angles, 3 buyer personas, objection handlers, urgency triggers — the full conversion stack.</div>
+      <div class="tool-arrow"><svg viewBox="0 0 12 12" fill="none" stroke-width="1.5"><path d="M2 6h8M6 2l4 4-4 4"/></svg></div>
     </div>
 
-  <!-- Auth Modal -->
-    <div id="authModal">
-        <div class="modal-content">
-            <h2>Get Started</h2>
-            <p>To use our premium generation features, please log in or create an account.</p>
-            <div class="modal-btns">
-                <a href="/login-page" class="btn-modal-fill">Login to Dashboard</a>
-                <a href="/signup-page" class="btn-modal-ghost">Create Account</a>
-                <button onclick="hideAuth()" style="background:transparent; border:none; color:#444; margin-top:20px; cursor:pointer; font-size: 0.85rem; text-decoration: underline;">Maybe later</button>
-            </div>
-        </div>
+    <div class="tool-card" onclick="location.href='/signup-page'">
+      <div class="tool-index">02</div>
+      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg></div>
+      <div class="tool-name">Product Description</div>
+      <div class="tool-desc">SEO-optimised titles, benefit-led copy, bullet points, and a single sharp call to action.</div>
+      <div class="tool-arrow"><svg viewBox="0 0 12 12" fill="none" stroke-width="1.5"><path d="M2 6h8M6 2l4 4-4 4"/></svg></div>
     </div>
 
-    <script>
-        // --- LOGICS MAINTAINED 100% AS IS ---
-        let isSpeakerEnabled = false;
-        let isListening = false;
-        let recognition = null;
-        let adMuted = true;
-        let currentAdUrl = "";
+    <div class="tool-card" onclick="location.href='/signup-page'">
+      <div class="tool-index">03</div>
+      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><path d="M15 10l4.553-2.069A1 1 0 0121 8.87V15.13a1 1 0 01-1.447.899L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg></div>
+      <div class="tool-name">Ad Copy Generator</div>
+      <div class="tool-desc">Facebook, Instagram, TikTok — primary text, headlines, video hooks, carousel copy.</div>
+      <div class="tool-arrow"><svg viewBox="0 0 12 12" fill="none" stroke-width="1.5"><path d="M2 6h8M6 2l4 4-4 4"/></svg></div>
+    </div>
 
-        lucide.createIcons();
+    <div class="tool-card" onclick="location.href='/signup-page'">
+      <div class="tool-index">04</div>
+      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></div>
+      <div class="tool-name">Abandoned Cart Emails</div>
+      <div class="tool-desc">3-email recovery sequence — timed, personal, conversion-tuned. Recover lost revenue on autopilot.</div>
+      <div class="tool-arrow"><svg viewBox="0 0 12 12" fill="none" stroke-width="1.5"><path d="M2 6h8M6 2l4 4-4 4"/></svg></div>
+    </div>
 
-        const ADS = [
-            {
-                title: "Strategist.AI Pro",
-                desc: "Scale your marketing with precision AI tools.",
-                url: "https://www.youtube.com/embed/ScMzIvxBSi4",
-                link: "https://strategist.ai"
-            },
-            {
-                title: "Next-Gen UI Kit",
-                desc: "Beautiful components for your next project.",
-                url: "https://www.youtube.com/embed/nI3dh2NpXZU",
-                link: "https://google.com"
-            },
-            {
-                title: "Pixup8k",
-                desc: "Pixup8k Convert Blurry Photos into 4k-8k",
-                url: "https://tse3.mm.bing.net/th/id/OIP.57kZM23jGZLONRqoSYCgRQHaJQ?rs=1&pid=ImgDetMain&o=7&rm=3",
-                link: "https://tse3.mm.bing.net/th/id/OIP.57kZM23jGZLONRqoSYCgRQHaJQ?rs=1&pid=ImgDetMain&o=7&rm=3"
-            },
-            {
-                title: "XYZ",
-                desc: "ABC",
-                url: "https://www.greatestphysiques.com/wp-content/uploads/2017/10/David-Laid.04-768x956.jpg",
-                link: "https://www.greatestphysiques.com/wp-content/uploads/2017/10/David-Laid.04-768x956.jpg"
-            }
-        ];
+    <div class="tool-card" onclick="location.href='/signup-page'">
+      <div class="tool-index">05</div>
+      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg></div>
+      <div class="tool-name">SEO Titles</div>
+      <div class="tool-desc">Keyword-first page titles, meta descriptions, alt text, URL slugs. Rank and click.</div>
+      <div class="tool-arrow"><svg viewBox="0 0 12 12" fill="none" stroke-width="1.5"><path d="M2 6h8M6 2l4 4-4 4"/></svg></div>
+    </div>
 
-        let adTimer = 8;
-        let adInterval;
+    <div class="tool-card" onclick="location.href='/signup-page'">
+      <div class="tool-index">06</div>
+      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg></div>
+      <div class="tool-name">Review Responder</div>
+      <div class="tool-desc">Short, detailed, and recovery responses for any review rating. Brand voice preserved every time.</div>
+      <div class="tool-arrow"><svg viewBox="0 0 12 12" fill="none" stroke-width="1.5"><path d="M2 6h8M6 2l4 4-4 4"/></svg></div>
+    </div>
 
-        function showAuth() {
-            document.getElementById('authModal').style.display = 'flex';
-        }
+    <div class="tool-card" onclick="location.href='/signup-page'">
+      <div class="tool-index">07</div>
+      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg></div>
+      <div class="tool-name">Audience Finder</div>
+      <div class="tool-desc">Primary, secondary, and negative personas. Buying triggers, content strategy, where to find them.</div>
+      <div class="tool-arrow"><svg viewBox="0 0 12 12" fill="none" stroke-width="1.5"><path d="M2 6h8M6 2l4 4-4 4"/></svg></div>
+    </div>
 
-        function hideAuth() {
-            document.getElementById('authModal').style.display = 'none';
-        }
+    <div class="tool-card" onclick="location.href='/signup-page'">
+      <div class="tool-index">08</div>
+      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><path d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/></svg></div>
+      <div class="tool-name">Hashtag Generator</div>
+      <div class="tool-desc">Tiered strategy — high volume, mid, niche, branded, and trending. Ready-to-copy blocks.</div>
+      <div class="tool-arrow"><svg viewBox="0 0 12 12" fill="none" stroke-width="1.5"><path d="M2 6h8M6 2l4 4-4 4"/></svg></div>
+    </div>
 
-        function fillPrompt(text) {
-            const textarea = document.getElementById('mainPrompt');
-            textarea.value = text;
-            if (isSpeakerEnabled) speakText(`Selected: ${text}`);
-            handleGenerate();
-        }
+    <div class="tool-card" onclick="location.href='/signup-page'">
+      <div class="tool-index">09</div>
+      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg></div>
+      <div class="tool-name">Profit Analyser</div>
+      <div class="tool-desc">Margins, net profit, break-even, scale projections, pricing recommendations. CFO-level clarity.</div>
+      <div class="tool-arrow"><svg viewBox="0 0 12 12" fill="none" stroke-width="1.5"><path d="M2 6h8M6 2l4 4-4 4"/></svg></div>
+    </div>
 
-        function toggleAdMute() {
-            adMuted = !adMuted;
-            const iframe = document.querySelector('#adMediaContainer iframe');
-            const icon = document.getElementById('adMuteIcon');
-            if (iframe && iframe.src.includes('youtube')) {
-                const muteParam = adMuted ? "1" : "0";
-                // Properly update the source without losing the base URL
-                const baseUrl = currentAdUrl.split('?')[0];
-                iframe.src = `${baseUrl}?autoplay=1&mute=${muteParam}&controls=0&modestbranding=1&rel=0`;
-            }
-            icon.setAttribute('data-lucide', adMuted ? 'volume-x' : 'volume-2');
-            lucide.createIcons();
-        }
+    <div class="tool-card" onclick="location.href='/signup-page'">
+      <div class="tool-index">10</div>
+      <div class="tool-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg></div>
+      <div class="tool-name">Store Health Check</div>
+      <div class="tool-desc">Conversion killers, trust signals, mobile audit, checkout friction — ranked by revenue impact.</div>
+      <div class="tool-arrow"><svg viewBox="0 0 12 12" fill="none" stroke-width="1.5"><path d="M2 6h8M6 2l4 4-4 4"/></svg></div>
+    </div>
 
-        function toggleVoiceInput() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                return;
-            }
-            const micBtn = document.getElementById('micBtn');
-            const prodInput = document.getElementById('prodName');
-            if (isListening) {
-                recognition.stop();
-                return;
-            }
-            recognition = new SpeechRecognition();
-            recognition.onstart = () => {
-                isListening = true;
-                micBtn.style.color = "#ef4444";
-                micBtn.classList.add('active');
-            };
-            recognition.onresult = (event) => {
-                const text = event.results[0][0].transcript;
-                document.getElementById('mainPrompt').value = text;
-                prodInput.value = text;
-            };
-            recognition.onend = () => {
-                isListening = false;
-                micBtn.style.color = "";
-                micBtn.classList.remove('active');
-            };
-            recognition.start();
-        }
+  </div>
+</div>
 
-        function toggleSpeaker() {
-            isSpeakerEnabled = !isSpeakerEnabled;
-            const speakerBtn = document.getElementById('speakerBtn');
-            if (isSpeakerEnabled) {
-                speakerBtn.style.color = "#3b82f6";
-                speakerBtn.classList.add('active');
-                speakText("Voice system activated.");
-            } else {
-                speakerBtn.style.color = "";
-                speakerBtn.classList.remove('active');
-                window.speechSynthesis.cancel();
-            }
-        }
+<!-- HOW IT WORKS -->
+<section class="section" id="how">
+  <div class="section-label">Process</div>
+  <div class="section-title">Built for speed.<br><em>Designed for results.</em></div>
+  <div class="steps-grid">
+    <div class="step-card">
+      <div class="step-num">1</div>
+      <div class="step-badge">Step 01</div>
+      <div class="step-title">Input your details</div>
+      <div class="step-desc">Enter your product, price, and target audience. Takes under 30 seconds.</div>
+    </div>
+    <div class="step-card">
+      <div class="step-num">2</div>
+      <div class="step-badge">Step 02</div>
+      <div class="step-title">AI generates strategy</div>
+      <div class="step-desc">Our engine builds a complete, actionable output — tailored, specific, professional.</div>
+    </div>
+    <div class="step-card">
+      <div class="step-num">3</div>
+      <div class="step-badge">Step 03</div>
+      <div class="step-title">Deploy and scale</div>
+      <div class="step-desc">Copy, publish, ship. From dashboard to live campaign in minutes, not days.</div>
+    </div>
+    <div class="step-card">
+      <div class="step-num">4</div>
+      <div class="step-badge">Step 04</div>
+      <div class="step-title">Review history</div>
+      <div class="step-desc">Every generation saved. Revisit, iterate, and refine as your strategy evolves.</div>
+    </div>
+  </div>
+</section>
 
-        async function speakText(text) {
-            if (!isSpeakerEnabled) return;
-            const utterance = new SpeechSynthesisUtterance(text);
-            window.speechSynthesis.speak(utterance);
-        }
+<!-- STATS -->
+<div class="stats-section">
+  <div class="stats-inner">
+    <div class="stat"><div class="stat-val">10<span>+</span></div><div class="stat-label">Specialised AI tools</div></div>
+    <div class="stat"><div class="stat-val">2<span>k</span></div><div class="stat-label">Tokens per generation</div></div>
+    <div class="stat"><div class="stat-val">10<span>×</span></div><div class="stat-label">Free daily generations</div></div>
+    <div class="stat"><div class="stat-val">&lt;30<span>s</span></div><div class="stat-label">Average output time</div></div>
+  </div>
+</div>
 
-        async function handleGenerate() {
-            const prompt = document.getElementById('mainPrompt').value || document.getElementById('prodName').value;
-            if (!prompt.trim()) return;
-            if (isSpeakerEnabled) speakText("Processing your request...");
-            showAuth();
-        }
+<!-- TESTIMONIALS -->
+<section class="section" id="results">
+  <div class="section-label">Proof</div>
+  <div class="section-title">Operators who<br><em>use Stratum.</em></div>
+  <div class="testimonials-grid">
+    <div class="testimonial">
+      <div class="t-stars">
+        <svg class="t-star" viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
+        <svg class="t-star" viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
+        <svg class="t-star" viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
+        <svg class="t-star" viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
+        <svg class="t-star" viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
+      </div>
+      <div class="t-text">"The ad copy generator alone saved me 4 hours per launch. The angles it produces are sharper than most freelancers I've hired."</div>
+      <div class="t-author">
+        <div class="t-avatar">SR</div>
+        <div><div class="t-name">Sarah R.</div><div class="t-role">DTC Skincare Brand</div></div>
+      </div>
+    </div>
+    <div class="testimonial">
+      <div class="t-stars">
+        <svg class="t-star" viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
+        <svg class="t-star" viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
+        <svg class="t-star" viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
+        <svg class="t-star" viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
+        <svg class="t-star" viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
+      </div>
+      <div class="t-text">"Profit Analyser changed how I price. I was leaving 18% margin on the table. Fixed that in one generation."</div>
+      <div class="t-author">
+        <div class="t-avatar">MK</div>
+        <div><div class="t-name">Marcus K.</div><div class="t-role">Shopify Store Owner</div></div>
+      </div>
+    </div>
+    <div class="testimonial">
+      <div class="t-stars">
+        <svg class="t-star" viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
+        <svg class="t-star" viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
+        <svg class="t-star" viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
+        <svg class="t-star" viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
+        <svg class="t-star" viewBox="0 0 12 12"><path d="M6 0l1.5 4.5H12L8.3 7.3l1.4 4.4L6 9.1l-3.7 2.6 1.4-4.4L0 4.5h4.5z"/></svg>
+      </div>
+      <div class="t-text">"Store Health Check identified 6 conversion killers on my product page I'd been blind to for months. Revenue up 23% in 3 weeks."</div>
+      <div class="t-author">
+        <div class="t-avatar">AL</div>
+        <div><div class="t-name">Aisha L.</div><div class="t-role">E-Commerce Consultant</div></div>
+      </div>
+    </div>
+  </div>
+</section>
 
-        function startAdSystem() {
-            if (sessionStorage.getItem('home_ad_seen')) return;
-            const overlay = document.getElementById('adOverlay');
-            const media = document.getElementById('adMediaContainer');
-            const skipBtn = document.getElementById('skipBtn');
-            const timerTxt = document.getElementById('skipTimer');
-            const randomAd = ADS[Math.floor(Math.random() * ADS.length)];
-            currentAdUrl = randomAd.url;
-            document.getElementById('adTitle').innerText = randomAd.title;
-            document.getElementById('adDesc').innerText = randomAd.desc;
-            document.getElementById('adVisitBtn').onclick = () => window.open(randomAd.link, '_blank');
-            if (randomAd.url.includes('youtube')) {
-                media.innerHTML = `<iframe class="ad-media" src="${randomAd.url}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0" allow="autoplay; encrypted-media" style="pointer-events: none;"></iframe>`;
-            } else {
-                media.innerHTML = `<img src="${randomAd.url}" style="width:100%; height:100%; object-fit:cover;">`;
-            }
-            overlay.classList.add('active');
-            adInterval = setInterval(() => {
-                adTimer--;
-                if (adTimer > 0) {
-                    timerTxt.innerText = `Accessing Neural Hub in ${adTimer}s...`;
-                } else {
-                    clearInterval(adInterval);
-                    timerTxt.innerText = "Access Granted.";
-                    skipBtn.disabled = false;
-                    skipBtn.classList.add('ready');
-                    skipBtn.innerText = "Continue to Dashboard";
-                }
-            }, 1000);
-            skipBtn.onclick = () => {
-                overlay.classList.remove('active');
-                media.innerHTML = ""; 
-                sessionStorage.setItem('home_ad_seen', 'true');
-                if (isSpeakerEnabled) speakText("Welcome to the hub.");
-            };
-        }
+<!-- CTA -->
+<div class="cta-section">
+  <div class="cta-box">
+    <h2>Start building.<br>Start converting.</h2>
+    <p>Free account. 10 generations per day. No card required.</p>
+    <div class="cta-actions">
+      <a href="/signup-page" class="btn-primary">
+        Create free account
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+      </a>
+      <a href="/login-page" class="btn-secondary">I have an account</a>
+    </div>
+  </div>
+</div>
 
-        window.onload = () => {
-            startAdSystem();
-        };
-    </script>
+<!-- FOOTER -->
+<footer>
+  <div class="footer-copy">© 2025 Stratum. All rights reserved.</div>
+  <div class="footer-links">
+    <a href="/login-page">Sign In</a>
+    <a href="/signup-page">Sign Up</a>
+    <a href="#tools">Tools</a>
+  </div>
+</footer>
+
+<script>
+// ── AD SYSTEM ──
+const ADS=[
+  {title:"Stratum Pro",subtitle:"Unlimited generations & priority AI",media:{type:"gradient",color1:"#e8ff59",color2:"#1a1a00"},link:"#"},
+  {title:"E-Commerce Mastery",subtitle:"Scale your store with precision strategy",media:{type:"gradient",color1:"#5970ff",color2:"#0a0f2e"},link:"#"},
+  {title:"Growth Intelligence",subtitle:"Data-driven decisions for modern brands",media:{type:"gradient",color1:"#ff5959",color2:"#1a0000"},link:"#"},
+];
+
+(function initAd(){
+  if(sessionStorage.getItem('ad_seen'))return document.getElementById('adOverlay').style.display='none';
+  const ad=ADS[Math.floor(Math.random()*ADS.length)];
+  const m=ad.media;
+  document.getElementById('adMedia').innerHTML=
+    `<div style="width:100%;height:100%;background:linear-gradient(135deg,${m.color1}22,${m.color2});display:flex;align-items:center;justify-content:center;">
+      <div style="text-align:center;">
+        <div style="font-family:'Sora',sans-serif;font-size:clamp(24px,5vw,48px);font-weight:700;color:#fff;letter-spacing:-0.03em;">${ad.title}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:12px;color:rgba(255,255,255,0.4);margin-top:12px;letter-spacing:0.1em;text-transform:uppercase;">${ad.subtitle}</div>
+      </div>
+    </div>`;
+  document.getElementById('adTitle').textContent=ad.title;
+  document.getElementById('adSubtitle').textContent=ad.subtitle;
+  document.getElementById('adVisit').href=ad.link;
+
+  let t=6;
+  const cd=document.getElementById('adCountdown');
+  const skip=document.getElementById('adSkip');
+  const iv=setInterval(()=>{
+    t--;cd.textContent=t;
+    if(t<=0){
+      clearInterval(iv);
+      skip.disabled=false;skip.classList.add('ready');
+      skip.innerHTML='Continue';
+    }
+  },1000);
+  skip.onclick=()=>{
+    if(!skip.disabled){
+      document.getElementById('adOverlay').style.display='none';
+      sessionStorage.setItem('ad_seen','1');
+    }
+  };
+})();
+</script>
 </body>
 </html>
