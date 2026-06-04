@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tool — Stratum</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --black:#080808;--surface:#0f0f0f;--surface2:#161616;--surface3:#1c1c1c;
+  --border:rgba(255,255,255,0.06);--border-strong:rgba(255,255,255,0.11);
+  --white:#fff;--off-white:#d4d4d4;--muted:#6b6b6b;--muted2:#4a4a4a;
+  --accent:#e8ff59;--accent-dim:rgba(232,255,89,0.1);
+  --red:#ff4545;--green:#4ade80;
+  --font:'Sora',sans-serif;--mono:'DM Mono',monospace;
+}
+html,body{min-height:100%;background:var(--black);color:var(--white);font-family:var(--font);-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:2px}
+
+/* ── NAV ── */
+nav{
+  position:sticky;top:0;z-index:100;height:56px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 32px;
+  background:rgba(8,8,8,0.88);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.nav-left{display:flex;align-items:center;gap:16px}
+.brand{display:flex;align-items:center;gap:9px;text-decoration:none}
+.logo-mark{width:26px;height:26px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-mark svg{width:13px;height:13px}
+.logo-name{font-size:13px;font-weight:600;color:var(--white)}
+.nav-sep{width:1px;height:18px;background:var(--border-strong)}
+.breadcrumb{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted)}
+.breadcrumb a{color:var(--muted);text-decoration:none;transition:color .2s}
+.breadcrumb a:hover{color:var(--white)}
+.breadcrumb svg{width:12px;height:12px;stroke:var(--muted2);fill:none;stroke-width:1.5}
+.breadcrumb span{color:var(--off-white);font-weight:500}
+
+.nav-right{display:flex;align-items:center;gap:10px}
+.nav-dash-btn{
+  display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:500;
+  color:var(--muted);background:none;border:1px solid var(--border-strong);
+  padding:6px 14px;border-radius:7px;cursor:pointer;text-decoration:none;transition:all .2s;
+}
+.nav-dash-btn:hover{color:var(--white);border-color:rgba(255,255,255,.25)}
+.nav-dash-btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.5}
+
+/* ── LAYOUT ── */
+.page{max-width:1120px;margin:0 auto;padding:36px 32px 80px;display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start}
+
+/* ── LEFT COL — FORM ── */
+.form-col{position:sticky;top:72px}
+
+.tool-meta{margin-bottom:26px}
+.tool-tag{
+  display:inline-flex;align-items:center;gap:7px;
+  font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--accent);border:1px solid rgba(232,255,89,.18);background:rgba(232,255,89,.05);
+  padding:5px 12px;border-radius:100px;margin-bottom:16px;
+}
+.tool-tag-dot{width:5px;height:5px;border-radius:50%;background:var(--accent)}
+.tool-icon-wrap{
+  width:44px;height:44px;border-radius:11px;background:var(--surface2);
+  border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin-bottom:14px;
+}
+.tool-icon-wrap svg{width:22px;height:22px;stroke:var(--accent);fill:none;stroke-width:1.5}
+.tool-name{font-size:24px;font-weight:700;letter-spacing:-.03em;color:var(--white);margin-bottom:7px}
+.tool-desc{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:20px}
+
+.tool-outputs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+.output-badge{
+  font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);background:var(--surface2);border:1px solid var(--border);
+  padding:4px 10px;border-radius:5px;
+}
+
+/* FORM CARD */
+.form-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:14px;
+  padding:24px;
+}
+.form-card-title{font-size:12px;font-weight:600;color:var(--white);margin-bottom:18px;display:flex;align-items:center;gap:8px}
+.form-card-title svg{width:13px;height:13px;stroke:var(--accent);fill:none;stroke-width:1.5}
+
+.field{margin-bottom:14px}
+.field-label{font-size:10px;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;display:block}
+.field-input,.field-textarea,.field-select{
+  width:100%;background:var(--surface2);border:1px solid var(--border);
+  border-radius:8px;padding:10px 13px;color:var(--white);
+  font-size:13px;font-family:var(--font);outline:none;transition:all .2s;appearance:none;
+}
+.field-input:focus,.field-textarea:focus,.field-select:focus{border-color:rgba(232,255,89,.3);background:var(--surface3)}
+.field-input::placeholder,.field-textarea::placeholder{color:var(--muted2)}
+.field-textarea{resize:vertical;min-height:80px;line-height:1.55}
+.field-select option{background:var(--surface2)}
+
+.gen-btn{
+  width:100%;padding:13px;border-radius:9px;background:var(--accent);border:none;
+  font-size:14px;font-weight:600;color:#000;cursor:pointer;font-family:var(--font);
+  transition:all .2s;margin-top:6px;display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.gen-btn:hover{opacity:.86;transform:translateY(-1px)}
+.gen-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.gen-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2}
+
+.usage-note{
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  font-size:11px;color:var(--muted);margin-top:12px;
+}
+.usage-note-dot{width:5px;height:5px;border-radius:50%;background:var(--accent)}
+
+/* ── RIGHT COL — OUTPUT ── */
+.output-col{}
+
+.output-placeholder{
+  background:var(--surface);border:1px dashed var(--border-strong);
+  border-radius:14px;padding:56px 32px;text-align:center;
+}
+.ph-icon{
+  width:48px;height:48px;border-radius:12px;background:var(--surface2);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;margin:0 auto 16px;
+}
+.ph-icon svg{width:22px;height:22px;stroke:var(--muted);fill:none;stroke-width:1.5}
+.ph-title{font-size:14px;font-weight:600;color:var(--off-white);margin-bottom:6px}
+.ph-sub{font-size:12px;color:var(--muted);line-height:1.65}
+
+/* OUTPUT CARD */
+.output-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;
+}
+.output-card-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 20px;border-bottom:1px solid var(--border);
+}
+.output-card-label{
+  display:flex;align-items:center;gap:8px;
+  font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);
+}
+.output-status-dot{width:5px;height:5px;border-radius:50%;background:var(--accent)}
+.output-actions{display:flex;gap:8px}
+.action-btn{
+  font-size:11px;font-weight:500;color:var(--muted);background:none;
+  border:1px solid var(--border);padding:4px 10px;border-radius:5px;cursor:pointer;transition:all .2s;
+}
+.action-btn:hover{color:var(--white);border-color:var(--border-strong)}
+
+.output-body{
+  padding:22px;font-size:13px;color:var(--off-white);line-height:1.85;
+  white-space:pre-wrap;word-break:break-word;max-height:70vh;overflow-y:auto;
+}
+.output-body::-webkit-scrollbar{width:3px}
+.output-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+/* STREAMING cursor */
+.stream-cursor{
+  display:inline-block;width:2px;height:14px;background:var(--accent);
+  margin-left:2px;vertical-align:middle;animation:blink-c .8s steps(1) infinite;
+}
+@keyframes blink-c{0%,100%{opacity:1}50%{opacity:0}}
+
+/* LOADER */
+.loader{display:flex;gap:6px;align-items:center;justify-content:center;padding:48px}
+.loader-dot{
+  width:7px;height:7px;border-radius:50%;background:var(--accent);
+  animation:blink 1.2s ease-in-out infinite;
+}
+.loader-dot:nth-child(2){animation-delay:.18s}
+.loader-dot:nth-child(3){animation-delay:.36s}
+@keyframes blink{0%,80%,100%{opacity:.15}40%{opacity:1}}
+
+/* ALERT */
+.alert{
+  border-radius:9px;padding:11px 14px;font-size:12px;margin-bottom:14px;display:none;border:1px solid;
+}
+.alert.error{color:var(--red);background:rgba(255,69,69,.07);border-color:rgba(255,69,69,.15)}
+.alert.success{color:var(--green);background:rgba(74,222,128,.07);border-color:rgba(74,222,128,.15)}
+.alert.show{display:block}
+
+/* USAGE BAR */
+.usage-bar-wrap{
+  background:var(--surface);border:1px solid var(--border);border-radius:11px;
+  padding:16px 18px;margin-bottom:20px;
+}
+.usage-bar-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.usage-bar-row span{font-size:11px;color:var(--muted)}
+.usage-bar-row strong{font-size:11px;color:var(--white)}
+.usage-track{height:3px;background:var(--surface3);border-radius:2px}
+.usage-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .5s ease}
+
+/* OTHER TOOLS */
+.other-tools{margin-top:24px}
+.other-tools-title{font-size:10px;font-family:var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.other-tools-grid{display:flex;flex-direction:column;gap:6px}
+.other-tool-item{
+  display:flex;align-items:center;gap:10px;
+  background:var(--surface);border:1px solid var(--border);border-radius:8px;
+  padding:10px 13px;cursor:pointer;transition:all .18s;text-decoration:none;
+}
+.other-tool-item:hover{border-color:var(--border-strong);background:var(--surface2)}
+.ot-icon{
+  width:28px;height:28px;border-radius:7px;background:var(--surface3);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.ot-icon svg{width:13px;height:13px;stroke:var(--accent);fill:none;stroke-width:1.5}
+.ot-name{font-size:12px;font-weight:500;color:var(--off-white)}
+.ot-arrow{margin-left:auto;stroke:var(--muted2);fill:none;stroke-width:1.5;flex-shrink:0}
+
+/* SPINNER */
+.spinner{width:15px;height:15px;border:2px solid rgba(0,0,0,.3);border-top-color:#000;border-radius:50%;animation:spin .75s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  nav{padding:0 18px}
+  .breadcrumb{display:none}
+  .page{grid-template-columns:1fr;padding:20px 18px 80px}
+  .form-col{position:static}
+}
+@media(max-width:480px){
+  .tool-outputs{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-left">
+    <a href="/" class="brand">
+      <div class="logo-mark"><svg viewBox="0 0 16 16" fill="none"><path d="M2 13L8 3l6 10H2z" fill="#000"/></svg></div>
+      <span class="logo-name">Stratum</span>
+    </a>
+    <div class="nav-sep"></div>
+    <div class="breadcrumb">
+      <a href="/dashboard">Dashboard</a>
+      <svg viewBox="0 0 12 12"><path d="M4 2l4 4-4 4"/></svg>
+      <span id="navToolName">Tool</span>
+    </div>
+  </div>
+  <div class="nav-right">
+    <a href="/dashboard" class="nav-dash-btn">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Dashboard
+    </a>
+  </div>
+</nav>
+
+<!-- PAGE -->
+<div class="page">
+
+  <!-- LEFT: FORM -->
+  <div class="form-col">
+
+    <!-- Usage bar -->
+    <div class="usage-bar-wrap">
+      <div class="usage-bar-row">
+        <span>Daily generations</span>
+        <strong><span id="usedCount">0</span> / 10 used</strong>
+      </div>
+      <div class="usage-track">
+        <div class="usage-fill" id="usageFill" style="width:0%"></div>
+      </div>
+    </div>
+
+    <!-- Tool meta -->
+    <div class="tool-meta">
+      <div class="tool-tag"><span class="tool-tag-dot"></span><span id="toolNum">01</span></div>
+      <div class="tool-icon-wrap" id="toolIconWrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" id="toolIconSvg"></svg>
+      </div>
+      <div class="tool-name" id="toolName">Loading…</div>
+      <div class="tool-desc" id="toolDesc"></div>
+      <div class="tool-outputs" id="toolOutputBadges"></div>
+    </div>
+
+    <!-- Alert -->
+    <div class="alert" id="genAlert"></div>
+
+    <!-- Form (injected) -->
+    <div class="form-card">
+      <div class="form-card-title">
+        <svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        Generate
+      </div>
+      <div id="formContainer"></div>
+    </div>
+
+    <!-- Other tools -->
+    <div class="other-tools">
+      <div class="other-tools-title">Other tools</div>
+      <div class="other-tools-grid" id="otherTools"></div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT: OUTPUT -->
+  <div class="output-col" id="outputCol">
+    <div class="output-placeholder" id="outputPlaceholder">
+      <div class="ph-icon">
+        <svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      </div>
+      <div class="ph-title">Output appears here</div>
+      <div class="ph-sub">Fill in the fields and click Generate.<br>Results stream in real time.</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ══ AUTH GUARD ══
+if(!localStorage.getItem('access_token')){
+  window.location.href='/login-page';
+  throw new Error('Unauthenticated');
+}
+
+// ══ TOOL REGISTRY — must match main.py build_prompt kwargs exactly ══
+const TOOLS=[
+  {id:'marketing_strategy',num:'01',name:'Marketing Strategy',
+   desc:'A complete conversion strategy: 5 ad angles, 3 buyer personas, objection handlers, irresistible offers, and urgency triggers.',
+   outputs:['Ad Angles','Personas','Offers','Headlines','Objection Handlers','Urgency Triggers'],
+   icon:'<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>',
+   inputs:[
+     {k:'product_name',l:'Product Name',p:'Lumina Desk Lamp'},
+     {k:'price',l:'Price ($)',p:'49.99'},
+     {k:'target_audience',l:'Target Audience',p:'Interior Designers'},
+   ]},
+  {id:'product_description',num:'02',name:'Product Description',
+   desc:'SEO-optimised title, short & long descriptions, 5 benefit-focused bullet points, and a sharp call to action.',
+   outputs:['SEO Title','Short Desc','Long Desc','Bullet Points','CTA'],
+   icon:'<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>',
+   inputs:[
+     {k:'product_name',l:'Product Name',p:'Eco Yoga Mat'},
+     {k:'features',l:'Key Features',p:'Non-slip, eco-friendly material',type:'textarea'},
+     {k:'target_audience',l:'Target Audience',p:'Health-conscious Gen Z'},
+     {k:'tone',l:'Tone',p:'Professional and aspirational'},
+   ]},
+  {id:'ad_copy',num:'03',name:'Ad Copy Generator',
+   desc:'Scroll-stopping copy for Facebook, Instagram, and TikTok — primary text, headlines, descriptions, video hooks, and carousel slides.',
+   outputs:['Primary Text','Headlines','Descriptions','Video Hook','Carousel'],
+   icon:'<rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>',
+   inputs:[
+     {k:'product_name',l:'Product Name',p:'Premium Sneakers'},
+     {k:'platform',l:'Platform',p:'Facebook & Instagram'},
+     {k:'target_audience',l:'Target Audience',p:'Sneaker enthusiasts 18-35'},
+     {k:'objective',l:'Objective',p:'Conversions'},
+   ]},
+  {id:'cart_email',num:'04',name:'Abandoned Cart Emails',
+   desc:'A 3-email recovery sequence timed for maximum conversion — 1hr, 24hr, and 72hr after abandonment.',
+   outputs:['Email 1 (1hr)','Email 2 (24hr)','Email 3 (72hr)'],
+   icon:'<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>',
+   inputs:[
+     {k:'product_name',l:'Product Name',p:'Wireless Earbuds'},
+     {k:'price',l:'Price ($)',p:'129.99'},
+     {k:'tone',l:'Brand Tone',p:'Warm and conversational'},
+   ]},
+  {id:'seo_titles',num:'05',name:'SEO Titles',
+   desc:'Keyword-first page titles, meta descriptions, alt text, URL slugs, and H1 headings — all balanced for SEO and CTR.',
+   outputs:['Page Titles','Meta Descriptions','Alt Text','URL Slugs','H1 Headings'],
+   icon:'<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+   inputs:[
+     {k:'product_name',l:'Product Name',p:'Standing Desk'},
+     {k:'category',l:'Category',p:'Home Office Furniture'},
+     {k:'keywords',l:'Target Keywords',p:'ergonomic standing desk, adjustable desk'},
+     {k:'platform',l:'Platform',p:'Shopify'},
+   ]},
+  {id:'review_response',num:'06',name:'Review Responder',
+   desc:'Three professional response variations — short, detailed, and recovery — for any review rating. Personal, never copy-paste generic.',
+   outputs:['Short Response','Detailed Response','Recovery Response'],
+   icon:'<path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>',
+   inputs:[
+     {k:'review',l:'Customer Review',p:'Great product but shipping was slow',type:'textarea'},
+     {k:'rating',l:'Rating (1-5)',p:'3'},
+     {k:'tone',l:'Brand Tone',p:'Professional and warm'},
+   ]},
+  {id:'audience_finder',num:'07',name:'Audience Finder',
+   desc:'Deep buyer personas — primary, secondary, and negative — with buying triggers, content strategy, and exact messaging.',
+   outputs:['Primary Persona','Secondary Persona','Negative Persona','Triggers','Messaging'],
+   icon:'<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>',
+   inputs:[
+     {k:'product_name',l:'Product Name',p:'Meal Prep Containers'},
+     {k:'price',l:'Price ($)',p:'39.99'},
+     {k:'category',l:'Category',p:'Kitchen & Health'},
+   ]},
+  {id:'hashtags',num:'08',name:'Hashtag Generator',
+   desc:'A tiered hashtag strategy — high volume, mid, niche, branded, and trending — formatted as ready-to-copy blocks.',
+   outputs:['High Volume','Mid Volume','Niche','Branded','Trending'],
+   icon:'<line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/>',
+   inputs:[
+     {k:'product_name',l:'Product Name',p:'Handmade Candles'},
+     {k:'category',l:'Category',p:'Home & Lifestyle'},
+     {k:'platform',l:'Platform',p:'Instagram & TikTok'},
+     {k:'target_audience',l:'Target Audience',p:'Home decor enthusiasts'},
+   ]},
+  {id:'profit_insights',num:'09',name:'Profit Analyser',
+   desc:'Full margin analysis: gross margin, net profit, break-even, scale projections at 2×/5×/10×, and cost reduction opportunities.',
+   outputs:['Gross Margin','Net Profit','Break-Even','Scale Analysis','Pricing Rec.'],
+   icon:'<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>',
+   inputs:[
+     {k:'product_name',l:'Product Name',p:'Ceramic Mug'},
+     {k:'selling_price',l:'Selling Price ($)',p:'24.99'},
+     {k:'product_cost',l:'Product Cost ($)',p:'6.50'},
+     {k:'shipping_cost',l:'Shipping Cost ($)',p:'3.00'},
+     {k:'ad_spend',l:'Ad Spend / Sale ($)',p:'4.50'},
+     {k:'monthly_volume',l:'Monthly Volume',p:'200'},
+   ]},
+  {id:'store_health',num:'10',name:'Store Health Check',
+   desc:'A comprehensive store audit: conversion killers, trust signals, mobile issues, page speed, product page gaps, and a ranked fix list.',
+   outputs:['Conversion Killers','Trust Audit','Mobile Issues','Checkout Fixes','Action List'],
+   icon:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+   inputs:[
+     {k:'store_url',l:'Store URL',p:'mystore.com'},
+     {k:'store_type',l:'Store Type',p:'Fashion & Apparel'},
+     {k:'traffic',l:'Monthly Traffic',p:'5000'},
+     {k:'conversion_rate',l:'Conversion Rate',p:'1.8%'},
+     {k:'issues',l:'Primary Issues',p:'Low add-to-cart rate',type:'textarea'},
+   ]},
+];
+
+// ══ BOOT ══
+// Jinja2 injects: {{ tool }} as the tool_name string in the page
+// We read it from a meta tag written by the template engine.
+const TOOL_ID = document.getElementById('toolIdMeta')
+  ? document.getElementById('toolIdMeta').content
+  : (window.__TOOL_ID__ || '');
+
+let currentTool = null;
+let wsConn = null;
+let streamBuffer = '';
+let isStreaming = false;
+
+window.onload = function(){
+  const id = TOOL_ID || getToolIdFromURL();
+  initTool(id);
+  loadUsage();
+  connectWS(id);
+};
+
+// Jinja2 passes {{ tool }} — we embed it in a meta tag (see bottom of body)
+function getToolIdFromURL(){
+  // Fallback: extract from /tools/{tool_name}
+  const parts = location.pathname.split('/');
+  return parts[parts.length - 1] || 'marketing_strategy';
+}
+
+function initTool(id){
+  const t = TOOLS.find(x => x.id === id) || TOOLS[0];
+  currentTool = t;
+
+  // Update <title>
+  document.title = t.name + ' — Stratum';
+
+  // Nav breadcrumb
+  document.getElementById('navToolName').textContent = t.name;
+
+  // Meta block
+  document.getElementById('toolNum').textContent = t.num;
+  document.getElementById('toolIconSvg').innerHTML = t.icon;
+  document.getElementById('toolName').textContent = t.name;
+  document.getElementById('toolDesc').textContent = t.desc;
+  document.getElementById('toolOutputBadges').innerHTML =
+    t.outputs.map(o => `<span class="output-badge">${escHtml(o)}</span>`).join('');
+
+  // Build form
+  buildForm(t);
+
+  // Other tools (exclude current)
+  const others = TOOLS.filter(x => x.id !== t.id).slice(0, 5);
+  document.getElementById('otherTools').innerHTML = others.map(o => `
+    <a href="/tools/${o.id}" class="other-tool-item">
+      <div class="ot-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5">${o.icon}</svg></div>
+      <span class="ot-name">${escHtml(o.name)}</span>
+      <svg class="ot-arrow" width="12" height="12" viewBox="0 0 12 12"><path d="M2 6h8M6 2l4 4-4 4"/></svg>
+    </a>
+  `).join('');
+}
+
+function buildForm(t){
+  const container = document.getElementById('formContainer');
+  const fields = t.inputs.map(f => `
+    <div class="field">
+      <label class="field-label">${escHtml(f.l)}</label>
+      ${f.type === 'textarea'
+        ? `<textarea class="field-textarea" name="${f.k}" placeholder="${escHtml(f.p)}" rows="3"></textarea>`
+        : `<input type="text" class="field-input" name="${f.k}" placeholder="${escHtml(f.p)}">`}
+    </div>
+  `).join('');
+
+  container.innerHTML = `
+    <form id="genForm" onsubmit="submitGenerate(event)">
+      ${fields}
+      <button type="submit" class="gen-btn" id="genBtn">
+        Generate
+        <svg viewBox="0 0 16 16"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+      </button>
+    </form>
+    <div class="usage-note">
+      <div class="usage-note-dot"></div>
+      <span id="remainingNote">— generations remaining today</span>
+    </div>
+  `;
+}
+
+// ══ LOAD USAGE — GET /me ══
+async function loadUsage(){
+  const token = localStorage.getItem('access_token');
+  try{
+    const res = await fetch('/me', {headers:{Authorization:`Bearer ${token}`}});
+    if(!res.ok) throw new Error();
+    const u = await res.json();
+    localStorage.setItem('user', JSON.stringify(u));
+    applyUsage(u.daily_usage||0, u.remaining||0);
+  }catch{
+    const u = JSON.parse(localStorage.getItem('user')||'{}');
+    applyUsage(u.daily_usage||0, Math.max(0,10-(u.daily_usage||0)));
+  }
+}
+
+function applyUsage(used, remaining){
+  document.getElementById('usedCount').textContent = used;
+  document.getElementById('usageFill').style.width = (used/10*100)+'%';
+  const note = document.getElementById('remainingNote');
+  if(note) note.textContent = remaining + ' generation' + (remaining!==1?'s':'') + ' remaining today';
+}
+
+// ══ GENERATE — POST /generate/{tool} ══
+async function submitGenerate(e){
+  e.preventDefault();
+  const token = localStorage.getItem('access_token');
+  if(!token){ window.location.href='/login-page'; return; }
+
+  const btn = document.getElementById('genBtn');
+  showAlert('');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div>';
+
+  showLoader();
+
+  const fd = new FormData(e.target);
+  try{
+    const res = await fetch(`/generate/${currentTool.id}`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+      body: fd,
+    });
+    const data = await res.json();
+    if(!res.ok) throw new Error(data.detail || 'Generation failed.');
+
+    showOutput(data.output);
+    applyUsage(data.daily_usage, data.remaining);
+  }catch(err){
+    showOutputError(err.message);
+    showAlert(err.message);
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = 'Generate <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg>';
+}
+
+// ══ OUTPUT HELPERS ══
+function showLoader(){
+  document.getElementById('outputCol').innerHTML = `
+    <div class="output-card">
+      <div class="output-card-header">
+        <div class="output-card-label"><div class="output-status-dot" style="animation:blink 1s infinite"></div>Generating…</div>
+      </div>
+      <div class="output-body">
+        <div class="loader">
+          <div class="loader-dot"></div><div class="loader-dot"></div><div class="loader-dot"></div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function showOutput(text){
+  document.getElementById('outputCol').innerHTML = `
+    <div class="output-card">
+      <div class="output-card-header">
+        <div class="output-card-label"><div class="output-status-dot"></div>Result — ${escHtml(currentTool.name)}</div>
+        <div class="output-actions">
+          <button class="action-btn" onclick="copyResult()">Copy</button>
+          <button class="action-btn" onclick="resetOutput()">New</button>
+        </div>
+      </div>
+      <div class="output-body" id="outputBody">${escHtml(text)}</div>
+    </div>
+  `;
+}
+
+function showOutputError(msg){
+  document.getElementById('outputCol').innerHTML = `
+    <div class="output-card" style="border-color:rgba(255,69,69,.2)">
+      <div class="output-card-header">
+        <div class="output-card-label" style="color:var(--red)">Error</div>
+        <div class="output-actions"><button class="action-btn" onclick="resetOutput()">Dismiss</button></div>
+      </div>
+      <div class="output-body" style="color:var(--red)">${escHtml(msg)}</div>
+    </div>
+  `;
+}
+
+function resetOutput(){
+  document.getElementById('outputCol').innerHTML = `
+    <div class="output-placeholder" id="outputPlaceholder">
+      <div class="ph-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+      <div class="ph-title">Output appears here</div>
+      <div class="ph-sub">Fill in the fields and click Generate.<br>Results stream in real time.</div>
+    </div>
+  `;
+}
+
+function copyResult(){
+  const body = document.getElementById('outputBody');
+  if(!body) return;
+  navigator.clipboard.writeText(body.innerText).then(()=>{
+    const btn = document.querySelector('.action-btn');
+    if(btn){ btn.textContent='Copied!'; setTimeout(()=>btn.textContent='Copy', 2000); }
+  });
+}
+
+// ══ WEBSOCKET — for live indicator only; streaming via WS is opt-in ══
+function connectWS(toolId){
+  const token = localStorage.getItem('access_token');
+  if(!token) return;
+  const proto = location.protocol==='https:'?'wss:':'ws:';
+  const id = toolId || currentTool?.id || 'marketing_strategy';
+  wsConn = new WebSocket(`${proto}//${location.host}/ws/generate/${id}?token=${token}`);
+  wsConn.onclose = ()=>{
+    if(localStorage.getItem('access_token')) setTimeout(()=>connectWS(id), 5000);
+  };
+}
+
+// ══ ALERT ══
+function showAlert(msg){
+  const el = document.getElementById('genAlert');
+  el.textContent = msg;
+  el.className = 'alert' + (msg ? ' show error' : '');
+}
+
+// ══ UTILS ══
+function escHtml(s){
+  return (s==null?'':String(s))
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+</script>
+
+<!--
+  Jinja2 injects the tool name via the template context: {"tool": tool_name}
+  We write it into a <meta> tag so the JS above can read it cleanly.
+  In Jinja2 this renders as e.g.: <meta id="toolIdMeta" content="marketing_strategy">
+-->
+<meta id="toolIdMeta" content="{{ tool }}">
+
+</body>
+</html>
