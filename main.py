@@ -2,7 +2,7 @@
 # AI E-COMMERCE STRATEGY PLATFORM
 # Author:  Waris Ali — AI Solutions Developer
 # Stack:   FastAPI · MongoDB · OpenAI · WebSockets · JWT
-# Version: 2.0.0
+# Version: 2.1.0  (+ Ads Management System)
 # ================================================================
 
 from fastapi import (
@@ -13,12 +13,15 @@ from fastapi.security import OAuth2PasswordBearer
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from jose import jwt, JWTError
 from passlib.context import CryptContext
 from dotenv import load_dotenv
 from pymongo import MongoClient, DESCENDING
 from openai import OpenAI
+from pydantic import BaseModel
+from bson import ObjectId
 
 import certifi
 import os
@@ -26,7 +29,7 @@ import logging
 import random
 import re
 from datetime import datetime, timedelta, timezone
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 
 # ================================================================
 # ENVIRONMENT
@@ -48,12 +51,13 @@ logger = logging.getLogger("ecommerce.platform.v2")
 # CONSTANTS
 # ================================================================
 
-ALGORITHM       = "HS256"
-TOKEN_EXPIRE_H  = 12
-MAX_BCRYPT_LEN  = 72
-RESET_CODE_TTL  = 15          # minutes
-MAX_GENERATIONS = 10          # free tier daily limit — no paid plans
-MAX_HISTORY     = 10          # last N generations stored per user
+ALGORITHM           = "HS256"
+TOKEN_EXPIRE_H      = 12
+MAX_BCRYPT_LEN      = 72
+RESET_CODE_TTL      = 15          # minutes
+MAX_GENERATIONS     = 10          # free tier daily limit
+MAX_HISTORY         = 10          # last N generations stored per user
+ADS_ADMIN_KEY       = os.getenv("ADS_ADMIN_KEY", "stratum_admin_2025")  # Set in .env
 
 # ================================================================
 # ENV VARIABLES
@@ -73,7 +77,7 @@ if not all([MONGO_URI, JWT_SECRET, OPENAI_KEY]):
 
 app = FastAPI(
     title="AI E-Commerce Strategy Platform",
-    version="2.0.0",
+    version="2.1.0",
     docs_url=None,
     redoc_url=None,
     openapi_url=None,
@@ -103,10 +107,11 @@ try:
         tlsCAFile=certifi.where(),
         serverSelectionTimeoutMS=8000,
     )
-    db           = mongo_client["ecommerce_platform"]
-    users_col    = db["users"]
-    sessions_col = db["sessions"]
+    db            = mongo_client["ecommerce_platform"]
+    users_col     = db["users"]
+    sessions_col  = db["sessions"]
     analytics_col = db["analytics"]
+    ads_col       = db["stratum_ads"]          # ← New ads collection
 
     mongo_client.admin.command("ping")
     logger.info("MongoDB connected successfully.")
@@ -165,17 +170,37 @@ async def get_current_user(token: str = Depends(oauth2)) -> dict:
     return user
 
 # ================================================================
+# ADMIN KEY DEPENDENCY (for Ads management)
+# ================================================================
+
+async def verify_admin_key(request: Request):
+    key = request.headers.get("X-Admin-Key") or request.query_params.get("admin_key")
+    if key != ADS_ADMIN_KEY:
+        raise HTTPException(status_code=403, detail="Invalid admin key.")
+    return True
+
+# ================================================================
 # ANALYTICS HELPER
 # ================================================================
 
 def log_event(email: str, event: str, meta: dict = {}):
     """Log user activity for internal analytics."""
     analytics_col.insert_one({
-        "email": email,
-        "event": event,
-        "meta": meta,
+        "email":     email,
+        "event":     event,
+        "meta":      meta,
         "timestamp": datetime.now(timezone.utc),
     })
+
+# ================================================================
+# ADS HELPER
+# ================================================================
+
+def serialize_ad(ad: dict) -> dict:
+    """Convert MongoDB document to JSON-serialisable dict."""
+    ad["id"] = str(ad["_id"])
+    del ad["_id"]
+    return ad
 
 # ================================================================
 # WEBSOCKET MANAGER
@@ -210,24 +235,16 @@ manager = ConnectionManager()
 # ================================================================
 
 def build_prompt(tool: str, **kwargs) -> str:
-    """
-    Central prompt registry.
-    Each tool has a dedicated, production-quality system prompt.
-    """
-
     prompts = {
 
-        # ── 1. Marketing Strategy ────────────────────────────────
         "marketing_strategy": f"""
-You are a senior performance marketing strategist with 15+ years
-in E-Commerce growth.
+You are a senior performance marketing strategist with 15+ years in E-Commerce growth.
 
 Product: {kwargs.get('product_name')}
 Price: ${kwargs.get('price')}
 Target Audience: {kwargs.get('target_audience')}
 
 Deliver a structured, actionable marketing strategy:
-
 1. AD ANGLES (5 unique psychological hooks)
 2. CUSTOMER PERSONAS (3 detailed buyer profiles)
 3. IRRESISTIBLE OFFERS (3 conversion-focused bundles or deals)
@@ -239,7 +256,6 @@ Deliver a structured, actionable marketing strategy:
 Be specific. Be direct. No generic advice.
 """,
 
-        # ── 2. Product Description ───────────────────────────────
         "product_description": f"""
 You are a world-class E-Commerce copywriter.
 
@@ -254,11 +270,8 @@ Write:
 3. LONG DESCRIPTION (150-200 words — benefit-led, not feature-led)
 4. BULLET POINTS (5 — scannable, benefit-focused)
 5. CALL TO ACTION (1 strong sentence)
-
-Do not use filler phrases. Every line must earn its place.
 """,
 
-        # ── 3. Ad Copy Generator ─────────────────────────────────
         "ad_copy": f"""
 You are a direct response copywriter specialising in paid ads.
 
@@ -273,11 +286,8 @@ Generate:
 3. DESCRIPTIONS (3 — under 30 characters each)
 4. VIDEO SCRIPT HOOK (15 seconds — pattern interrupt opening)
 5. CAROUSEL COPY (3 slides — headline + one line each)
-
-All copy must be scroll-stopping and conversion-focused.
 """,
 
-        # ── 4. Abandoned Cart Email ──────────────────────────────
         "cart_email": f"""
 You are an email marketing specialist focused on E-Commerce recovery.
 
@@ -286,20 +296,11 @@ Price: ${kwargs.get('price')}
 Brand Tone: {kwargs.get('tone', 'warm and professional')}
 
 Write a 3-email abandoned cart sequence:
-
-EMAIL 1 — (Send: 1 hour after abandonment)
-Subject line + Body (gentle reminder, no discount)
-
-EMAIL 2 — (Send: 24 hours after abandonment)
-Subject line + Body (add social proof + mild urgency)
-
-EMAIL 3 — (Send: 72 hours after abandonment)
-Subject line + Body (final offer with incentive)
-
-Each email: under 150 words. Personal. Conversational. No spam language.
+EMAIL 1 — (Send: 1 hour after abandonment) Subject line + Body
+EMAIL 2 — (Send: 24 hours after abandonment) Subject line + Body
+EMAIL 3 — (Send: 72 hours after abandonment) Subject line + Body
 """,
 
-        # ── 5. SEO Titles ────────────────────────────────────────
         "seo_titles": f"""
 You are an SEO specialist for E-Commerce stores.
 
@@ -314,11 +315,8 @@ Generate:
 3. ALT TEXT (3 variations — descriptive, keyword-rich)
 4. URL SLUG (3 clean options)
 5. H1 HEADING (3 variations)
-
-Prioritise search intent. Every title must balance SEO and CTR.
 """,
 
-        # ── 6. Customer Review Response ──────────────────────────
         "review_response": f"""
 You are a professional customer experience manager for an E-Commerce brand.
 
@@ -330,11 +328,8 @@ Write 3 response variations:
 1. SHORT (1-2 sentences — for positive reviews)
 2. DETAILED (3-4 sentences — acknowledges, thanks, adds value)
 3. RECOVERY (for negative reviews — empathetic, offers solution, no defensiveness)
-
-Each response must feel personal — never copy-paste generic.
 """,
 
-        # ── 7. Target Audience Finder ────────────────────────────
         "audience_finder": f"""
 You are a consumer psychology expert and market researcher.
 
@@ -343,17 +338,15 @@ Price Point: ${kwargs.get('price')}
 Category: {kwargs.get('category', 'E-Commerce')}
 
 Identify and profile the ideal buyer:
-
-1. PRIMARY PERSONA (detailed — age, income, psychology, pain points, desires)
-2. SECONDARY PERSONA (different segment — same product, different motivation)
-3. NEGATIVE PERSONA (who to exclude from targeting and why)
-4. BUYING TRIGGERS (what pushes each persona to purchase)
-5. CONTENT THAT CONVERTS (what type of content works for each persona)
-6. WHERE TO FIND THEM (specific platforms, communities, search terms)
-7. MESSAGING THAT LANDS (exact language they use — verbatim)
+1. PRIMARY PERSONA
+2. SECONDARY PERSONA
+3. NEGATIVE PERSONA
+4. BUYING TRIGGERS
+5. CONTENT THAT CONVERTS
+6. WHERE TO FIND THEM
+7. MESSAGING THAT LANDS
 """,
 
-        # ── 8. Hashtag Generator ─────────────────────────────────
         "hashtags": f"""
 You are a social media growth strategist for E-Commerce brands.
 
@@ -363,16 +356,13 @@ Platform: {kwargs.get('platform', 'Instagram & TikTok')}
 Target Market: {kwargs.get('target_audience')}
 
 Generate:
-1. HIGH VOLUME (10 hashtags — 1M+ posts — broad reach)
-2. MID VOLUME (10 hashtags — 100K-1M posts — targeted)
-3. NICHE (10 hashtags — under 100K posts — community)
+1. HIGH VOLUME (10 hashtags — 1M+ posts)
+2. MID VOLUME (10 hashtags — 100K-1M posts)
+3. NICHE (10 hashtags — under 100K posts)
 4. BRANDED (5 hashtag ideas they can own)
-5. TRENDING (5 currently relevant hashtags for this category)
-
-Format as ready-to-copy text blocks. Explain strategy briefly.
+5. TRENDING (5 currently relevant hashtags)
 """,
 
-        # ── 9. Profit Calculator Insights ────────────────────────
         "profit_insights": f"""
 You are a CFO-level E-Commerce financial strategist.
 
@@ -384,19 +374,15 @@ Ad Spend Per Sale: ${kwargs.get('ad_spend', 0)}
 Monthly Volume: {kwargs.get('monthly_volume', 100)} units
 
 Calculate and analyse:
-
 1. GROSS MARGIN ($ and %)
-2. NET PROFIT PER UNIT (after all costs)
-3. MONTHLY NET PROFIT (at given volume)
-4. BREAK-EVEN POINT (minimum units to cover fixed costs)
-5. SCALE ANALYSIS (profit at 2x, 5x, 10x volume)
-6. PRICING RECOMMENDATION (optimal price for margin + competition)
-7. COST REDUCTION OPPORTUNITIES (where to improve margins)
-
-Be precise. Use actual numbers. No vague recommendations.
+2. NET PROFIT PER UNIT
+3. MONTHLY NET PROFIT
+4. BREAK-EVEN POINT
+5. SCALE ANALYSIS (2x, 5x, 10x)
+6. PRICING RECOMMENDATION
+7. COST REDUCTION OPPORTUNITIES
 """,
 
-        # ── 10. Store Health Check ───────────────────────────────
         "store_health": f"""
 You are a senior Shopify and E-Commerce consultant.
 
@@ -407,16 +393,13 @@ Conversion Rate: {kwargs.get('conversion_rate', 'Unknown')}
 Primary Issues: {kwargs.get('issues', 'Not specified')}
 
 Provide a comprehensive store health audit:
-
-1. CONVERSION KILLERS (top 5 reasons visitors are not buying)
-2. TRUST SIGNALS AUDIT (what is missing that reduces credibility)
-3. MOBILE EXPERIENCE (critical mobile optimisation issues)
-4. PAGE SPEED IMPACT (how speed affects conversions and SEO)
-5. PRODUCT PAGE AUDIT (what high-converting product pages include)
-6. CHECKOUT OPTIMISATION (friction points and how to remove them)
-7. IMMEDIATE ACTION LIST (5 things to fix this week — ranked by impact)
-
-Be direct. Be specific. Prioritise by revenue impact.
+1. CONVERSION KILLERS (top 5)
+2. TRUST SIGNALS AUDIT
+3. MOBILE EXPERIENCE
+4. PAGE SPEED IMPACT
+5. PRODUCT PAGE AUDIT
+6. CHECKOUT OPTIMISATION
+7. IMMEDIATE ACTION LIST (ranked by impact)
 """,
     }
 
@@ -449,6 +432,11 @@ async def dashboard(request: Request):
 async def tool_page(request: Request, tool_name: str):
     return templates.TemplateResponse("tool.html", {"request": request, "tool": tool_name})
 
+@app.get("/ads-manager", response_class=HTMLResponse)
+async def ads_manager_page(request: Request):
+    """Admin-only ads management page. Protected by admin key in the UI."""
+    return templates.TemplateResponse("ads.html", {"request": request})
+
 # ================================================================
 # AUTH — SIGNUP
 # ================================================================
@@ -461,21 +449,12 @@ async def signup(
     password: str = Form(...),
     country:  str = Form(...),
 ):
-    # Validate email
     if not validate_email(email):
         raise HTTPException(status_code=422, detail="Invalid email format.")
-
-    # Validate password strength
     if not validate_password_strength(password):
-        raise HTTPException(
-            status_code=422,
-            detail="Password must be 8+ characters with at least 1 uppercase letter and 1 number."
-        )
-
-    # Check duplicates
+        raise HTTPException(status_code=422, detail="Password must be 8+ characters with at least 1 uppercase letter and 1 number.")
     if users_col.find_one({"email": email}):
         raise HTTPException(status_code=409, detail="Email already registered.")
-
     if users_col.find_one({"phone": phone}):
         raise HTTPException(status_code=409, detail="Phone number already in use.")
 
@@ -497,7 +476,6 @@ async def signup(
     token = create_token({"sub": email})
     log_event(email, "signup", {"country": country})
     logger.info(f"New user registered: {email}")
-
     return {"status": "success", "access_token": token}
 
 # ================================================================
@@ -510,13 +488,11 @@ async def login(
     password: str = Form(...),
 ):
     user = users_col.find_one({"email": email.lower().strip()}, {"_id": 0})
-
     if not user or not verify_password(password, user["hashed_password"]):
         raise HTTPException(status_code=401, detail="Invalid email or password.")
 
     token = create_token({"sub": email})
     log_event(email, "login")
-
     return {
         "access_token": token,
         "user": {
@@ -540,7 +516,7 @@ async def forgot_password(
     if not user:
         raise HTTPException(status_code=404, detail="No account found with these credentials.")
 
-    code   = str(random.randint(100000, 999999))   # 6-digit code
+    code   = str(random.randint(100000, 999999))
     expiry = datetime.now(timezone.utc) + timedelta(minutes=RESET_CODE_TTL)
 
     users_col.update_one(
@@ -548,10 +524,8 @@ async def forgot_password(
         {"$set": {"reset_code": code, "reset_code_expiry": expiry}}
     )
 
-    # In production — integrate Twilio or similar SMS service here
     logger.info(f"[RESET CODE] {email} → {code}")
     print(f"\n{'='*40}\nSMS TO: {phone}\nCODE: {code}\n{'='*40}\n")
-
     return {"message": f"Verification code sent to ****{phone[-4:]}"}
 
 # ================================================================
@@ -589,12 +563,8 @@ async def reset_password(
     user = users_col.find_one({"email": email})
     if not user or user.get("reset_code") != code:
         raise HTTPException(status_code=400, detail="Unauthorised reset attempt.")
-
     if not validate_password_strength(new_password):
-        raise HTTPException(
-            status_code=422,
-            detail="Password must be 8+ characters with 1 uppercase and 1 number."
-        )
+        raise HTTPException(status_code=422, detail="Password must be 8+ characters with 1 uppercase and 1 number.")
 
     users_col.update_one(
         {"email": email},
@@ -615,7 +585,6 @@ async def reset_password(
 # ================================================================
 
 def check_and_reset_daily_usage(user: dict) -> dict:
-    """Resets daily usage counter if it is a new calendar day."""
     today = datetime.now(timezone.utc).date().isoformat()
     if user.get("usage_reset_date") != today:
         users_col.update_one(
@@ -635,11 +604,6 @@ async def generate(
     request:      Request,
     current_user: dict = Depends(get_current_user),
 ):
-    """
-    Universal generation endpoint.
-    Accepts any tool name and form data dynamically.
-    All tools are free — rate limited to MAX_GENERATIONS per day.
-    """
     user = check_and_reset_daily_usage(current_user)
 
     if user.get("daily_usage", 0) >= MAX_GENERATIONS:
@@ -648,7 +612,6 @@ async def generate(
             detail=f"Daily limit of {MAX_GENERATIONS} generations reached. Resets at midnight UTC."
         )
 
-    # Parse form data dynamically
     form_data = await request.form()
     kwargs    = {k: v for k, v in form_data.items()}
 
@@ -661,14 +624,8 @@ async def generate(
         response = openai_client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {
-                    "role": "system",
-                    "content": "You are a world-class E-Commerce growth expert. Be specific, actionable, and professional."
-                },
-                {
-                    "role": "user",
-                    "content": prompt
-                }
+                {"role": "system", "content": "You are a world-class E-Commerce growth expert. Be specific, actionable, and professional."},
+                {"role": "user",   "content": prompt}
             ],
             temperature=0.7,
             max_tokens=2000,
@@ -679,7 +636,6 @@ async def generate(
         logger.error(f"OpenAI error for {current_user['email']}: {exc}")
         raise HTTPException(status_code=503, detail="AI service temporarily unavailable.")
 
-    # Update usage and save generation history
     users_col.update_one(
         {"email": current_user["email"]},
         {
@@ -701,12 +657,12 @@ async def generate(
     log_event(current_user["email"], "generation", {"tool": tool})
 
     return JSONResponse(content={
-        "status":       "success",
-        "tool":         tool,
-        "output":       output,
-        "daily_usage":  user.get("daily_usage", 0) + 1,
-        "limit":        MAX_GENERATIONS,
-        "remaining":    MAX_GENERATIONS - user.get("daily_usage", 0) - 1,
+        "status":      "success",
+        "tool":        tool,
+        "output":      output,
+        "daily_usage": user.get("daily_usage", 0) + 1,
+        "limit":       MAX_GENERATIONS,
+        "remaining":   MAX_GENERATIONS - user.get("daily_usage", 0) - 1,
     })
 
 # ================================================================
@@ -740,8 +696,169 @@ async def get_history(current_user: dict = Depends(get_current_user)):
     generations = user.get("last_generations", [])
     return {
         "count":       len(generations),
-        "generations": list(reversed(generations))  # newest first
+        "generations": list(reversed(generations))
     }
+
+# ================================================================
+# ADS MANAGEMENT — PUBLIC (used by home.html)
+# ================================================================
+
+@app.get("/ads/active", tags=["Ads"])
+async def get_active_ads():
+    """Returns all active ads for display on the home page."""
+    ads = list(ads_col.find({"active": True}).sort("priority", DESCENDING))
+    return {"ads": [serialize_ad(ad) for ad in ads]}
+
+# ================================================================
+# ADS MANAGEMENT — ADMIN CRUD
+# ================================================================
+
+@app.get("/ads", tags=["Ads Admin"])
+async def list_all_ads(admin: bool = Depends(verify_admin_key)):
+    """List all ads (active + inactive) — admin only."""
+    ads = list(ads_col.find().sort("created_at", DESCENDING))
+    return {"ads": [serialize_ad(ad) for ad in ads]}
+
+
+@app.post("/ads", tags=["Ads Admin"])
+async def create_ad(
+    request: Request,
+    admin:   bool = Depends(verify_admin_key),
+):
+    """
+    Create a new ad.
+
+    Body (JSON):
+    {
+        "title":          "Stratum Pro",
+        "subtitle":       "Unlimited generations",
+        "cta_text":       "Learn More",
+        "cta_link":       "https://yourlink.com",
+        "image_url":      "https://your-image.com/banner.jpg",   ← optional
+        "gradient_from":  "#e8ff59",
+        "gradient_to":    "#1a1a00",
+        "skip_delay":     6,        ← seconds before skip enabled
+        "priority":       10,       ← higher = shown first
+        "active":         true
+    }
+    """
+    body = await request.json()
+
+    required = ["title", "subtitle", "cta_text", "cta_link"]
+    for field in required:
+        if not body.get(field):
+            raise HTTPException(status_code=422, detail=f"Missing required field: {field}")
+
+    ad = {
+        "title":         body["title"],
+        "subtitle":      body["subtitle"],
+        "cta_text":      body.get("cta_text", "Learn More"),
+        "cta_link":      body["cta_link"],
+        "image_url":     body.get("image_url", ""),           # empty = gradient fallback
+        "gradient_from": body.get("gradient_from", "#e8ff59"),
+        "gradient_to":   body.get("gradient_to", "#1a1a00"),
+        "skip_delay":    int(body.get("skip_delay", 6)),
+        "priority":      int(body.get("priority", 10)),
+        "active":        bool(body.get("active", True)),
+        "impressions":   0,
+        "clicks":        0,
+        "created_at":    datetime.now(timezone.utc),
+        "updated_at":    datetime.now(timezone.utc),
+    }
+
+    result = ads_col.insert_one(ad)
+    ad["id"] = str(result.inserted_id)
+    del ad["_id"]
+    logger.info(f"New ad created: {ad['title']} (id={ad['id']})")
+    return {"status": "created", "ad": ad}
+
+
+@app.put("/ads/{ad_id}", tags=["Ads Admin"])
+async def update_ad(
+    ad_id:   str,
+    request: Request,
+    admin:   bool = Depends(verify_admin_key),
+):
+    """Update any fields of an existing ad."""
+    try:
+        oid = ObjectId(ad_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid ad ID.")
+
+    body = await request.json()
+    body.pop("_id", None)
+    body.pop("id", None)
+    body["updated_at"] = datetime.now(timezone.utc)
+
+    result = ads_col.update_one({"_id": oid}, {"$set": body})
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Ad not found.")
+
+    updated = ads_col.find_one({"_id": oid})
+    return {"status": "updated", "ad": serialize_ad(updated)}
+
+
+@app.delete("/ads/{ad_id}", tags=["Ads Admin"])
+async def delete_ad(
+    ad_id: str,
+    admin: bool = Depends(verify_admin_key),
+):
+    """Permanently delete an ad."""
+    try:
+        oid = ObjectId(ad_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid ad ID.")
+
+    result = ads_col.delete_one({"_id": oid})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Ad not found.")
+
+    logger.info(f"Ad deleted: {ad_id}")
+    return {"status": "deleted", "id": ad_id}
+
+
+@app.patch("/ads/{ad_id}/toggle", tags=["Ads Admin"])
+async def toggle_ad(
+    ad_id: str,
+    admin: bool = Depends(verify_admin_key),
+):
+    """Toggle active/inactive status of an ad."""
+    try:
+        oid = ObjectId(ad_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid ad ID.")
+
+    ad = ads_col.find_one({"_id": oid})
+    if not ad:
+        raise HTTPException(status_code=404, detail="Ad not found.")
+
+    new_status = not ad.get("active", True)
+    ads_col.update_one({"_id": oid}, {"$set": {"active": new_status, "updated_at": datetime.now(timezone.utc)}})
+    return {"status": "toggled", "active": new_status}
+
+
+@app.post("/ads/{ad_id}/impression", tags=["Ads"])
+async def record_impression(ad_id: str):
+    """Called by home.html when an ad is shown."""
+    try:
+        oid = ObjectId(ad_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid ad ID.")
+
+    ads_col.update_one({"_id": oid}, {"$inc": {"impressions": 1}})
+    return {"status": "recorded"}
+
+
+@app.post("/ads/{ad_id}/click", tags=["Ads"])
+async def record_click(ad_id: str):
+    """Called by home.html when the CTA is clicked."""
+    try:
+        oid = ObjectId(ad_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid ad ID.")
+
+    ads_col.update_one({"_id": oid}, {"$inc": {"clicks": 1}})
+    return {"status": "recorded"}
 
 # ================================================================
 # WEBSOCKET — STREAMING GENERATION
@@ -753,10 +870,6 @@ async def websocket_generate(
     tool:      str,
     token:     str,
 ):
-    """
-    WebSocket endpoint for real-time streaming AI generation.
-    Streams token by token for a live typing experience.
-    """
     email = decode_token(token)
     if not email:
         await websocket.close(code=1008)
@@ -789,18 +902,11 @@ async def websocket_generate(
                 await manager.send(email, f"ERROR: Tool '{tool}' not found.")
                 continue
 
-            # Stream response token by token
             stream = openai_client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
-                    {
-                        "role": "system",
-                        "content": "You are a world-class E-Commerce growth expert. Be specific, actionable, and professional."
-                    },
-                    {
-                        "role": "user",
-                        "content": prompt
-                    }
+                    {"role": "system", "content": "You are a world-class E-Commerce growth expert. Be specific, actionable, and professional."},
+                    {"role": "user",   "content": prompt}
                 ],
                 temperature=0.7,
                 max_tokens=2000,
@@ -814,10 +920,8 @@ async def websocket_generate(
                     full_output += delta
                     await manager.send(email, delta)
 
-            # Signal stream end
             await manager.send(email, "[DONE]")
 
-            # Save to history
             users_col.update_one(
                 {"email": email},
                 {
@@ -852,7 +956,7 @@ async def websocket_generate(
 async def health():
     return {
         "status":    "running",
-        "version":   "2.0.0",
+        "version":   "2.1.0",
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
@@ -864,65 +968,15 @@ async def health():
 async def list_tools():
     return {
         "tools": [
-            {
-                "id":          "marketing_strategy",
-                "name":        "Marketing Strategy Generator",
-                "description": "Full conversion-focused marketing strategy for any product.",
-                "inputs":      ["product_name", "price", "target_audience"],
-            },
-            {
-                "id":          "product_description",
-                "name":        "Product Description Writer",
-                "description": "SEO-optimised titles, descriptions, and bullet points.",
-                "inputs":      ["product_name", "features", "target_audience", "tone"],
-            },
-            {
-                "id":          "ad_copy",
-                "name":        "Ad Copy Generator",
-                "description": "Facebook, Instagram, and TikTok ad copy — scroll-stopping.",
-                "inputs":      ["product_name", "platform", "target_audience", "objective"],
-            },
-            {
-                "id":          "cart_email",
-                "name":        "Abandoned Cart Email Sequence",
-                "description": "3-email recovery sequence timed for maximum conversion.",
-                "inputs":      ["product_name", "price", "tone"],
-            },
-            {
-                "id":          "seo_titles",
-                "name":        "SEO Title Generator",
-                "description": "Keyword-optimised titles, meta descriptions, and slugs.",
-                "inputs":      ["product_name", "category", "keywords", "platform"],
-            },
-            {
-                "id":          "review_response",
-                "name":        "Customer Review Responder",
-                "description": "Professional responses for any review — positive or negative.",
-                "inputs":      ["review", "rating", "tone"],
-            },
-            {
-                "id":          "audience_finder",
-                "name":        "Target Audience Finder",
-                "description": "Deep buyer persona profiles with messaging and targeting data.",
-                "inputs":      ["product_name", "price", "category"],
-            },
-            {
-                "id":          "hashtags",
-                "name":        "Hashtag Generator",
-                "description": "Tiered hashtag strategy for Instagram and TikTok.",
-                "inputs":      ["product_name", "category", "platform", "target_audience"],
-            },
-            {
-                "id":          "profit_insights",
-                "name":        "Profit Margin Analyser",
-                "description": "Full margin analysis with scale projections and recommendations.",
-                "inputs":      ["product_name", "selling_price", "product_cost", "shipping_cost", "ad_spend", "monthly_volume"],
-            },
-            {
-                "id":          "store_health",
-                "name":        "Store Health Checker",
-                "description": "Conversion audit — what is killing your sales and how to fix it.",
-                "inputs":      ["store_url", "store_type", "traffic", "conversion_rate", "issues"],
-            },
+            {"id": "marketing_strategy",  "name": "Marketing Strategy Generator",   "inputs": ["product_name", "price", "target_audience"]},
+            {"id": "product_description", "name": "Product Description Writer",      "inputs": ["product_name", "features", "target_audience", "tone"]},
+            {"id": "ad_copy",             "name": "Ad Copy Generator",               "inputs": ["product_name", "platform", "target_audience", "objective"]},
+            {"id": "cart_email",          "name": "Abandoned Cart Email Sequence",   "inputs": ["product_name", "price", "tone"]},
+            {"id": "seo_titles",          "name": "SEO Title Generator",             "inputs": ["product_name", "category", "keywords", "platform"]},
+            {"id": "review_response",     "name": "Customer Review Responder",       "inputs": ["review", "rating", "tone"]},
+            {"id": "audience_finder",     "name": "Target Audience Finder",          "inputs": ["product_name", "price", "category"]},
+            {"id": "hashtags",            "name": "Hashtag Generator",               "inputs": ["product_name", "category", "platform", "target_audience"]},
+            {"id": "profit_insights",     "name": "Profit Margin Analyser",          "inputs": ["product_name", "selling_price", "product_cost", "shipping_cost", "ad_spend", "monthly_volume"]},
+            {"id": "store_health",        "name": "Store Health Checker",            "inputs": ["store_url", "store_type", "traffic", "conversion_rate", "issues"]},
         ]
     }
