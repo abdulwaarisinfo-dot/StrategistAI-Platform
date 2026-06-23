@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stratum — Ads Manager</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --black:#080808;--surface:#0f0f0f;--surface2:#161616;--surface3:#1c1c1c;--surface4:#222;
+  --border:rgba(255,255,255,0.06);--border-strong:rgba(255,255,255,0.12);--border-focus:rgba(232,255,89,0.4);
+  --white:#fff;--off-white:#d4d4d4;--muted:#6b6b6b;--muted2:#3a3a3a;
+  --accent:#e8ff59;--accent-dim:rgba(232,255,89,0.08);--accent-glow:rgba(232,255,89,0.15);
+  --red:#ff4545;--red-dim:rgba(255,69,69,0.1);--green:#4ade80;--green-dim:rgba(74,222,128,0.1);
+  --yellow:#fbbf24;--yellow-dim:rgba(251,191,36,0.1);
+  --font:'Sora',sans-serif;--mono:'DM Mono',monospace;
+}
+html{scroll-behavior:smooth;height:100%}
+body{background:var(--black);color:var(--white);font-family:var(--font);-webkit-font-smoothing:antialiased;min-height:100%}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:2px}
+
+/* ─── AUTH GATE ─── */
+#authGate{
+  position:fixed;inset:0;background:var(--black);z-index:9999;
+  display:flex;align-items:center;justify-content:center;padding:20px;
+}
+.auth-card{
+  width:100%;max-width:400px;background:var(--surface);
+  border:1px solid var(--border-strong);border-radius:16px;padding:40px;
+}
+.auth-logo{display:flex;align-items:center;gap:10px;margin-bottom:32px}
+.auth-logo-mark{width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center}
+.auth-logo-mark svg{width:16px;height:16px}
+.auth-logo-name{font-size:15px;font-weight:600}
+.auth-title{font-size:20px;font-weight:700;letter-spacing:-.03em;margin-bottom:6px}
+.auth-sub{font-size:12px;color:var(--muted);margin-bottom:28px}
+.auth-field{margin-bottom:14px}
+.auth-field label{display:block;font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:7px;font-family:var(--mono)}
+.auth-field input{
+  width:100%;background:var(--surface3);border:1px solid var(--border-strong);
+  color:var(--white);font-family:var(--font);font-size:13px;
+  padding:11px 14px;border-radius:8px;outline:none;transition:border-color .2s;
+}
+.auth-field input:focus{border-color:var(--border-focus)}
+.auth-btn{
+  width:100%;background:var(--accent);color:#000;font-family:var(--font);
+  font-size:13px;font-weight:600;border:none;padding:12px;border-radius:8px;
+  cursor:pointer;transition:opacity .2s;margin-top:6px;
+}
+.auth-btn:hover{opacity:.85}
+.auth-err{font-size:12px;color:var(--red);margin-top:10px;display:none}
+
+/* ─── LAYOUT ─── */
+#app{display:none}
+.topbar{
+  position:sticky;top:0;z-index:100;height:60px;
+  background:rgba(8,8,8,.9);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 28px;
+}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.topbar-logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.topbar-mark{width:26px;height:26px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center}
+.topbar-mark svg{width:13px;height:13px}
+.topbar-name{font-size:13px;font-weight:600}
+.topbar-badge{
+  font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  background:var(--accent-dim);color:var(--accent);border:1px solid rgba(232,255,89,.2);
+  padding:3px 9px;border-radius:100px;
+}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.btn-sm{
+  font-size:12px;font-weight:500;padding:7px 14px;border-radius:7px;cursor:pointer;
+  text-decoration:none;transition:all .2s;border:1px solid var(--border-strong);
+  color:var(--off-white);background:none;
+}
+.btn-sm:hover{border-color:rgba(255,255,255,.25);color:var(--white)}
+.btn-sm.accent{background:var(--accent);color:#000;border-color:transparent;font-weight:600}
+.btn-sm.accent:hover{opacity:.85}
+.btn-sm.danger{border-color:rgba(255,69,69,.3);color:var(--red)}
+.btn-sm.danger:hover{background:var(--red-dim)}
+
+.main{max-width:1100px;margin:0 auto;padding:32px 28px 80px}
+
+/* ─── PAGE HEADER ─── */
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:32px}
+.page-title{font-size:22px;font-weight:700;letter-spacing:-.03em}
+.page-sub{font-size:12px;color:var(--muted);margin-top:4px}
+
+/* ─── STATS ROW ─── */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:32px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 18px}
+.stat-card-val{font-size:26px;font-weight:700;letter-spacing:-.03em;color:var(--white)}
+.stat-card-val span{color:var(--accent)}
+.stat-card-label{font-size:10px;color:var(--muted);margin-top:3px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase}
+
+/* ─── ADS TABLE ─── */
+.section-label{
+  font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:8px;
+}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border)}
+.ads-table{width:100%;border-collapse:collapse}
+.ads-table th{
+  font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);font-weight:400;padding:10px 14px;text-align:left;
+  border-bottom:1px solid var(--border);
+}
+.ads-table td{
+  padding:14px;border-bottom:1px solid var(--border);
+  font-size:12px;color:var(--off-white);vertical-align:middle;
+}
+.ads-table tr:last-child td{border-bottom:none}
+.ads-table tr:hover td{background:rgba(255,255,255,.02)}
+.ad-preview{display:flex;align-items:center;gap:12px}
+.ad-thumb{
+  width:56px;height:36px;border-radius:6px;flex-shrink:0;overflow:hidden;
+  border:1px solid var(--border);display:flex;align-items:center;justify-content:center;
+  font-size:8px;color:var(--muted);font-family:var(--mono);
+}
+.ad-thumb img{width:100%;height:100%;object-fit:cover}
+.ad-thumb-gradient{width:100%;height:100%}
+.ad-info-title{font-size:13px;font-weight:600;color:var(--white);margin-bottom:2px}
+.ad-info-sub{font-size:10px;color:var(--muted)}
+.badge{
+  display:inline-flex;align-items:center;gap:5px;
+  font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;
+  padding:3px 9px;border-radius:100px;
+}
+.badge-active{background:var(--green-dim);color:var(--green);border:1px solid rgba(74,222,128,.2)}
+.badge-inactive{background:rgba(255,255,255,.04);color:var(--muted);border:1px solid var(--border)}
+.badge-dot{width:4px;height:4px;border-radius:50%;background:currentColor}
+.actions-cell{display:flex;align-items:center;gap:6px}
+.icon-btn{
+  width:30px;height:30px;border-radius:7px;border:1px solid var(--border);
+  background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .18s;flex-shrink:0;
+}
+.icon-btn svg{width:13px;height:13px;stroke:var(--muted);fill:none;stroke-width:1.8;transition:stroke .18s}
+.icon-btn:hover{border-color:var(--border-strong)}
+.icon-btn.edit:hover svg{stroke:var(--accent)}
+.icon-btn.toggle:hover svg{stroke:var(--green)}
+.icon-btn.delete:hover{border-color:rgba(255,69,69,.4);background:var(--red-dim)}
+.icon-btn.delete:hover svg{stroke:var(--red)}
+.metric{font-family:var(--mono);font-size:11px}
+.metric-val{color:var(--white)}
+.metric-sep{color:var(--muted2);margin:0 4px}
+.metric-ctr{color:var(--accent);font-size:10px}
+.priority-badge{
+  display:inline-block;font-family:var(--mono);font-size:10px;
+  background:var(--surface3);border:1px solid var(--border);
+  padding:2px 8px;border-radius:4px;color:var(--off-white);
+}
+.empty-state{
+  text-align:center;padding:56px 20px;
+  font-size:13px;color:var(--muted);
+}
+.empty-state svg{width:32px;height:32px;stroke:var(--muted2);fill:none;margin-bottom:14px;stroke-width:1}
+.empty-state p{margin-top:8px;font-size:12px;color:var(--muted2)}
+
+/* ─── MODAL ─── */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.86);z-index:9000;
+  display:flex;align-items:center;justify-content:center;padding:20px;
+  backdrop-filter:blur(12px);opacity:0;pointer-events:none;transition:opacity .25s;
+}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{
+  width:100%;max-width:560px;background:var(--surface);
+  border:1px solid var(--border-strong);border-radius:16px;
+  max-height:90vh;overflow-y:auto;
+  transform:translateY(16px);transition:transform .25s;
+}
+.modal-overlay.open .modal{transform:translateY(0)}
+.modal-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 24px 0;margin-bottom:22px;
+}
+.modal-title{font-size:16px;font-weight:700;letter-spacing:-.02em}
+.modal-close{
+  width:28px;height:28px;border-radius:7px;border:1px solid var(--border);
+  background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;
+}
+.modal-close svg{width:12px;height:12px;stroke:var(--muted);fill:none;stroke-width:2}
+.modal-close:hover{border-color:var(--border-strong)}
+.modal-close:hover svg{stroke:var(--white)}
+.modal-body{padding:0 24px 24px}
+
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:10px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:7px;font-family:var(--mono)}
+.field input,.field select,.field textarea{
+  width:100%;background:var(--surface3);border:1px solid var(--border-strong);
+  color:var(--white);font-family:var(--font);font-size:13px;
+  padding:10px 12px;border-radius:8px;outline:none;transition:border-color .2s;
+}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--border-focus)}
+.field textarea{resize:vertical;min-height:72px}
+.field select{cursor:pointer}
+.field select option{background:var(--surface3)}
+
+.color-row{display:flex;align-items:center;gap:10px}
+.color-input-wrap{position:relative;flex:1}
+.color-input-wrap input[type=text]{padding-left:40px}
+.color-swatch{
+  position:absolute;left:10px;top:50%;transform:translateY(-50%);
+  width:18px;height:18px;border-radius:4px;border:1px solid var(--border-strong);
+  cursor:pointer;overflow:hidden;
+}
+.color-swatch input[type=color]{
+  position:absolute;inset:-4px;width:calc(100%+8px);height:calc(100%+8px);
+  opacity:0;cursor:pointer;border:none;padding:0;
+}
+
+.preview-strip{
+  background:var(--surface3);border:1px solid var(--border);border-radius:8px;
+  overflow:hidden;margin-bottom:16px;
+}
+.preview-media{width:100%;aspect-ratio:16/6;display:flex;align-items:center;justify-content:center;transition:background .3s}
+.preview-title-text{font-size:18px;font-weight:700;color:#fff;letter-spacing:-.03em;text-align:center}
+.preview-sub-text{font-size:10px;color:rgba(255,255,255,.4);margin-top:6px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em;text-align:center}
+.preview-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;gap:8px}
+.preview-bar-text{font-size:11px;font-weight:600;color:var(--white)}
+.preview-bar-cta{font-size:10px;font-weight:600;padding:5px 12px;border-radius:5px;color:#000;border:none}
+
+.modal-footer{display:flex;justify-content:flex-end;gap:10px;margin-top:4px}
+.btn-modal{font-size:12px;font-weight:600;padding:10px 20px;border-radius:8px;cursor:pointer;transition:all .2s;border:none}
+.btn-modal.cancel{background:var(--surface3);color:var(--off-white);border:1px solid var(--border-strong)}
+.btn-modal.cancel:hover{border-color:rgba(255,255,255,.25)}
+.btn-modal.save{background:var(--accent);color:#000}
+.btn-modal.save:hover{opacity:.85}
+.btn-modal:disabled{opacity:.4;cursor:not-allowed}
+
+/* ─── CONFIRM DIALOG ─── */
+.confirm-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:9999;
+  display:flex;align-items:center;justify-content:center;padding:20px;
+  backdrop-filter:blur(16px);opacity:0;pointer-events:none;transition:opacity .2s;
+}
+.confirm-overlay.open{opacity:1;pointer-events:all}
+.confirm-box{
+  width:100%;max-width:360px;background:var(--surface);
+  border:1px solid rgba(255,69,69,.25);border-radius:14px;padding:28px;
+  transform:scale(.96);transition:transform .2s;
+}
+.confirm-overlay.open .confirm-box{transform:scale(1)}
+.confirm-icon{width:40px;height:40px;border-radius:10px;background:var(--red-dim);border:1px solid rgba(255,69,69,.2);display:flex;align-items:center;justify-content:center;margin-bottom:16px}
+.confirm-icon svg{width:18px;height:18px;stroke:var(--red);fill:none;stroke-width:1.8}
+.confirm-title{font-size:15px;font-weight:700;margin-bottom:6px}
+.confirm-msg{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:22px}
+.confirm-actions{display:flex;gap:10px}
+.confirm-actions button{flex:1;padding:10px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;border:none}
+.confirm-cancel{background:var(--surface3);color:var(--off-white);border:1px solid var(--border-strong) !important}
+.confirm-cancel:hover{border-color:rgba(255,255,255,.25) !important}
+.confirm-delete{background:var(--red);color:#fff}
+.confirm-delete:hover{opacity:.85}
+
+/* ─── TOAST ─── */
+#toast{
+  position:fixed;bottom:24px;right:24px;z-index:99999;
+  font-size:12px;font-weight:500;padding:11px 18px;border-radius:9px;
+  display:none;align-items:center;gap:8px;max-width:320px;
+  box-shadow:0 8px 32px rgba(0,0,0,.5);
+}
+#toast.success{background:#1a2a1a;border:1px solid rgba(74,222,128,.25);color:var(--green)}
+#toast.error{background:#2a1a1a;border:1px solid rgba(255,69,69,.25);color:var(--red)}
+#toast svg{width:14px;height:14px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:2}
+
+@media(max-width:640px){
+  .form-row{grid-template-columns:1fr}
+  .main{padding:20px 16px 60px}
+  .topbar{padding:0 16px}
+  .ads-table th:nth-child(4),.ads-table td:nth-child(4),
+  .ads-table th:nth-child(5),.ads-table td:nth-child(5){display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- AUTH GATE -->
+<div id="authGate">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-mark"><svg viewBox="0 0 16 16" fill="none"><path d="M2 13L8 3l6 10H2z" fill="#000"/></svg></div>
+      <span class="auth-logo-name">Stratum</span>
+    </div>
+    <div class="auth-title">Ads Manager</div>
+    <div class="auth-sub">Admin access only. Enter your admin key to continue.</div>
+    <div class="auth-field">
+      <label>Admin Key</label>
+      <input type="password" id="adminKeyInput" placeholder="Enter admin key…" autocomplete="off">
+    </div>
+    <button class="auth-btn" onclick="authenticate()">Access Dashboard</button>
+    <div class="auth-err" id="authErr">Invalid admin key. Try again.</div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-left">
+      <a href="/" class="topbar-logo">
+        <div class="topbar-mark"><svg viewBox="0 0 16 16" fill="none"><path d="M2 13L8 3l6 10H2z" fill="#000"/></svg></div>
+        <span class="topbar-name">Stratum</span>
+      </a>
+      <span class="topbar-badge">Ads Manager</span>
+    </div>
+    <div class="topbar-right">
+      <a href="/" target="_blank" class="btn-sm">← Home</a>
+      <button class="btn-sm accent" onclick="openCreateModal()">+ New Ad</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Advertisement Control</div>
+        <div class="page-sub">Manage what users see when they land on the home page.</div>
+      </div>
+      <button class="btn-sm accent" onclick="openCreateModal()">+ Create Ad</button>
+    </div>
+
+    <div class="stats-row" id="statsRow">
+      <div class="stat-card"><div class="stat-card-val" id="statTotal">—</div><div class="stat-card-label">Total Ads</div></div>
+      <div class="stat-card"><div class="stat-card-val" id="statActive">—</div><div class="stat-card-label">Active</div></div>
+      <div class="stat-card"><div class="stat-card-val" id="statImpr">—</div><div class="stat-card-label">Impressions</div></div>
+      <div class="stat-card"><div class="stat-card-val" id="statClicks">—</div><div class="stat-card-label">Total Clicks</div></div>
+      <div class="stat-card"><div class="stat-card-val" id="statCTR">—<span>%</span></div><div class="stat-card-label">Avg CTR</div></div>
+    </div>
+
+    <div class="section-label">All Advertisements</div>
+
+    <div style="overflow-x:auto;border:1px solid var(--border);border-radius:12px">
+      <table class="ads-table">
+        <thead>
+          <tr>
+            <th>Ad</th>
+            <th>Status</th>
+            <th>Priority</th>
+            <th>Impressions</th>
+            <th>Clicks / CTR</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="adsTbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- CREATE / EDIT MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="modalTitle">Create New Ad</div>
+      <button class="modal-close" onclick="closeModal()">
+        <svg viewBox="0 0 12 12"><path d="M1 1l10 10M11 1L1 11"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Live Preview -->
+      <div class="preview-strip" id="previewStrip">
+        <div class="preview-media" id="previewMedia">
+          <div>
+            <div class="preview-title-text" id="previewTitleText">Ad Title</div>
+            <div class="preview-sub-text" id="previewSubText">Subtitle goes here</div>
+          </div>
+        </div>
+        <div class="preview-bar">
+          <div>
+            <div class="preview-bar-text" id="previewBarTitle">Ad Title</div>
+          </div>
+          <button class="preview-bar-cta" id="previewCta">Learn More</button>
+        </div>
+      </div>
+
+      <!-- Form -->
+      <div class="form-row">
+        <div class="field">
+          <label>Title *</label>
+          <input type="text" id="fTitle" placeholder="e.g. Stratum Pro" maxlength="60" oninput="updatePreview()">
+        </div>
+        <div class="field">
+          <label>Subtitle *</label>
+          <input type="text" id="fSubtitle" placeholder="e.g. Unlimited generations" maxlength="80" oninput="updatePreview()">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label>CTA Button Text *</label>
+          <input type="text" id="fCtaText" placeholder="Learn More" maxlength="24" oninput="updatePreview()">
+        </div>
+        <div class="field">
+          <label>CTA Link *</label>
+          <input type="url" id="fCtaLink" placeholder="https://…">
+        </div>
+      </div>
+      <div class="field">
+        <label>Image URL <span style="color:var(--muted2);font-size:9px">(optional — uses gradient if empty)</span></label>
+        <input type="url" id="fImageUrl" placeholder="https://your-cdn.com/banner.jpg" oninput="updatePreview()">
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label>Gradient From</label>
+          <div class="color-row">
+            <div class="color-input-wrap">
+              <div class="color-swatch" id="swatchFrom">
+                <input type="color" id="cpFrom" value="#e8ff59" oninput="syncColor('From')">
+              </div>
+              <input type="text" id="fGradFrom" value="#e8ff59" maxlength="7" oninput="syncColorText('From')">
+            </div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Gradient To</label>
+          <div class="color-row">
+            <div class="color-input-wrap">
+              <div class="color-swatch" id="swatchTo">
+                <input type="color" id="cpTo" value="#1a1a00" oninput="syncColor('To')">
+              </div>
+              <input type="text" id="fGradTo" value="#1a1a00" maxlength="7" oninput="syncColorText('To')">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label>Skip Delay (seconds)</label>
+          <input type="number" id="fSkipDelay" value="6" min="1" max="30">
+        </div>
+        <div class="field">
+          <label>Priority <span style="color:var(--muted2);font-size:9px">(higher = shown first)</span></label>
+          <input type="number" id="fPriority" value="10" min="1" max="100">
+        </div>
+      </div>
+      <div class="field">
+        <label>Status</label>
+        <select id="fActive">
+          <option value="true">Active — visible to users</option>
+          <option value="false">Inactive — hidden from users</option>
+        </select>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-modal cancel" onclick="closeModal()">Cancel</button>
+        <button class="btn-modal save" id="saveBtn" onclick="saveAd()">Create Ad</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM DELETE DIALOG -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <div class="confirm-icon">
+      <svg viewBox="0 0 20 20"><polyline points="3 6 5 6 19 6"/><path d="M8 6V4h6v2"/><path d="M5 6l1 12h10L17 6"/></svg>
+    </div>
+    <div class="confirm-title">Delete this ad?</div>
+    <div class="confirm-msg">This action is permanent and cannot be undone. The ad will be removed from MongoDB immediately.</div>
+    <div class="confirm-actions">
+      <button class="confirm-cancel" onclick="closeConfirm()">Keep it</button>
+      <button class="confirm-delete" id="confirmDeleteBtn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast">
+  <svg id="toastIcon" viewBox="0 0 14 14"></svg>
+  <span id="toastMsg"></span>
+</div>
+
+<script>
+// ─── STATE ───
+let ADMIN_KEY = '';
+let editingId = null;
+let deleteTargetId = null;
+
+// ─── AUTH ───
+function authenticate(){
+  const key = document.getElementById('adminKeyInput').value.trim();
+  if(!key){ showAuthErr('Please enter your admin key.'); return; }
+
+  // Verify by hitting a protected endpoint
+  fetch('/ads', { headers: { 'X-Admin-Key': key } })
+    .then(r => {
+      if(r.ok){ ADMIN_KEY = key; showApp(); }
+      else { showAuthErr('Invalid admin key. Try again.'); }
+    })
+    .catch(() => showAuthErr('Cannot reach server. Check your connection.'));
+}
+
+document.getElementById('adminKeyInput').addEventListener('keydown', e => {
+  if(e.key === 'Enter') authenticate();
+});
+
+function showAuthErr(msg){
+  const el = document.getElementById('authErr');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function showApp(){
+  document.getElementById('authGate').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  loadAds();
+}
+
+// ─── LOAD ADS ───
+async function loadAds(){
+  try {
+    const res  = await fetch('/ads', { headers: { 'X-Admin-Key': ADMIN_KEY } });
+    const data = await res.json();
+    renderTable(data.ads || []);
+    renderStats(data.ads || []);
+  } catch(e){
+    showToast('Failed to load ads.', 'error');
+  }
+}
+
+function renderStats(ads){
+  const active = ads.filter(a => a.active).length;
+  const impr   = ads.reduce((s,a) => s + (a.impressions||0), 0);
+  const clicks = ads.reduce((s,a) => s + (a.clicks||0), 0);
+  const ctr    = impr ? ((clicks/impr)*100).toFixed(1) : '0.0';
+  document.getElementById('statTotal').textContent  = ads.length;
+  document.getElementById('statActive').innerHTML   = `${active}<span style="color:var(--green)">✓</span>`;
+  document.getElementById('statImpr').textContent   = impr.toLocaleString();
+  document.getElementById('statClicks').textContent = clicks.toLocaleString();
+  document.getElementById('statCTR').innerHTML      = `${ctr}<span>%</span>`;
+}
+
+function renderTable(ads){
+  const tbody = document.getElementById('adsTbody');
+  if(!ads.length){
+    tbody.innerHTML = `<tr><td colspan="6">
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        <div>No ads yet</div>
+        <p>Click "Create Ad" to add your first advertisement.</p>
+      </div>
+    </td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = ads.map(ad => {
+    const impr  = ad.impressions || 0;
+    const clks  = ad.clicks || 0;
+    const ctr   = impr ? ((clks/impr)*100).toFixed(1) : '0.0';
+    const thumb = ad.image_url
+      ? `<img src="${escHtml(ad.image_url)}" onerror="this.parentElement.innerHTML='IMG'">`
+      : `<div class="ad-thumb-gradient" style="background:linear-gradient(135deg,${escHtml(ad.gradient_from)}44,${escHtml(ad.gradient_to)})"></div>`;
+
+    return `<tr>
+      <td>
+        <div class="ad-preview">
+          <div class="ad-thumb">${thumb}</div>
+          <div>
+            <div class="ad-info-title">${escHtml(ad.title)}</div>
+            <div class="ad-info-sub">${escHtml(ad.subtitle)}</div>
+          </div>
+        </div>
+      </td>
+      <td>
+        <span class="badge ${ad.active ? 'badge-active' : 'badge-inactive'}">
+          <span class="badge-dot"></span>
+          ${ad.active ? 'Active' : 'Inactive'}
+        </span>
+      </td>
+      <td><span class="priority-badge">${ad.priority || 10}</span></td>
+      <td><span class="metric"><span class="metric-val">${impr.toLocaleString()}</span></span></td>
+      <td>
+        <span class="metric">
+          <span class="metric-val">${clks.toLocaleString()}</span>
+          <span class="metric-sep">/</span>
+          <span class="metric-ctr">${ctr}%</span>
+        </span>
+      </td>
+      <td>
+        <div class="actions-cell">
+          <button class="icon-btn edit" title="Edit" onclick="openEditModal('${ad.id}')">
+            <svg viewBox="0 0 14 14"><path d="M10 2l2 2-7 7H3v-2l7-7z"/><path d="M9 3l2 2"/></svg>
+          </button>
+          <button class="icon-btn toggle" title="${ad.active ? 'Deactivate' : 'Activate'}" onclick="toggleAd('${ad.id}')">
+            <svg viewBox="0 0 14 14"><circle cx="7" cy="7" r="5"/><path d="M7 4v3l2 1.5"/></svg>
+          </button>
+          <button class="icon-btn delete" title="Delete" onclick="confirmDelete('${ad.id}')">
+            <svg viewBox="0 0 14 14"><polyline points="2 4 4 4 12 4"/><path d="M3 4l.8 8h6.4L11 4"/><path d="M5 4V2.5h4V4"/></svg>
+          </button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ─── MODAL ───
+function openCreateModal(){
+  editingId = null;
+  document.getElementById('modalTitle').textContent = 'Create New Ad';
+  document.getElementById('saveBtn').textContent    = 'Create Ad';
+  resetForm();
+  updatePreview();
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function openEditModal(id){
+  editingId = id;
+  document.getElementById('modalTitle').textContent = 'Edit Ad';
+  document.getElementById('saveBtn').textContent    = 'Save Changes';
+
+  fetch(`/ads`, { headers: { 'X-Admin-Key': ADMIN_KEY } })
+    .then(r => r.json())
+    .then(data => {
+      const ad = (data.ads || []).find(a => a.id === id);
+      if(!ad){ showToast('Ad not found.', 'error'); return; }
+      document.getElementById('fTitle').value     = ad.title || '';
+      document.getElementById('fSubtitle').value  = ad.subtitle || '';
+      document.getElementById('fCtaText').value   = ad.cta_text || '';
+      document.getElementById('fCtaLink').value   = ad.cta_link || '';
+      document.getElementById('fImageUrl').value  = ad.image_url || '';
+      document.getElementById('fGradFrom').value  = ad.gradient_from || '#e8ff59';
+      document.getElementById('fGradTo').value    = ad.gradient_to   || '#1a1a00';
+      document.getElementById('cpFrom').value     = ad.gradient_from || '#e8ff59';
+      document.getElementById('cpTo').value       = ad.gradient_to   || '#1a1a00';
+      document.getElementById('fSkipDelay').value = ad.skip_delay || 6;
+      document.getElementById('fPriority').value  = ad.priority  || 10;
+      document.getElementById('fActive').value    = String(ad.active !== false);
+      updatePreview();
+      document.getElementById('modalOverlay').classList.add('open');
+    });
+}
+
+function closeModal(){
+  document.getElementById('modalOverlay').classList.remove('open');
+  editingId = null;
+}
+
+function resetForm(){
+  ['fTitle','fSubtitle','fCtaText','fCtaLink','fImageUrl'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('fGradFrom').value  = '#e8ff59';
+  document.getElementById('fGradTo').value    = '#1a1a00';
+  document.getElementById('cpFrom').value     = '#e8ff59';
+  document.getElementById('cpTo').value       = '#1a1a00';
+  document.getElementById('fSkipDelay').value = '6';
+  document.getElementById('fPriority').value  = '10';
+  document.getElementById('fActive').value    = 'true';
+}
+
+// ─── LIVE PREVIEW ───
+function updatePreview(){
+  const title    = document.getElementById('fTitle').value    || 'Ad Title';
+  const subtitle = document.getElementById('fSubtitle').value || 'Subtitle goes here';
+  const ctaText  = document.getElementById('fCtaText').value  || 'Learn More';
+  const imgUrl   = document.getElementById('fImageUrl').value;
+  const gFrom    = document.getElementById('fGradFrom').value || '#e8ff59';
+  const gTo      = document.getElementById('fGradTo').value   || '#1a1a00';
+
+  document.getElementById('previewTitleText').textContent = title;
+  document.getElementById('previewSubText').textContent   = subtitle;
+  document.getElementById('previewBarTitle').textContent  = title;
+  document.getElementById('previewCta').textContent       = ctaText;
+  document.getElementById('previewCta').style.background  = gFrom;
+
+  const media = document.getElementById('previewMedia');
+  if(imgUrl){
+    media.style.backgroundImage  = `url(${imgUrl})`;
+    media.style.backgroundSize   = 'cover';
+    media.style.backgroundPosition = 'center';
+    media.style.background       = `url(${imgUrl}) center/cover`;
+  } else {
+    media.style.background = `linear-gradient(135deg, ${gFrom}33, ${gTo})`;
+  }
+
+  document.getElementById('swatchFrom').style.background = gFrom;
+  document.getElementById('swatchTo').style.background   = gTo;
+}
+
+function syncColor(which){
+  const cp  = document.getElementById(`cp${which}`);
+  const txt = document.getElementById(`fGrad${which}`);
+  txt.value = cp.value;
+  updatePreview();
+}
+
+function syncColorText(which){
+  const txt = document.getElementById(`fGrad${which}`);
+  const cp  = document.getElementById(`cp${which}`);
+  if(/^#[0-9a-fA-F]{6}$/.test(txt.value)) cp.value = txt.value;
+  updatePreview();
+}
+
+// ─── SAVE ───
+async function saveAd(){
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true;
+
+  const payload = {
+    title:         document.getElementById('fTitle').value.trim(),
+    subtitle:      document.getElementById('fSubtitle').value.trim(),
+    cta_text:      document.getElementById('fCtaText').value.trim(),
+    cta_link:      document.getElementById('fCtaLink').value.trim(),
+    image_url:     document.getElementById('fImageUrl').value.trim(),
+    gradient_from: document.getElementById('fGradFrom').value.trim(),
+    gradient_to:   document.getElementById('fGradTo').value.trim(),
+    skip_delay:    parseInt(document.getElementById('fSkipDelay').value) || 6,
+    priority:      parseInt(document.getElementById('fPriority').value)  || 10,
+    active:        document.getElementById('fActive').value === 'true',
+  };
+
+  if(!payload.title || !payload.subtitle || !payload.cta_text || !payload.cta_link){
+    showToast('Please fill in all required fields.', 'error');
+    btn.disabled = false;
+    return;
+  }
+
+  try {
+    const url    = editingId ? `/ads/${editingId}` : '/ads';
+    const method = editingId ? 'PUT' : 'POST';
+    const res    = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY },
+      body: JSON.stringify(payload),
+    });
+
+    if(res.ok){
+      closeModal();
+      showToast(editingId ? 'Ad updated.' : 'Ad created.', 'success');
+      loadAds();
+    } else {
+      const err = await res.json();
+      showToast(err.detail || 'Save failed.', 'error');
+    }
+  } catch(e){
+    showToast('Network error.', 'error');
+  }
+
+  btn.disabled = false;
+}
+
+// ─── TOGGLE ───
+async function toggleAd(id){
+  try {
+    const res = await fetch(`/ads/${id}/toggle`, {
+      method: 'PATCH',
+      headers: { 'X-Admin-Key': ADMIN_KEY }
+    });
+    if(res.ok){
+      const d = await res.json();
+      showToast(`Ad ${d.active ? 'activated' : 'deactivated'}.`, 'success');
+      loadAds();
+    }
+  } catch(e){ showToast('Toggle failed.', 'error'); }
+}
+
+// ─── DELETE ───
+function confirmDelete(id){
+  deleteTargetId = id;
+  document.getElementById('confirmOverlay').classList.add('open');
+  document.getElementById('confirmDeleteBtn').onclick = executeDelete;
+}
+
+function closeConfirm(){
+  document.getElementById('confirmOverlay').classList.remove('open');
+  deleteTargetId = null;
+}
+
+async function executeDelete(){
+  if(!deleteTargetId) return;
+  try {
+    const res = await fetch(`/ads/${deleteTargetId}`, {
+      method: 'DELETE',
+      headers: { 'X-Admin-Key': ADMIN_KEY }
+    });
+    if(res.ok){
+      closeConfirm();
+      showToast('Ad deleted.', 'success');
+      loadAds();
+    } else {
+      showToast('Delete failed.', 'error');
+    }
+  } catch(e){ showToast('Network error.', 'error'); }
+}
+
+// ─── TOAST ───
+let toastTimer;
+function showToast(msg, type = 'success'){
+  const el  = document.getElementById('toast');
+  const ico = document.getElementById('toastIcon');
+  document.getElementById('toastMsg').textContent = msg;
+  el.className = type;
+  el.style.display = 'flex';
+  ico.innerHTML = type === 'success'
+    ? '<polyline points="2 7 5.5 10.5 12 3.5"/>'
+    : '<circle cx="7" cy="7" r="6"/><line x1="7" y1="4" x2="7" y2="7.5"/><circle cx="7" cy="10" r=".5" fill="currentColor"/>';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.style.display = 'none'; }, 3200);
+}
+
+// ─── UTILS ───
+function escHtml(str){
+  if(!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Close modal on overlay click
+document.getElementById('modalOverlay').addEventListener('click', e => {
+  if(e.target === document.getElementById('modalOverlay')) closeModal();
+});
+document.getElementById('confirmOverlay').addEventListener('click', e => {
+  if(e.target === document.getElementById('confirmOverlay')) closeConfirm();
+});
+</script>
+</body>
+</html>
