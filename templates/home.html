@@ -197,15 +197,11 @@ nav{
   position:fixed;inset:0;background:rgba(0,0,0,.94);z-index:9999;
   display:flex;align-items:center;justify-content:center;
   backdrop-filter:blur(16px);
-  opacity:0;transition:opacity .4s ease;
 }
-#adOverlay.visible{opacity:1}
 .ad-box{
   width:100%;max-width:700px;margin:0 20px;
   background:var(--surface);border:1px solid var(--border-strong);border-radius:18px;overflow:hidden;
-  transform:translateY(20px);transition:transform .4s ease;
 }
-#adOverlay.visible .ad-box{transform:translateY(0)}
 .ad-media{position:relative;width:100%;aspect-ratio:16/9;background:#000;overflow:hidden}
 .ad-badge{
   position:absolute;top:12px;left:12px;
@@ -213,35 +209,13 @@ nav{
   background:rgba(0,0,0,.7);color:var(--muted);border:1px solid var(--border-strong);
   padding:4px 10px;border-radius:4px;z-index:2;
 }
-.ad-img{width:100%;height:100%;object-fit:cover;display:block}
-.ad-gradient-bg{
-  width:100%;height:100%;display:flex;align-items:center;justify-content:center;
-}
-.ad-gradient-text-title{
-  font-family:'Sora',sans-serif;font-size:clamp(22px,5vw,46px);
-  font-weight:700;color:#fff;letter-spacing:-.04em;text-align:center;
-}
-.ad-gradient-text-sub{
-  font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.38);
-  margin-top:10px;letter-spacing:.1em;text-transform:uppercase;text-align:center;
-}
 .ad-footer{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;gap:12px;flex-wrap:wrap}
 .ad-meta-title{font-size:13px;font-weight:600;color:var(--white)}
 .ad-meta-sub{font-size:11px;color:var(--muted);margin-top:2px}
-.ad-footer-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
-.ad-visit{
-  font-size:12px;font-weight:600;color:#000;background:var(--accent);
-  border:none;padding:8px 16px;border-radius:7px;cursor:pointer;
-  text-decoration:none;white-space:nowrap;transition:opacity .2s;
-}
+.ad-visit{font-size:12px;font-weight:600;color:#000;background:var(--accent);border:none;padding:8px 16px;border-radius:7px;cursor:pointer;text-decoration:none;white-space:nowrap;transition:opacity .2s}
 .ad-visit:hover{opacity:.85}
-.ad-skip{
-  font-size:12px;font-weight:500;color:var(--muted);background:none;
-  border:1px solid var(--border-strong);padding:8px 16px;border-radius:7px;
-  cursor:not-allowed;white-space:nowrap;transition:all .25s;min-width:96px;text-align:center;
-}
+.ad-skip{font-size:12px;font-weight:500;color:var(--muted);background:none;border:1px solid var(--border-strong);padding:8px 16px;border-radius:7px;cursor:not-allowed;white-space:nowrap;transition:all .25s}
 .ad-skip.ready{cursor:pointer;color:var(--white);border-color:rgba(255,255,255,.25)}
-.ad-skip.ready:hover{background:rgba(255,255,255,.06)}
 
 /* ── FOOTER ── */
 footer{border-top:1px solid var(--border);padding:36px 40px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
@@ -265,8 +239,8 @@ footer{border-top:1px solid var(--border);padding:36px 40px;display:flex;align-i
 </head>
 <body>
 
-<!-- AD OVERLAY — populated dynamically from /ads/active -->
-<div id="adOverlay" style="display:none">
+<!-- AD OVERLAY -->
+<div id="adOverlay">
   <div class="ad-box">
     <div class="ad-media">
       <span class="ad-badge">Advertisement</span>
@@ -274,13 +248,11 @@ footer{border-top:1px solid var(--border);padding:36px 40px;display:flex;align-i
     </div>
     <div class="ad-footer">
       <div>
-        <div class="ad-meta-title" id="adTitle"></div>
-        <div class="ad-meta-sub"   id="adSub"></div>
+        <div class="ad-meta-title" id="adTitle">Stratum Intelligence</div>
+        <div class="ad-meta-sub" id="adSub">AI-powered growth for modern commerce</div>
       </div>
-      <div class="ad-footer-right">
-        <a id="adVisit" href="#" target="_blank" class="ad-visit">Learn More</a>
-        <button id="adSkip" class="ad-skip" disabled>Skip in <span id="adTimer">6</span>s</button>
-      </div>
+      <a id="adVisit" href="#" target="_blank" class="ad-visit">Learn More</a>
+      <button id="adSkip" class="ad-skip" disabled>Skip in <span id="adTimer">6</span>s</button>
     </div>
   </div>
 </div>
@@ -306,14 +278,18 @@ footer{border-top:1px solid var(--border);padding:36px 40px;display:flex;align-i
 <section class="hero">
   <div class="hero-grid"></div>
   <div class="hero-glow"></div>
+
   <div class="hero-eyebrow">
     <span class="eyebrow-dot"></span>
     AI Commerce Intelligence Platform
   </div>
+
   <h1>Strategy that<br><span class="accent">converts.</span></h1>
+
   <p class="hero-sub">
     Ten precision AI tools. One platform. Built for store owners, marketers, and operators who need results — not theory.
   </p>
+
   <div class="hero-actions">
     <a href="/signup-page" class="btn-primary">
       Get started free
@@ -321,6 +297,7 @@ footer{border-top:1px solid var(--border);padding:36px 40px;display:flex;align-i
     </a>
     <a href="/login-page" class="btn-secondary">Sign in to dashboard</a>
   </div>
+
   <div class="hero-trust">
     <div class="trust-item">
       <svg class="check-icon" viewBox="0 0 14 14"><polyline points="2 7 5.5 10.5 12 3.5"/></svg>
@@ -352,6 +329,7 @@ footer{border-top:1px solid var(--border);padding:36px 40px;display:flex;align-i
     <div class="marquee-item"><span class="m-dot">✦</span> Hashtag Generator</div>
     <div class="marquee-item"><span class="m-dot">✦</span> Profit Analyser</div>
     <div class="marquee-item"><span class="m-dot">✦</span> Store Health Check</div>
+    <!-- duplicate for seamless loop -->
     <div class="marquee-item"><span class="m-dot">✦</span> Marketing Strategy</div>
     <div class="marquee-item"><span class="m-dot">✦</span> Product Descriptions</div>
     <div class="marquee-item"><span class="m-dot">✦</span> Ad Copy Generator</div>
@@ -492,86 +470,37 @@ grid.innerHTML=TOOLS.map(t=>`
   </div>
 `).join('');
 
-// ── AD SYSTEM — loads from /ads/active ──
-(async function(){
-  // Skip if already seen this session
-  if(sessionStorage.getItem('ad_seen')) return;
-
-  let ads = [];
-  try {
-    const res = await fetch('/ads/active');
-    if(res.ok){
-      const data = await res.json();
-      ads = data.ads || [];
-    }
-  } catch(e) { /* silently skip if API down */ }
-
-  // No active ads → skip overlay entirely
-  if(!ads.length) return;
-
-  // Pick highest-priority ad (already sorted by backend, take first)
-  const ad = ads[0];
-
-  // Build media area
-  const contentEl = document.getElementById('adContent');
-  if(ad.image_url){
-    contentEl.innerHTML = `<img src="${ad.image_url}" class="ad-img" alt="${ad.title}" onerror="this.parentElement.innerHTML=buildGradient()" />`;
-  } else {
-    contentEl.innerHTML = buildGradientHTML(ad);
+// ── AD SYSTEM ──
+(function(){
+  if(sessionStorage.getItem('ad_seen')){
+    document.getElementById('adOverlay').style.display='none';return;
   }
-
-  function buildGradientHTML(a){
-    return `<div class="ad-gradient-bg" style="background:linear-gradient(135deg,${a.gradient_from}22,${a.gradient_to})">
-      <div>
-        <div class="ad-gradient-text-title">${a.title}</div>
-        <div class="ad-gradient-text-sub">${a.subtitle}</div>
+  const ads=[
+    {title:"Stratum Pro",sub:"Unlimited generations & priority AI",c1:"#e8ff59",c2:"#1a1a00",link:"#"},
+    {title:"E-Commerce Mastery",sub:"Scale your store with precision strategy",c1:"#5970ff",c2:"#0a0f2e",link:"#"},
+    {title:"Growth Intelligence",sub:"Data-driven decisions for modern brands",c1:"#ff5959",c2:"#1a0000",link:"#"},
+  ];
+  const ad=ads[Math.floor(Math.random()*ads.length)];
+  document.getElementById('adContent').innerHTML=`
+    <div style="width:100%;height:100%;background:linear-gradient(135deg,${ad.c1}22,${ad.c2});display:flex;align-items:center;justify-content:center;">
+      <div style="text-align:center;">
+        <div style="font-family:'Sora',sans-serif;font-size:clamp(22px,5vw,46px);font-weight:700;color:#fff;letter-spacing:-.04em">${ad.title}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.38);margin-top:10px;letter-spacing:.1em;text-transform:uppercase">${ad.sub}</div>
       </div>
     </div>`;
-  }
+  document.getElementById('adTitle').textContent=ad.title;
+  document.getElementById('adSub').textContent=ad.sub;
+  document.getElementById('adVisit').href=ad.link;
 
-  // Populate footer
-  document.getElementById('adTitle').textContent  = ad.title;
-  document.getElementById('adSub').textContent    = ad.subtitle;
-  const visitBtn = document.getElementById('adVisit');
-  visitBtn.textContent = ad.cta_text || 'Learn More';
-  visitBtn.href        = ad.cta_link || '#';
-
-  // Track impression
-  if(ad.id) fetch(`/ads/${ad.id}/impression`, {method:'POST'}).catch(()=>{});
-
-  // Track CTA click
-  visitBtn.addEventListener('click', ()=>{
-    if(ad.id) fetch(`/ads/${ad.id}/click`, {method:'POST'}).catch(()=>{});
-  });
-
-  // Show overlay with animation
-  const overlay = document.getElementById('adOverlay');
-  overlay.style.display = 'flex';
-  requestAnimationFrame(()=>requestAnimationFrame(()=>overlay.classList.add('visible')));
-
-  // Skip countdown
-  let t = Math.max(1, parseInt(ad.skip_delay) || 6);
-  const cd   = document.getElementById('adTimer');
-  const skip = document.getElementById('adSkip');
-  cd.textContent = t;
-
-  const iv = setInterval(()=>{
-    t--;
-    cd.textContent = t;
-    if(t <= 0){
-      clearInterval(iv);
-      skip.disabled = false;
-      skip.classList.add('ready');
-      skip.textContent = 'Continue →';
-    }
-  }, 1000);
-
-  skip.onclick = ()=>{
-    if(!skip.disabled){
-      overlay.classList.remove('visible');
-      setTimeout(()=>{ overlay.style.display='none'; },400);
-      sessionStorage.setItem('ad_seen','1');
-    }
+  let t=6;
+  const cd=document.getElementById('adTimer');
+  const skip=document.getElementById('adSkip');
+  const iv=setInterval(()=>{
+    t--;cd.textContent=t;
+    if(t<=0){clearInterval(iv);skip.disabled=false;skip.classList.add('ready');skip.textContent='Continue';}
+  },1000);
+  skip.onclick=()=>{
+    if(!skip.disabled){document.getElementById('adOverlay').style.display='none';sessionStorage.setItem('ad_seen','1');}
   };
 })();
 </script>
