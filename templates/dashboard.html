@@ -415,9 +415,6 @@ body{background:var(--black);color:var(--white);font-family:var(--font);-webkit-
           <div><div class="setting-label" id="settingEmail">—</div><div class="setting-sub">Email address</div></div>
         </div>
         <div class="setting-row">
-          <div><div class="setting-label" id="settingCountry">—</div><div class="setting-sub">Country</div></div>
-        </div>
-        <div class="setting-row">
           <div>
             <div class="setting-label">Free Plan</div>
             <div class="setting-sub">10 generations / day · <span id="settingTotal">0</span> total used</div>
@@ -561,7 +558,6 @@ function applyProfile(u){
   document.getElementById('greetName').textContent=name.split(' ')[0];
   document.getElementById('settingName').textContent=name;
   document.getElementById('settingEmail').textContent=u.email||'—';
-  document.getElementById('settingCountry').textContent=u.country||'—';
   document.getElementById('settingTotal').textContent=u.total_usage||0;
   updateUsage(daily);
 }
