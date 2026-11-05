@@ -19,8 +19,11 @@ from passlib.context import CryptContext
 from dotenv import load_dotenv
 from pymongo import MongoClient, DESCENDING
 from openai import OpenAI
+from google.oauth2 import id_token as google_id_token
+from google.auth.transport import requests as google_requests
 
 import certifi
+import secrets
 import os
 import logging
 import random
@@ -62,6 +65,7 @@ MAX_HISTORY     = 10          # last N generations stored per user
 MONGO_URI     = os.getenv("MONGO_URI", "")
 JWT_SECRET    = os.getenv("JWT_SECRET_KEY", "")
 OPENAI_KEY    = os.getenv("OPENAI_API_KEY", "")
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")   # optional: enables "Continue with Google"
 
 if not all([MONGO_URI, JWT_SECRET, OPENAI_KEY]):
     logger.critical("Missing required environment variables. Check .env file.")
@@ -435,11 +439,11 @@ async def home(request: Request):
 
 @app.get("/signup-page", response_class=HTMLResponse)
 async def signup_page(request: Request):
-    return templates.TemplateResponse("signup.html", {"request": request})
+    return templates.TemplateResponse("signup.html", {"request": request, "google_client_id": GOOGLE_CLIENT_ID})
 
 @app.get("/login-page", response_class=HTMLResponse)
 async def login_page(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
+    return templates.TemplateResponse("login.html", {"request": request, "google_client_id": GOOGLE_CLIENT_ID})
 
 @app.get("/dashboard", response_class=HTMLResponse)
 async def dashboard(request: Request):
@@ -525,6 +529,73 @@ async def login(
             "daily_usage": user.get("daily_usage", 0),
             "limit":       MAX_GENERATIONS,
         }
+    }
+
+# ================================================================
+# AUTH — GOOGLE SIGN-IN (verifies Google ID token server-side)
+# ================================================================
+
+@app.post("/auth/google", tags=["Auth"])
+async def google_auth(credential: str = Form(...)):
+    if not GOOGLE_CLIENT_ID:
+        raise HTTPException(status_code=503, detail="Google sign-in is not configured.")
+
+    try:
+        info = google_id_token.verify_oauth2_token(
+            credential, google_requests.Request(), GOOGLE_CLIENT_ID
+        )
+    except ValueError:
+        raise HTTPException(status_code=401, detail="Invalid Google credential.")
+
+    if info.get("iss") not in ("accounts.google.com", "https://accounts.google.com"):
+        raise HTTPException(status_code=401, detail="Invalid Google credential.")
+    if not info.get("email") or not info.get("email_verified"):
+        raise HTTPException(status_code=401, detail="Google account email is not verified.")
+
+    email = info["email"].lower().strip()
+    user  = users_col.find_one({"email": email}, {"_id": 0})
+    is_new = user is None
+
+    if is_new:
+        name = (info.get("name") or email.split("@")[0]).strip()
+        user = {
+            "username":          name,
+            "email":             email,
+            # Google users have no phone/country/password at signup.
+            # Random unusable password hash keeps password login safe.
+            "phone":             None,
+            "hashed_password":   hash_password(secrets.token_urlsafe(32)),
+            "country":           "",
+            "auth_provider":     "google",
+            "google_id":         info.get("sub"),
+            "picture":           info.get("picture"),
+            "daily_usage":       0,
+            "total_usage":       0,
+            "usage_reset_date":  datetime.now(timezone.utc).date().isoformat(),
+            "last_generations":  [],
+            "created_at":        datetime.now(timezone.utc),
+            "updated_at":        datetime.now(timezone.utc),
+        }
+        users_col.insert_one(dict(user))
+        log_event(email, "signup", {"provider": "google"})
+        logger.info(f"New Google user registered: {email}")
+    else:
+        # Existing account with same verified email: link Google, keep all data.
+        users_col.update_one(
+            {"email": email},
+            {"$set": {"google_id": info.get("sub"), "updated_at": datetime.now(timezone.utc)}},
+        )
+        log_event(email, "login", {"provider": "google"})
+
+    token = create_token({"sub": email})
+    return {
+        "access_token": token,
+        "user": {
+            "email":       user["email"],
+            "username":    user["username"],
+            "daily_usage": user.get("daily_usage", 0),
+            "limit":       MAX_GENERATIONS,
+        },
     }
 
 # ================================================================
