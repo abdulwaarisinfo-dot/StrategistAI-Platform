@@ -227,7 +227,7 @@ body{
       <h2 id="forgotTitle">Reset password</h2>
       <button class="modal-close" onclick="closeForgot()">×</button>
     </div>
-    <p class="modal-sub" id="forgotSub">Enter your email and phone number to receive a verification code.</p>
+    <p class="modal-sub" id="forgotSub">Enter your email to receive a verification code.</p>
 
     <div class="alert" id="forgotAlert"></div>
 
@@ -237,10 +237,6 @@ body{
         <div class="field">
           <label class="field-label">Email</label>
           <input type="email" class="field-input" name="email" id="fEmail" required placeholder="name@company.com">
-        </div>
-        <div class="field">
-          <label class="field-label">Phone</label>
-          <input type="text" class="field-input" name="phone" required placeholder="+1 555 000 0000">
         </div>
         <button type="submit" class="submit" id="codeBtn">Send verification code</button>
       </form>
@@ -298,7 +294,7 @@ function closeForgot(){
   document.getElementById('step1').style.display='block';
   document.getElementById('step2').style.display='none';
   document.getElementById('forgotTitle').textContent='Reset password';
-  document.getElementById('forgotSub').textContent='Enter your email and phone number to receive a verification code.';
+  document.getElementById('forgotSub').textContent='Enter your email to receive a verification code.';
   document.getElementById('form1').reset();
   document.getElementById('form2').reset();
   showAlert('forgotAlert','','');
@@ -318,7 +314,7 @@ async function requestCode(e){
     document.getElementById('step1').style.display='none';
     document.getElementById('step2').style.display='block';
     document.getElementById('forgotTitle').textContent='Verify & reset';
-    document.getElementById('forgotSub').textContent='Enter the 6-digit code sent to your phone, then choose a new password.';
+    document.getElementById('forgotSub').textContent='Enter the 6-digit code sent to your email, then choose a new password.';
   }catch(err){
     showAlert('forgotAlert',err.message,'error');
   }
