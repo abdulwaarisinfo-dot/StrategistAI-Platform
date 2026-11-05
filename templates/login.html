@@ -211,6 +211,9 @@ body{
     </form>
 
     <div class="divider">or</div>
+    {% if google_client_id %}
+    <div id="googleBtn" style="display:flex;justify-content:center;margin-bottom:6px"></div>
+    {% endif %}
     <p style="text-align:center;font-size:12px;color:var(--muted)">
       Don't have an account? <a href="/signup-page" style="color:var(--accent);text-decoration:none">Create one free →</a>
     </p>
@@ -358,5 +361,31 @@ function togglePwd(fieldId,btn){
   btn.querySelector('svg').style.opacity=isPassword?'.45':'1';
 }
 </script>
+
+{% if google_client_id %}
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+// ── GOOGLE SIGN-IN ──
+async function handleGoogleCredential(resp){
+  try{
+    const fd=new FormData();fd.append('credential',resp.credential);
+    const res=await fetch('/auth/google',{method:'POST',body:fd});
+    const data=await res.json();
+    if(!res.ok)throw new Error(data.detail||'Google sign-in failed.');
+    localStorage.setItem('access_token',data.access_token);
+    localStorage.setItem('user',JSON.stringify(data.user||{}));
+    window.location.href='/dashboard';
+  }catch(err){
+    showAlert('loginAlert',err.message,'error');
+  }
+}
+window.addEventListener('load',function init(){
+  if(!window.google||!google.accounts){return setTimeout(init,150);}
+  google.accounts.id.initialize({client_id:'{{ google_client_id }}',callback:handleGoogleCredential});
+  google.accounts.id.renderButton(document.getElementById('googleBtn'),
+    {theme:'filled_black',size:'large',shape:'rectangular',text:'continue_with',width:340});
+});
+</script>
+{% endif %}
 </body>
 </html>
