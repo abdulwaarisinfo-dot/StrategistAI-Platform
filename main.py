@@ -54,7 +54,7 @@ TOKEN_EXPIRE_H  = 12
 MAX_GENERATIONS = 10          # free tier daily limit — no paid plans
 MAX_HISTORY     = 10          # last N generations stored per user
 MAX_BCRYPT_LEN  = 72
-OPENAI_MODEL    = "gpt-5-mini"
+OPENAI_MODEL    = os.getenv("OPENAI_MODEL", "gpt-6-luna")
 
 # ================================================================
 # ENV VARIABLES
