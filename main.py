@@ -10,12 +10,11 @@ from fastapi import (
     Request, WebSocket, WebSocketDisconnect
 )
 from fastapi.security import OAuth2PasswordBearer
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
 
 from jose import jwt, JWTError
-from passlib.context import CryptContext
 from dotenv import load_dotenv
 from pymongo import MongoClient, DESCENDING
 from openai import OpenAI
@@ -23,11 +22,8 @@ from google.oauth2 import id_token as google_id_token
 from google.auth.transport import requests as google_requests
 
 import certifi
-import secrets
 import os
 import logging
-import random
-import re
 from datetime import datetime, timedelta, timezone
 from typing import Dict, Optional
 
@@ -53,8 +49,6 @@ logger = logging.getLogger("ecommerce.platform.v2")
 
 ALGORITHM       = "HS256"
 TOKEN_EXPIRE_H  = 12
-MAX_BCRYPT_LEN  = 72
-RESET_CODE_TTL  = 15          # minutes
 MAX_GENERATIONS = 10          # free tier daily limit — no paid plans
 MAX_HISTORY     = 10          # last N generations stored per user
 OPENAI_MODEL    = "gpt-5-mini"
@@ -66,11 +60,11 @@ OPENAI_MODEL    = "gpt-5-mini"
 MONGO_URI     = os.getenv("MONGO_URI", "")
 JWT_SECRET    = os.getenv("JWT_SECRET_KEY", "")
 OPENAI_KEY    = os.getenv("OPENAI_API_KEY", "")
-GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")   # optional: enables "Continue with Google"
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")   # Google is the only sign-in method
 
-if not all([MONGO_URI, JWT_SECRET, OPENAI_KEY]):
+if not all([MONGO_URI, JWT_SECRET, OPENAI_KEY, GOOGLE_CLIENT_ID]):
     logger.critical("Missing required environment variables. Check .env file.")
-    raise RuntimeError("Missing environment variables: MONGO_URI, JWT_SECRET_KEY, OPENAI_API_KEY")
+    raise RuntimeError("Missing environment variables: MONGO_URI, JWT_SECRET_KEY, OPENAI_API_KEY, GOOGLE_CLIENT_ID")
 
 # ================================================================
 # FASTAPI APP
@@ -93,8 +87,7 @@ app.add_middleware(
 )
 
 templates    = Jinja2Templates(directory="templates")
-oauth2       = OAuth2PasswordBearer(tokenUrl="login")
-pwd_context  = CryptContext(schemes=["bcrypt"], deprecated="auto")
+oauth2       = OAuth2PasswordBearer(tokenUrl="auth/google")
 openai_client = OpenAI(api_key=OPENAI_KEY)
 
 # ================================================================
@@ -120,26 +113,26 @@ except Exception as exc:
     logger.critical(f"MongoDB connection failed: {exc}")
     raise exc
 
-# ================================================================
-# PASSWORD HELPERS
-# ================================================================
-
-def hash_password(plain: str) -> str:
-    return pwd_context.hash(plain[:MAX_BCRYPT_LEN])
-
-def verify_password(plain: str, hashed: str) -> bool:
-    return pwd_context.verify(plain[:MAX_BCRYPT_LEN], hashed)
-
-def validate_password_strength(password: str) -> bool:
-    """Minimum 8 chars, 1 uppercase, 1 digit."""
-    return (
-        len(password) >= 8
-        and any(c.isupper() for c in password)
-        and any(c.isdigit() for c in password)
+# ----------------------------------------------------------------
+# ONE-TIME CLEANUP: Google is the only auth method now.
+# Strip legacy email/password, phone, country and reset-code data.
+# Idempotent: safe to run on every start.
+# ----------------------------------------------------------------
+try:
+    _cleaned = users_col.update_many(
+        {},
+        {"$unset": {
+            "hashed_password":   "",
+            "phone":             "",
+            "country":           "",
+            "reset_code":        "",
+            "reset_code_expiry": "",
+        }},
     )
-
-def validate_email(email: str) -> bool:
-    return bool(re.match(r"^[\w\.-]+@[\w\.-]+\.\w{2,}$", email))
+    if _cleaned.modified_count:
+        logger.info(f"Legacy auth fields removed from {_cleaned.modified_count} user(s).")
+except Exception as exc:
+    logger.warning(f"Legacy auth cleanup skipped: {exc}")
 
 # ================================================================
 # JWT HELPERS
@@ -440,7 +433,8 @@ async def home(request: Request):
 
 @app.get("/signup-page", response_class=HTMLResponse)
 async def signup_page(request: Request):
-    return templates.TemplateResponse("signup.html", {"request": request, "google_client_id": GOOGLE_CLIENT_ID})
+    # Google sign-in creates the account on first use, so signup == login.
+    return RedirectResponse(url="/login-page", status_code=307)
 
 @app.get("/login-page", response_class=HTMLResponse)
 async def login_page(request: Request):
@@ -455,89 +449,13 @@ async def tool_page(request: Request, tool_name: str):
     return templates.TemplateResponse("tool.html", {"request": request, "tool": tool_name})
 
 # ================================================================
-# AUTH — SIGNUP
-# ================================================================
-
-@app.post("/signup", tags=["Auth"])
-async def signup(
-    username: str = Form(...),
-    email:    str = Form(...),
-    password: str = Form(...),
-    country:  str = Form(...),
-    phone:    Optional[str] = Form(None),   # no longer collected
-):
-    # Validate email
-    if not validate_email(email):
-        raise HTTPException(status_code=422, detail="Invalid email format.")
-
-    # Validate password strength
-    if not validate_password_strength(password):
-        raise HTTPException(
-            status_code=422,
-            detail="Password must be 8+ characters with at least 1 uppercase letter and 1 number."
-        )
-
-    # Check duplicates
-    if users_col.find_one({"email": email}):
-        raise HTTPException(status_code=409, detail="Email already registered.")
-
-    user = {
-        "username":          username.strip(),
-        "email":             email.lower().strip(),
-        "phone":             phone.strip() if phone else None,
-        "hashed_password":   hash_password(password),
-        "country":           country.strip(),
-        "daily_usage":       0,
-        "total_usage":       0,
-        "usage_reset_date":  datetime.now(timezone.utc).date().isoformat(),
-        "last_generations":  [],
-        "created_at":        datetime.now(timezone.utc),
-        "updated_at":        datetime.now(timezone.utc),
-    }
-
-    users_col.insert_one(user)
-    token = create_token({"sub": email})
-    log_event(email, "signup", {"country": country})
-    logger.info(f"New user registered: {email}")
-
-    return {"status": "success", "access_token": token}
-
-# ================================================================
-# AUTH — LOGIN
-# ================================================================
-
-@app.post("/login", tags=["Auth"])
-async def login(
-    email:    str = Form(...),
-    password: str = Form(...),
-):
-    user = users_col.find_one({"email": email.lower().strip()}, {"_id": 0})
-
-    if not user or not verify_password(password, user["hashed_password"]):
-        raise HTTPException(status_code=401, detail="Invalid email or password.")
-
-    token = create_token({"sub": email})
-    log_event(email, "login")
-
-    return {
-        "access_token": token,
-        "user": {
-            "email":       user["email"],
-            "username":    user["username"],
-            "daily_usage": user.get("daily_usage", 0),
-            "limit":       MAX_GENERATIONS,
-        }
-    }
-
-# ================================================================
-# AUTH — GOOGLE SIGN-IN (verifies Google ID token server-side)
+# AUTH — GOOGLE SIGN-IN (only login method)
+# Verifies the Google ID token server-side, creates the user on
+# first sign-in, and returns this app's session JWT.
 # ================================================================
 
 @app.post("/auth/google", tags=["Auth"])
 async def google_auth(credential: str = Form(...)):
-    if not GOOGLE_CLIENT_ID:
-        raise HTTPException(status_code=503, detail="Google sign-in is not configured.")
-
     try:
         info = google_id_token.verify_oauth2_token(
             credential, google_requests.Request(), GOOGLE_CLIENT_ID
@@ -551,37 +469,42 @@ async def google_auth(credential: str = Form(...)):
         raise HTTPException(status_code=401, detail="Google account email is not verified.")
 
     email = info["email"].lower().strip()
+    now   = datetime.now(timezone.utc)
     user  = users_col.find_one({"email": email}, {"_id": 0})
-    is_new = user is None
 
-    if is_new:
-        name = (info.get("name") or email.split("@")[0]).strip()
+    if user is None:
         user = {
-            "username":          name,
+            "username":          (info.get("name") or email.split("@")[0]).strip(),
             "email":             email,
-            # Google users have no phone/country/password at signup.
-            # Random unusable password hash keeps password login safe.
-            "phone":             None,
-            "hashed_password":   hash_password(secrets.token_urlsafe(32)),
-            "country":           "",
             "auth_provider":     "google",
             "google_id":         info.get("sub"),
             "picture":           info.get("picture"),
             "daily_usage":       0,
             "total_usage":       0,
-            "usage_reset_date":  datetime.now(timezone.utc).date().isoformat(),
+            "usage_reset_date":  now.date().isoformat(),
             "last_generations":  [],
-            "created_at":        datetime.now(timezone.utc),
-            "updated_at":        datetime.now(timezone.utc),
+            "created_at":        now,
+            "updated_at":        now,
         }
         users_col.insert_one(dict(user))
         log_event(email, "signup", {"provider": "google"})
         logger.info(f"New Google user registered: {email}")
     else:
-        # Existing account with same verified email: link Google, keep all data.
+        # Existing account with the same verified email: attach Google, keep all data.
         users_col.update_one(
             {"email": email},
-            {"$set": {"google_id": info.get("sub"), "updated_at": datetime.now(timezone.utc)}},
+            {
+                "$set": {
+                    "auth_provider": "google",
+                    "google_id":     info.get("sub"),
+                    "picture":       info.get("picture"),
+                    "updated_at":    now,
+                },
+                "$unset": {
+                    "hashed_password": "", "phone": "", "country": "",
+                    "reset_code": "", "reset_code_expiry": "",
+                },
+            },
         )
         log_event(email, "login", {"provider": "google"})
 
@@ -595,89 +518,6 @@ async def google_auth(credential: str = Form(...)):
             "limit":       MAX_GENERATIONS,
         },
     }
-
-# ================================================================
-# AUTH — FORGOT PASSWORD
-# ================================================================
-
-@app.post("/forgot-password", tags=["Auth"])
-async def forgot_password(
-    email: str = Form(...),
-):
-    email = email.lower().strip()
-    user = users_col.find_one({"email": email})
-    if not user:
-        raise HTTPException(status_code=404, detail="No account found with this email.")
-
-    code   = str(random.randint(100000, 999999))   # 6-digit code
-    expiry = datetime.now(timezone.utc) + timedelta(minutes=RESET_CODE_TTL)
-
-    users_col.update_one(
-        {"email": email},
-        {"$set": {"reset_code": code, "reset_code_expiry": expiry}}
-    )
-
-    # In production — integrate an email service (SMTP / SendGrid / Resend) here
-    logger.info(f"[RESET CODE] {email} → {code}")
-    print(f"\n{'='*40}\nEMAIL TO: {email}\nCODE: {code}\n{'='*40}\n")
-
-    return {"message": "Verification code sent to your email."}
-
-# ================================================================
-# AUTH — VERIFY RESET CODE
-# ================================================================
-
-@app.post("/verify-reset-code", tags=["Auth"])
-async def verify_reset_code(
-    email: str = Form(...),
-    code:  str = Form(...),
-):
-    user = users_col.find_one({"email": email})
-    if not user or user.get("reset_code") != code:
-        raise HTTPException(status_code=400, detail="Invalid verification code.")
-
-    expiry = user.get("reset_code_expiry")
-    if expiry:
-        if expiry.tzinfo is None:
-            expiry = expiry.replace(tzinfo=timezone.utc)
-        if datetime.now(timezone.utc) > expiry:
-            raise HTTPException(status_code=400, detail="Code has expired. Request a new one.")
-
-    return {"message": "Verified. You may now reset your password."}
-
-# ================================================================
-# AUTH — RESET PASSWORD
-# ================================================================
-
-@app.post("/reset-password", tags=["Auth"])
-async def reset_password(
-    email:        str = Form(...),
-    code:         str = Form(...),
-    new_password: str = Form(...),
-):
-    user = users_col.find_one({"email": email})
-    if not user or user.get("reset_code") != code:
-        raise HTTPException(status_code=400, detail="Unauthorised reset attempt.")
-
-    if not validate_password_strength(new_password):
-        raise HTTPException(
-            status_code=422,
-            detail="Password must be 8+ characters with 1 uppercase and 1 number."
-        )
-
-    users_col.update_one(
-        {"email": email},
-        {
-            "$set": {
-                "hashed_password": hash_password(new_password),
-                "updated_at":      datetime.now(timezone.utc),
-            },
-            "$unset": {"reset_code": "", "reset_code_expiry": ""}
-        }
-    )
-
-    log_event(email, "password_reset")
-    return {"message": "Password updated successfully."}
 
 # ================================================================
 # DAILY USAGE RESET HELPER
@@ -788,7 +628,6 @@ async def get_profile(current_user: dict = Depends(get_current_user)):
     return {
         "username":     user["username"],
         "email":        user["email"],
-        "country":      user.get("country"),
         "daily_usage":  user.get("daily_usage", 0),
         "total_usage":  user.get("total_usage", 0),
         "limit":        MAX_GENERATIONS,
