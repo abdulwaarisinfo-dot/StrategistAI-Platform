@@ -10,11 +10,12 @@ from fastapi import (
     Request, WebSocket, WebSocketDisconnect
 )
 from fastapi.security import OAuth2PasswordBearer
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
 
 from jose import jwt, JWTError
+from passlib.context import CryptContext
 from dotenv import load_dotenv
 from pymongo import MongoClient, DESCENDING
 from openai import OpenAI
@@ -23,6 +24,7 @@ from google.auth.transport import requests as google_requests
 
 import certifi
 import os
+import re
 import logging
 from datetime import datetime, timedelta, timezone
 from typing import Dict, Optional
@@ -51,6 +53,7 @@ ALGORITHM       = "HS256"
 TOKEN_EXPIRE_H  = 12
 MAX_GENERATIONS = 10          # free tier daily limit — no paid plans
 MAX_HISTORY     = 10          # last N generations stored per user
+MAX_BCRYPT_LEN  = 72
 OPENAI_MODEL    = "gpt-5-mini"
 
 # ================================================================
@@ -60,7 +63,7 @@ OPENAI_MODEL    = "gpt-5-mini"
 MONGO_URI     = os.getenv("MONGO_URI", "")
 JWT_SECRET    = os.getenv("JWT_SECRET_KEY", "")
 OPENAI_KEY    = os.getenv("OPENAI_API_KEY", "")
-GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")   # Google is the only sign-in method
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")   # Sign-in with Google
 
 if not all([MONGO_URI, JWT_SECRET, OPENAI_KEY, GOOGLE_CLIENT_ID]):
     logger.critical("Missing required environment variables. Check .env file.")
@@ -87,7 +90,8 @@ app.add_middleware(
 )
 
 templates    = Jinja2Templates(directory="templates")
-oauth2       = OAuth2PasswordBearer(tokenUrl="auth/google")
+oauth2       = OAuth2PasswordBearer(tokenUrl="login")
+pwd_context  = CryptContext(schemes=["bcrypt"], deprecated="auto")
 openai_client = OpenAI(api_key=OPENAI_KEY)
 
 # ================================================================
@@ -114,25 +118,39 @@ except Exception as exc:
     raise exc
 
 # ----------------------------------------------------------------
-# ONE-TIME CLEANUP: Google is the only auth method now.
-# Strip legacy email/password, phone, country and reset-code data.
-# Idempotent: safe to run on every start.
+# CLEANUP: remove retired fields (phone, country, SMS reset codes).
+# Passwords are kept. Idempotent: safe to run on every start.
 # ----------------------------------------------------------------
 try:
     _cleaned = users_col.update_many(
         {},
-        {"$unset": {
-            "hashed_password":   "",
-            "phone":             "",
-            "country":           "",
-            "reset_code":        "",
-            "reset_code_expiry": "",
-        }},
+        {"$unset": {"phone": "", "country": "", "reset_code": "", "reset_code_expiry": ""}},
     )
     if _cleaned.modified_count:
-        logger.info(f"Legacy auth fields removed from {_cleaned.modified_count} user(s).")
+        logger.info(f"Retired fields removed from {_cleaned.modified_count} user(s).")
 except Exception as exc:
-    logger.warning(f"Legacy auth cleanup skipped: {exc}")
+    logger.warning(f"Field cleanup skipped: {exc}")
+
+# ================================================================
+# PASSWORD HELPERS
+# ================================================================
+
+def hash_password(plain: str) -> str:
+    return pwd_context.hash(plain[:MAX_BCRYPT_LEN])
+
+def verify_password(plain: str, hashed: str) -> bool:
+    return pwd_context.verify(plain[:MAX_BCRYPT_LEN], hashed)
+
+def validate_password_strength(password: str) -> bool:
+    """Minimum 8 chars, 1 uppercase, 1 digit."""
+    return (
+        len(password) >= 8
+        and any(c.isupper() for c in password)
+        and any(c.isdigit() for c in password)
+    )
+
+def validate_email(email: str) -> bool:
+    return bool(re.match(r"^[\w\.-]+@[\w\.-]+\.\w{2,}$", email))
 
 # ================================================================
 # JWT HELPERS
@@ -433,8 +451,7 @@ async def home(request: Request):
 
 @app.get("/signup-page", response_class=HTMLResponse)
 async def signup_page(request: Request):
-    # Google sign-in creates the account on first use, so signup == login.
-    return RedirectResponse(url="/login-page", status_code=307)
+    return templates.TemplateResponse("signup.html", {"request": request, "google_client_id": GOOGLE_CLIENT_ID})
 
 @app.get("/login-page", response_class=HTMLResponse)
 async def login_page(request: Request):
@@ -449,7 +466,99 @@ async def tool_page(request: Request, tool_name: str):
     return templates.TemplateResponse("tool.html", {"request": request, "tool": tool_name})
 
 # ================================================================
-# AUTH — GOOGLE SIGN-IN (only login method)
+# AUTH — SIGNUP (email + password + confirm password)
+# ================================================================
+
+@app.post("/signup", tags=["Auth"])
+async def signup(
+    email:            str = Form(...),
+    password:         str = Form(...),
+    confirm_password: str = Form(...),
+):
+    email = email.lower().strip()
+
+    if not validate_email(email):
+        raise HTTPException(status_code=422, detail="Invalid email format.")
+    if password != confirm_password:
+        raise HTTPException(status_code=422, detail="Passwords do not match.")
+    if not validate_password_strength(password):
+        raise HTTPException(
+            status_code=422,
+            detail="Password must be 8+ characters with at least 1 uppercase letter and 1 number."
+        )
+    if users_col.find_one({"email": email}):
+        raise HTTPException(
+            status_code=409,
+            detail="Email already registered. Please sign in (or use Continue with Google)."
+        )
+
+    now  = datetime.now(timezone.utc)
+    user = {
+        "username":          email.split("@")[0],
+        "email":             email,
+        "hashed_password":   hash_password(password),
+        "auth_provider":     "password",
+        "email_verified":    False,
+        "daily_usage":       0,
+        "total_usage":       0,
+        "usage_reset_date":  now.date().isoformat(),
+        "last_generations":  [],
+        "created_at":        now,
+        "updated_at":        now,
+    }
+    users_col.insert_one(dict(user))
+    log_event(email, "signup", {"provider": "password"})
+    logger.info(f"New user registered: {email}")
+
+    token = create_token({"sub": email})
+    return {
+        "status": "success",
+        "access_token": token,
+        "user": {
+            "email":       email,
+            "username":    user["username"],
+            "daily_usage": 0,
+            "limit":       MAX_GENERATIONS,
+        },
+    }
+
+# ================================================================
+# AUTH — LOGIN (email + password)
+# ================================================================
+
+@app.post("/login", tags=["Auth"])
+async def login(
+    email:    str = Form(...),
+    password: str = Form(...),
+):
+    email = email.lower().strip()
+    user  = users_col.find_one({"email": email}, {"_id": 0})
+
+    if not user or not user.get("hashed_password"):
+        if user:
+            raise HTTPException(
+                status_code=401,
+                detail="This account uses Google sign-in. Please use Continue with Google."
+            )
+        raise HTTPException(status_code=401, detail="Invalid email or password.")
+    if not verify_password(password, user["hashed_password"]):
+        raise HTTPException(status_code=401, detail="Invalid email or password.")
+
+    token = create_token({"sub": email})
+    log_event(email, "login", {"provider": "password"})
+
+    return {
+        "access_token": token,
+        "user": {
+            "email":       user["email"],
+            "username":    user["username"],
+            "daily_usage": user.get("daily_usage", 0),
+            "limit":       MAX_GENERATIONS,
+        }
+    }
+
+# ================================================================
+# AUTH — GOOGLE SIGN-IN
 # Verifies the Google ID token server-side, creates the user on
 # first sign-in, and returns this app's session JWT.
 # ================================================================
@@ -477,6 +586,7 @@ async def google_auth(credential: str = Form(...)):
             "username":          (info.get("name") or email.split("@")[0]).strip(),
             "email":             email,
             "auth_provider":     "google",
+            "email_verified":    True,
             "google_id":         info.get("sub"),
             "picture":           info.get("picture"),
             "daily_usage":       0,
@@ -490,22 +600,21 @@ async def google_auth(credential: str = Form(...)):
         log_event(email, "signup", {"provider": "google"})
         logger.info(f"New Google user registered: {email}")
     else:
-        # Existing account with the same verified email: attach Google, keep all data.
-        users_col.update_one(
-            {"email": email},
-            {
-                "$set": {
-                    "auth_provider": "google",
-                    "google_id":     info.get("sub"),
-                    "picture":       info.get("picture"),
-                    "updated_at":    now,
-                },
-                "$unset": {
-                    "hashed_password": "", "phone": "", "country": "",
-                    "reset_code": "", "reset_code_expiry": "",
-                },
-            },
-        )
+        # Existing account with the same email: Google has proven ownership of it.
+        # If it was a password signup whose email was never verified, the password is
+        # dropped so nobody who pre-registered someone else's email keeps access.
+        update = {
+            "$set": {
+                "google_id":      info.get("sub"),
+                "picture":        info.get("picture"),
+                "email_verified": True,
+                "updated_at":     now,
+            }
+        }
+        if user.get("hashed_password") and not user.get("email_verified"):
+            update["$unset"] = {"hashed_password": ""}
+            update["$set"]["auth_provider"] = "google"
+        users_col.update_one({"email": email}, update)
         log_event(email, "login", {"provider": "google"})
 
     token = create_token({"sub": email})
