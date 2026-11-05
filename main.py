@@ -57,6 +57,7 @@ MAX_BCRYPT_LEN  = 72
 RESET_CODE_TTL  = 15          # minutes
 MAX_GENERATIONS = 10          # free tier daily limit — no paid plans
 MAX_HISTORY     = 10          # last N generations stored per user
+OPENAI_MODEL    = "gpt-5-mini"
 
 # ================================================================
 # ENV VARIABLES
@@ -461,9 +462,9 @@ async def tool_page(request: Request, tool_name: str):
 async def signup(
     username: str = Form(...),
     email:    str = Form(...),
-    phone:    str = Form(...),
     password: str = Form(...),
     country:  str = Form(...),
+    phone:    Optional[str] = Form(None),   # no longer collected
 ):
     # Validate email
     if not validate_email(email):
@@ -480,13 +481,10 @@ async def signup(
     if users_col.find_one({"email": email}):
         raise HTTPException(status_code=409, detail="Email already registered.")
 
-    if users_col.find_one({"phone": phone}):
-        raise HTTPException(status_code=409, detail="Phone number already in use.")
-
     user = {
         "username":          username.strip(),
         "email":             email.lower().strip(),
-        "phone":             phone.strip(),
+        "phone":             phone.strip() if phone else None,
         "hashed_password":   hash_password(password),
         "country":           country.strip(),
         "daily_usage":       0,
@@ -605,11 +603,11 @@ async def google_auth(credential: str = Form(...)):
 @app.post("/forgot-password", tags=["Auth"])
 async def forgot_password(
     email: str = Form(...),
-    phone: str = Form(...),
 ):
-    user = users_col.find_one({"email": email, "phone": phone})
+    email = email.lower().strip()
+    user = users_col.find_one({"email": email})
     if not user:
-        raise HTTPException(status_code=404, detail="No account found with these credentials.")
+        raise HTTPException(status_code=404, detail="No account found with this email.")
 
     code   = str(random.randint(100000, 999999))   # 6-digit code
     expiry = datetime.now(timezone.utc) + timedelta(minutes=RESET_CODE_TTL)
@@ -619,11 +617,11 @@ async def forgot_password(
         {"$set": {"reset_code": code, "reset_code_expiry": expiry}}
     )
 
-    # In production — integrate Twilio or similar SMS service here
+    # In production — integrate an email service (SMTP / SendGrid / Resend) here
     logger.info(f"[RESET CODE] {email} → {code}")
-    print(f"\n{'='*40}\nSMS TO: {phone}\nCODE: {code}\n{'='*40}\n")
+    print(f"\n{'='*40}\nEMAIL TO: {email}\nCODE: {code}\n{'='*40}\n")
 
-    return {"message": f"Verification code sent to ****{phone[-4:]}"}
+    return {"message": "Verification code sent to your email."}
 
 # ================================================================
 # AUTH — VERIFY RESET CODE
@@ -730,7 +728,7 @@ async def generate(
 
     try:
         response = openai_client.chat.completions.create(
-            model="gpt-4o-mini",
+            model=OPENAI_MODEL,
             messages=[
                 {
                     "role": "system",
@@ -741,8 +739,8 @@ async def generate(
                     "content": prompt
                 }
             ],
-            temperature=0.7,
-            max_tokens=2000,
+            reasoning_effort="low",
+            max_completion_tokens=6000,
         )
         output = response.choices[0].message.content
 
@@ -862,7 +860,7 @@ async def websocket_generate(
 
             # Stream response token by token
             stream = openai_client.chat.completions.create(
-                model="gpt-4o-mini",
+                model=OPENAI_MODEL,
                 messages=[
                     {
                         "role": "system",
@@ -873,8 +871,8 @@ async def websocket_generate(
                         "content": prompt
                     }
                 ],
-                temperature=0.7,
-                max_tokens=2000,
+                reasoning_effort="low",
+                max_completion_tokens=6000,
                 stream=True,
             )
 
