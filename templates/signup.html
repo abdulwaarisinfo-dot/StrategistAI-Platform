@@ -200,17 +200,11 @@ body{
 
     <div class="alert" id="signupAlert"></div>
 
-    <!-- Fields match POST /signup: username, email, phone, password, country -->
+    <!-- Fields match POST /signup: username, email, password, country -->
     <form id="signupForm" onsubmit="handleSignup(event)">
-      <div class="form-row">
-        <div class="field">
-          <label class="field-label">Full name</label>
-          <input type="text" class="field-input" name="username" placeholder="Alex Johnson" required autocomplete="name">
-        </div>
-        <div class="field">
-          <label class="field-label">Phone</label>
-          <input type="text" class="field-input" name="phone" placeholder="+1 555 000 0000" required>
-        </div>
+      <div class="field">
+        <label class="field-label">Full name</label>
+        <input type="text" class="field-input" name="username" placeholder="Alex Johnson" required autocomplete="name">
       </div>
 
       <div class="field">
@@ -302,7 +296,7 @@ function checkStrength(val){
 }
 
 // ── SIGNUP → POST /signup ──
-// Backend expects: username, email, phone, password, country (all Form fields)
+// Backend expects: username, email, password, country (all Form fields)
 // Returns: {status:"success", access_token, user?}
 // Note: signup response only returns access_token (no user object in the backend response),
 // so we do an immediate /me call to populate localStorage.
